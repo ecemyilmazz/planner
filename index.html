@@ -133,9 +133,17 @@ h1,h2,h3{font-family:'Archivo',system-ui,sans-serif;letter-spacing:-.02em;font-w
 .hblock span{font-family:'IBM Plex Mono';font-size:9.5px;opacity:.85}
 .hdead{display:grid;grid-template-columns:52px repeat(7,1fr);border-bottom:1px solid var(--rule);background:var(--paper)}
 .hdead .lbl{font-family:'Archivo';font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);padding:6px 5px;text-align:right;line-height:1.15}
-.hdead .cell{border-left:1px solid var(--rule-soft);padding:5px 4px;min-height:34px}
+.hdead .cell{border-left:1px solid var(--rule-soft);padding:5px 4px;min-height:34px;max-height:104px;overflow-y:auto;overscroll-behavior:contain}
+.hdead .cell::-webkit-scrollbar{width:6px}
+.hdead .cell::-webkit-scrollbar-thumb{background:var(--rule);border-radius:3px}
+.hdead .cell.over{background:rgba(34,102,128,.13);outline:2px dashed var(--c-mtb);outline-offset:-2px}
+.dahafazla{font-size:9px;color:var(--ink-faint);text-align:center;padding-top:2px;font-family:'IBM Plex Mono'}
 .minidead{font-size:10px;line-height:1.25;padding:2px 5px;border-radius:3px;margin-bottom:3px;background:var(--paper-2);border-left:2px solid var(--c-istakibi);color:var(--ink-soft)}
 .minidead.bk{border-left-color:var(--c-bkonu)}
+.minidead[draggable]{cursor:grab}
+.minidead[draggable]:hover{background:var(--rule-soft)}
+.minidead.bitti{opacity:.5;text-decoration:line-through}
+.minidead.dragging{opacity:.35}
 
 .filtre{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
 .filtre select,.filtre input{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:6px 9px;font-size:12.5px}
@@ -384,12 +392,18 @@ function kes(s,n){return s.length>n?s.slice(0,n-1)+'…':s}
 function guv(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 const zamanliMi=k=>ZAMANLI.includes(k.tur);
 const gunun=t=>kayitlar.filter(k=>zamanliMi(k)&&k.tarih===t&&k.bas).sort((a,b)=>dk(a.bas)-dk(b.bas));
-const gunSaatsiz=t=>kayitlar.filter(k=>zamanliMi(k)&&k.tarih===t&&!k.bas&&!k.tamam);
+const gunSaatsiz=t=>kayitlar.filter(k=>zamanliMi(k)&&k.tarih===t&&!k.bas);
 const atanmamis=()=>kayitlar.filter(k=>zamanliMi(k)&&!k.tarih&&!k.tamam);
 function hatirlatmalar(t){
   return kayitlar.filter(k=>!zamanliMi(k)&&k.bitis)
-    .filter(k=>{const f=farkGun(t,k.bitis);return f<=7&&f>=-30})
-    .sort((a,b)=>farkGun(t,a.bitis)-farkGun(t,b.bitis));
+    .filter(k=>{
+      const f=farkGun(t,k.bitis);
+      // tamamlananlar son tarih gunune kadar gorunur, ertesi gun dusar
+      if(k.tamam)return f>=0&&f<=7;
+      // acik isler son tarihten sonra da gorunmeye devam eder
+      return f<=7&&f>=-30;
+    })
+    .sort((a,b)=>farkGun(t,a.bitis)-farkGun(t,b.bitis)||(a.tamam-b.tamam));
 }
 let durumZ;
 function bildir(m){const d=document.getElementById('durum');d.textContent=m;d.classList.add('gor');
@@ -526,9 +540,16 @@ function bolgeBagla(){
       if(tasinan==null)return;
       const k=kayitlar.find(x=>x.id===tasinan);if(!k)return;
       if(el.dataset.birak==='hatirlatma'){
-        k.tarih=el.dataset.gun||aktifTarih;k.bas=null;k.bit=null;
-        bildir('Saatsiz — bugünün hatırlatmalarına alındı');
+        const g=el.dataset.gun||aktifTarih;
+        if(zamanliMi(k)){
+          k.tarih=g;k.bas=null;k.bit=null;
+          bildir(`Saatsiz — ${kisaTarih(g)} gününe alındı`);
+        }else{
+          k.bitis=g;
+          bildir(`Son tarih ${kisaTarih(g)} olarak değişti`);
+        }
       }else{
+        if(!zamanliMi(k)){bildir('Son tarihli işler havuza alınamaz');return}
         k.tarih=null;k.bas=null;k.bit=null;
         bildir('Atanmamış havuzuna geri alındı');
       }
@@ -554,6 +575,7 @@ function surukle(kaynak,hedef,birak){
 }
 function yerlestir(id,tarih,slot){
   const k=kayitlar.find(x=>x.id===id);if(!k)return;
+  if(!zamanliMi(k)){bildir('Bu tür takvimde yer kaplamaz — son tarih şeridine bırak');return}
   const uzun=(k.bas&&k.bit)?dk(k.bit)-dk(k.bas):60;
   let b=ayar.bas*60+slot*ayar.dilim;
   if(b+uzun>ayar.bit*60)b=ayar.bit*60-uzun;
@@ -569,9 +591,11 @@ function haftaEkrani(){
     `<div class="${t===BUGUN?'bg2':''}"><div class="g">${GUNLER[(tn(t).getDay()+6)%7].slice(0,3)}</div><div class="d">${tn(t).getDate()}</div></div>`).join('')+'</div>';
   const dead='<div class="hdead"><div class="lbl">Son<br>tarih</div>'+gl.map(t=>{
     const d=kayitlar.filter(k=>!zamanliMi(k)&&k.bitis===t), sz=gunSaatsiz(t);
+    const n=sz.length+d.length;
     return `<div class="cell bolge" data-birak="hatirlatma" data-gun="${t}">${
-      sz.map(k=>`<div class="minidead" style="border-left-color:${renkAl(k)}" title="${guv(k.konu)}">${guv(kes(k.konu,32))}</div>`).join('')+
-      d.map(k=>`<div class="minidead ${k.tur==='Bireysel Konu'?'bk':''}" title="${guv(k.konu)}">${guv(kes(k.konu,32))}</div>`).join('')}</div>`;
+      sz.map(k=>`<div class="minidead ${k.tamam?'bitti':''}" draggable="true" data-id="${k.id}" style="border-left-color:${renkAl(k)}" title="${guv(k.konu)} — sürükleyerek gününü değiştir">${guv(kes(k.konu,30))}</div>`).join('')+
+      d.map(k=>`<div class="minidead ${k.tur==='Bireysel Konu'?'bk':''} ${k.tamam?'bitti':''}" draggable="true" data-id="${k.id}" title="${guv(k.konu)} — sürükleyerek son tarihini değiştir">${guv(kes(k.konu,30))}</div>`).join('')
+      }${n>3?`<div class="dahafazla">${n} kayıt · kaydır</div>`:''}</div>`;
   }).join('')+'</div>';
   let satir='';
   for(let i=0;i<N;i++){
@@ -594,8 +618,9 @@ function haftaBagla(){
   document.getElementById('hgeri').onclick=()=>{aktifTarih=ekleGun(aktifTarih,-7);ciz()};
   document.getElementById('hileri').onclick=()=>{aktifTarih=ekleGun(aktifTarih,7);ciz()};
   document.getElementById('hbugun').onclick=()=>{aktifTarih=BUGUN;ciz()};
-  surukle('.hblock','.hl',(id,slot,tarih)=>yerlestir(id,tarih,slot));
+  surukle('.hblock, .minidead[draggable]','.hl',(id,slot,tarih)=>yerlestir(id,tarih,slot));
   document.querySelectorAll('.hblock').forEach(b=>b.onclick=()=>modalAc(+b.dataset.id));
+  document.querySelectorAll('.minidead[draggable]').forEach(b=>b.onclick=()=>modalAc(+b.dataset.id));
   bolgeBagla();
 }
 
