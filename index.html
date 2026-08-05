@@ -76,6 +76,18 @@ h1,h2,h3{font-family:'Archivo',system-ui,sans-serif;letter-spacing:-.02em;font-w
 .dot{width:8px;height:8px;border-radius:2px;flex:none;display:inline-block}
 .minitur{font-size:10.5px;font-family:'Archivo';font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
 .bos{border:1px dashed var(--rule);border-radius:7px;padding:14px 12px;font-size:12px;color:var(--ink-faint);text-align:center;line-height:1.5}
+.liste{max-height:38vh;overflow-y:auto;overscroll-behavior:contain;padding-right:3px;border-radius:7px}
+.liste::-webkit-scrollbar{width:7px}
+.liste::-webkit-scrollbar-thumb{background:var(--rule);border-radius:4px}
+.liste.over{outline:2px dashed var(--c-mtb);outline-offset:2px;background:rgba(34,102,128,.07)}
+.kart{position:relative}
+.sil-x{position:absolute;top:4px;right:4px;width:19px;height:19px;border-radius:5px;display:grid;place-items:center;font-size:14px;line-height:1;color:var(--ink-faint);background:var(--paper);opacity:0;transition:opacity .12s}
+.kart:hover .sil-x,.sil-x:focus-visible{opacity:1}
+.sil-x:hover{background:var(--c-istakibi);color:#fff}
+.block .sil-x{background:rgba(0,0,0,.25);color:#fff}
+.block .sil-x:hover{background:rgba(0,0,0,.55)}
+.flag .konu,.chip .konu{padding-right:16px}
+.saatsiz-rozet{font-family:'IBM Plex Mono';font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:4px;background:var(--paper-2);color:var(--ink-soft)}
 
 .spine{background:var(--paper);border:1px solid var(--rule);border-radius:9px;overflow:hidden}
 .spinehead{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--rule);background:var(--paper-2);gap:10px;flex-wrap:wrap}
@@ -157,6 +169,8 @@ tr.tamam .kt{text-decoration:line-through}
 .kisiler label:has(input:checked){background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .kisiler input{width:auto;margin:0}
 .mfoot{display:flex;gap:9px;justify-content:flex-end;padding:14px 19px;border-top:1px solid var(--rule);flex-wrap:wrap}
+#sil{color:var(--c-istakibi);border-color:#E3BDB2}
+#sil:hover{background:var(--c-istakibi);color:#fff;border-color:var(--c-istakibi)}
 .uyari{font-size:11.5px;color:var(--ink-faint);line-height:1.45;background:var(--paper-2);padding:9px 11px;border-radius:6px;border-left:2px solid var(--rule)}
 .satirsec{display:flex;gap:7px}
 .satirsec button{flex:1;border:1px solid var(--rule);background:var(--paper-2);border-radius:6px;padding:7px;font-size:12.5px;font-weight:500}
@@ -369,7 +383,8 @@ function turAdi(k){return k.tur!=='Toplantı'?k.tur:`Toplantı · ${k.grup}${k.f
 function kes(s,n){return s.length>n?s.slice(0,n-1)+'…':s}
 function guv(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 const zamanliMi=k=>ZAMANLI.includes(k.tur);
-const gunun=t=>kayitlar.filter(k=>zamanliMi(k)&&k.tarih===t).sort((a,b)=>dk(a.bas)-dk(b.bas));
+const gunun=t=>kayitlar.filter(k=>zamanliMi(k)&&k.tarih===t&&k.bas).sort((a,b)=>dk(a.bas)-dk(b.bas));
+const gunSaatsiz=t=>kayitlar.filter(k=>zamanliMi(k)&&k.tarih===t&&!k.bas&&!k.tamam);
 const atanmamis=()=>kayitlar.filter(k=>zamanliMi(k)&&!k.tarih&&!k.tamam);
 function hatirlatmalar(t){
   return kayitlar.filter(k=>!zamanliMi(k)&&k.bitis)
@@ -410,7 +425,7 @@ function seritKontrol(){
 
 /* --- gün --- */
 function gunEkrani(){
-  const hat=hatirlatmalar(aktifTarih), atan=atanmamis(), blok=gunun(aktifTarih);
+  const hat=hatirlatmalar(aktifTarih), atan=atanmamis(), blok=gunun(aktifTarih), sz=gunSaatsiz(aktifTarih);
   const toplam=blok.reduce((s,k)=>s+dk(k.bit)-dk(k.bas),0);
   const N=slotSayi(), P=slotPx();
   let satir='';
@@ -420,10 +435,11 @@ function gunEkrani(){
   }
   const bloklar=blok.map(k=>{
     const ust=(dk(k.bas)-ayar.bas*60)/ayar.dilim*P, yuk=(dk(k.bit)-dk(k.bas))/ayar.dilim*P, kisa=yuk<34;
-    return `<div class="block ${kisa?'kisa':''}" draggable="true" data-id="${k.id}" tabindex="0"
+    return `<div class="block kart ${kisa?'kisa':''}" draggable="true" data-id="${k.id}" data-ac="${k.id}" tabindex="0"
       style="top:${ust}px;height:${Math.max(yuk-2,14)}px;background:${renkAl(k)}">
-      <div class="bk2">${guv(kes(k.konu,kisa?46:78))}</div>
-      <div class="bmeta">${k.bas}–${k.bit} · ${guv(turAdi(k))}</div></div>`;
+      <div class="bk2">${guv(kes(k.konu,kisa?42:74))}</div>
+      <div class="bmeta">${k.bas}–${k.bit} · ${guv(turAdi(k))}</div>
+      <button class="sil-x" data-sil="${k.id}" title="Kaydı sil">×</button></div>`;
   }).join('');
   return `
   <div class="dayhead">
@@ -433,12 +449,16 @@ function gunEkrani(){
   </div>
   <div class="gunwrap">
     <div class="rail">
-      <section><div class="railtitle">Hatırlatmalar <span class="n">${hat.length}</span></div>
-        <div class="railnote">Takvimde yer kaplamaz — son tarihi yaklaşan işler</div>
-        ${hat.length?hat.map(flagHtml).join(''):'<div class="bos">Önümüzdeki 7 günde biten iş yok.</div>'}</section>
+      <section><div class="railtitle">Hatırlatmalar <span class="n">${hat.length+sz.length}</span></div>
+        <div class="railnote">Takvimde yer kaplamaz — buraya sürüklersen saatsiz, o günün işi olur</div>
+        <div class="liste bolge" data-birak="hatirlatma">${
+          sz.map(saatsizHtml).join('')+hat.map(flagHtml).join('')||
+          '<div class="bos">Bu güne hatırlatma yok.<br>Buraya iş sürükleyebilirsin.</div>'}</div></section>
       <section><div class="railtitle">Atanmamış <span class="n">${atan.length}</span></div>
-        <div class="railnote">Takvime sürükleyip bir saate yerleştir</div>
-        ${atan.length?atan.map(chipHtml).join(''):'<div class="bos">Hepsi yerleşti.</div>'}</section>
+        <div class="railnote">Takvime sürükleyip saat ver, ya da buraya geri çek</div>
+        <div class="liste bolge" data-birak="havuz">${
+          atan.map(chipHtml).join('')||
+          '<div class="bos">Hepsi yerleşti.<br>Buraya geri sürükleyebilirsin.</div>'}</div></section>
     </div>
     <div class="spine">
       <div class="spinehead"><h3>Zaman planı · ${pad(ayar.bas)}:00 – ${pad(ayar.bit)}:00</h3>
@@ -456,15 +476,25 @@ function flagHtml(k){
   const f=farkGun(aktifTarih,k.bitis);
   const s=f<0?'gecti':f<=3?'yakin':'';
   const y=f<0?`${-f} gün geçti`:f===0?'BUGÜN':f===1?'yarın':`${f} gün kaldı`;
-  return `<div class="flag ${k.tur==='Bireysel Konu'?'bkonu':''} ${k.tamam?'tamam':''}">
+  return `<div class="flag kart ${k.tur==='Bireysel Konu'?'bkonu':''} ${k.tamam?'tamam':''}">
     <div class="ust"><span class="kalan ${s}">${y}</span><span class="tur">${guv(k.tur)}</span></div>
     <div class="konu" data-ac="${k.id}" tabindex="0">${guv(k.konu)}</div>
-    <div class="alt"><button class="tik" data-tik="${k.id}" title="Tamamlandı">✓</button><span>${guv(k.sorumlular.join(', ')||'—')}</span></div></div>`;
+    <div class="alt"><button class="tik" data-tik="${k.id}" title="Tamamlandı">✓</button><span>${guv(k.sorumlular.join(', ')||'—')}</span></div>
+    <button class="sil-x" data-sil="${k.id}" title="Kaydı sil">×</button></div>`;
+}
+function saatsizHtml(k){
+  return `<div class="flag kart ${k.tamam?'tamam':''}" draggable="true" data-id="${k.id}"
+    style="border-left-color:${renkAl(k)}">
+    <div class="ust"><span class="saatsiz-rozet">saatsiz</span><span class="tur">${guv(turAdi(k))}</span></div>
+    <div class="konu" data-ac="${k.id}" tabindex="0">${guv(k.konu)}</div>
+    <div class="alt"><button class="tik" data-tik="${k.id}" title="Tamamlandı">✓</button><span>${guv(k.sorumlular.join(', ')||'—')}</span></div>
+    <button class="sil-x" data-sil="${k.id}" title="Kaydı sil">×</button></div>`;
 }
 function chipHtml(k){
-  return `<div class="chip" draggable="true" data-id="${k.id}" tabindex="0">
+  return `<div class="chip kart" draggable="true" data-id="${k.id}" data-ac="${k.id}" tabindex="0">
     <div class="etiket"><i class="dot" style="background:${renkAl(k)}"></i><span class="minitur">${guv(turAdi(k))}</span></div>
-    <div class="konu">${guv(kes(k.konu,90))}</div></div>`;
+    <div class="konu">${guv(kes(k.konu,90))}</div>
+    <button class="sil-x" data-sil="${k.id}" title="Kaydı sil">×</button></div>`;
 }
 function gunBagla(){
   document.getElementById('geri').onclick=()=>{aktifTarih=ekleGun(aktifTarih,-1);ciz()};
@@ -473,9 +503,38 @@ function gunBagla(){
   document.querySelectorAll('[data-tik]').forEach(b=>b.onclick=()=>{
     const k=kayitlar.find(x=>x.id==b.dataset.tik);k.tamam=!k.tamam;yaz();ciz();
     bildir(k.tamam?'Tamamlandı':'Tekrar açıldı')});
-  document.querySelectorAll('[data-ac]').forEach(b=>b.onclick=()=>modalAc(+b.dataset.ac));
-  surukle('.chip, .block','.lane',(id,slot)=>yerlestir(id,aktifTarih,slot));
-  document.querySelectorAll('.block').forEach(b=>b.ondblclick=()=>modalAc(+b.dataset.id));
+  document.querySelectorAll('[data-ac]').forEach(b=>b.onclick=e=>{
+    if(e.target.closest('.sil-x, .tik'))return; modalAc(+b.dataset.ac)});
+  silBagla();
+  surukle('.chip, .block, .flag[draggable]','.lane',(id,slot)=>yerlestir(id,aktifTarih,slot));
+  bolgeBagla();
+}
+function silBagla(){
+  document.querySelectorAll('[data-sil]').forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const k=kayitlar.find(x=>x.id==b.dataset.sil);
+    if(!confirm(`"${kes(k.konu,60)}"\n\nBu kayıt silinecek. Emin misin?`))return;
+    kayitlar=kayitlar.filter(x=>x.id!=b.dataset.sil);yaz();ciz();bildir('Kayıt silindi');
+  });
+}
+function bolgeBagla(){
+  document.querySelectorAll('.bolge').forEach(el=>{
+    el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('over')});
+    el.addEventListener('dragleave',e=>{if(!el.contains(e.relatedTarget))el.classList.remove('over')});
+    el.addEventListener('drop',e=>{
+      e.preventDefault();e.stopPropagation();el.classList.remove('over');
+      if(tasinan==null)return;
+      const k=kayitlar.find(x=>x.id===tasinan);if(!k)return;
+      if(el.dataset.birak==='hatirlatma'){
+        k.tarih=el.dataset.gun||aktifTarih;k.bas=null;k.bit=null;
+        bildir('Saatsiz — bugünün hatırlatmalarına alındı');
+      }else{
+        k.tarih=null;k.bas=null;k.bit=null;
+        bildir('Atanmamış havuzuna geri alındı');
+      }
+      yaz();ciz();
+    });
+  });
 }
 
 /* --- sürükle-bırak --- */
@@ -509,8 +568,10 @@ function haftaEkrani(){
   const head='<div class="hhead"><div></div>'+gl.map(t=>
     `<div class="${t===BUGUN?'bg2':''}"><div class="g">${GUNLER[(tn(t).getDay()+6)%7].slice(0,3)}</div><div class="d">${tn(t).getDate()}</div></div>`).join('')+'</div>';
   const dead='<div class="hdead"><div class="lbl">Son<br>tarih</div>'+gl.map(t=>{
-    const d=kayitlar.filter(k=>!zamanliMi(k)&&k.bitis===t);
-    return `<div class="cell">${d.map(k=>`<div class="minidead ${k.tur==='Bireysel Konu'?'bk':''}" title="${guv(k.konu)}">${guv(kes(k.konu,32))}</div>`).join('')}</div>`;
+    const d=kayitlar.filter(k=>!zamanliMi(k)&&k.bitis===t), sz=gunSaatsiz(t);
+    return `<div class="cell bolge" data-birak="hatirlatma" data-gun="${t}">${
+      sz.map(k=>`<div class="minidead" style="border-left-color:${renkAl(k)}" title="${guv(k.konu)}">${guv(kes(k.konu,32))}</div>`).join('')+
+      d.map(k=>`<div class="minidead ${k.tur==='Bireysel Konu'?'bk':''}" title="${guv(k.konu)}">${guv(kes(k.konu,32))}</div>`).join('')}</div>`;
   }).join('')+'</div>';
   let satir='';
   for(let i=0;i<N;i++){
@@ -534,7 +595,8 @@ function haftaBagla(){
   document.getElementById('hileri').onclick=()=>{aktifTarih=ekleGun(aktifTarih,7);ciz()};
   document.getElementById('hbugun').onclick=()=>{aktifTarih=BUGUN;ciz()};
   surukle('.hblock','.hl',(id,slot,tarih)=>yerlestir(id,tarih,slot));
-  document.querySelectorAll('.hblock').forEach(b=>b.ondblclick=()=>modalAc(+b.dataset.id));
+  document.querySelectorAll('.hblock').forEach(b=>b.onclick=()=>modalAc(+b.dataset.id));
+  bolgeBagla();
 }
 
 /* --- kayıtlar --- */
