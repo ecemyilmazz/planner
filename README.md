@@ -2,7 +2,7 @@
 
 Yöneticiler için gün planlama aracı. Tek HTML dosyası, bağımlılık yok, sunucu yok.
 
-**[Demoyu aç →](https://KULLANICI-ADIN.github.io/planner/)**
+**[Demoyu aç →](https://ecemyilmazz.github.io/planner/)**
 
 ## Çözdüğü problem
 
