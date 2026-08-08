@@ -345,9 +345,8 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
     </div>
     <div class="spacer"></div>
     <button class="ghost" id="icsBtn" title="Bu haftayı takvim dosyası olarak indir">Takvime aktar</button>
-    <button class="ghost" id="excelBtn" title="Tüm kayıtları Excel olarak indir">Excel'e aktar</button>
-    <button class="ghost" id="yedekBtn">Yedek al</button>
-    <button class="ghost" id="geriYukleBtn">Yedek yükle</button>
+    <button class="ghost" id="excelBtn" title="Tüm kayıtları Excel dosyası olarak indir">Excel'e aktar</button>
+    <button class="ghost" id="excelAlBtn" title="Excel dosyasından kayıt yükle">Excel'den al</button>
     <button class="ghost" id="ayarBtn">Ayarlar</button>
     <button class="solid" id="yeniBtn">Yeni kayıt</button>
     <button class="ghost" id="cikisBtn" hidden title="Giriş ekranına dön">Çıkış</button>
@@ -418,7 +417,14 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
         <div class="satirsec" id="aDilim"><button data-d="15">15 dakika</button><button data-d="30">30 dakika</button></div>
       </div>
       <div class="alan"><label>Veri</label>
-        <button class="ghost" id="sifirla" style="text-align:left;color:var(--c-istakibi)">Tüm kayıtları sil ve örnek veriye dön</button>
+        <div class="tanimnot">Excel aktarımı kayıtları taşır. Tam yedek ayrıca tanımları,
+        renkleri ve ayarları da içerir — cihaz değiştirirken ya da tarayıcı verilerini
+        temizlemeden önce bunu kullan.</div>
+        <div style="display:grid;gap:6px">
+          <button class="ghost" id="yedekBtn" style="text-align:left">Tam yedek al (.json)</button>
+          <button class="ghost" id="geriYukleBtn" style="text-align:left">Yedekten geri yükle</button>
+          <button class="ghost" id="sifirla" style="text-align:left;color:var(--c-istakibi)">Tüm kayıtları sil ve örnek veriye dön</button>
+        </div>
       </div>
       <div class="mfoot" style="padding:0;border:none;margin-top:4px"><button class="solid" id="ayarKaydet">Genel ayarları kaydet</button></div>
     </div>
@@ -465,6 +471,7 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
 </div>
 
 <input type="file" id="dosyaSec" accept=".json,application/json" hidden>
+<input type="file" id="excelSec" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
 <div class="durum" id="durum"></div>
 
 <script>
@@ -1662,8 +1669,235 @@ function excelAktar(){
   bildir(`${satirlar.length} kayıt indirildi`);
 }
 
+
+/* ================= EXCEL'DEN ICE AKTARIM ================= */
+/* .xlsx bir zip'tir. Sikistirilmis parcalari acmak icin tarayicinin
+   yerlesik DecompressionStream API'si kullanilir — harici kutuphane yok. */
+
+async function zipAc(arrayBuffer){
+  const u8=new Uint8Array(arrayBuffer), dv=new DataView(arrayBuffer);
+  /* merkezi dizin sonu kaydini (EOCD) sondan ara */
+  let eocd=-1;
+  for(let i=u8.length-22;i>=Math.max(0,u8.length-66000);i--){
+    if(dv.getUint32(i,true)===0x06054b50){eocd=i;break}
+  }
+  if(eocd<0)throw new Error('Bu dosya geçerli bir Excel dosyası değil (zip yapısı bulunamadı).');
+  const adet=dv.getUint16(eocd+10,true), merkezOfs=dv.getUint32(eocd+16,true);
+  const cozucu=new TextDecoder('utf-8');
+  const parcalar={};
+  let p=merkezOfs;
+  for(let i=0;i<adet;i++){
+    if(dv.getUint32(p,true)!==0x02014b50)break;
+    const yontem=dv.getUint16(p+10,true);
+    const sikBoy=dv.getUint32(p+20,true);
+    const adBoy=dv.getUint16(p+28,true);
+    const ekBoy=dv.getUint16(p+30,true);
+    const yorumBoy=dv.getUint16(p+32,true);
+    const yerelOfs=dv.getUint32(p+42,true);
+    const ad=cozucu.decode(u8.subarray(p+46,p+46+adBoy));
+    /* yerel basliktan gercek veri konumunu bul */
+    const yAdBoy=dv.getUint16(yerelOfs+26,true), yEkBoy=dv.getUint16(yerelOfs+28,true);
+    const veriBas=yerelOfs+30+yAdBoy+yEkBoy;
+    parcalar[ad]={yontem,veri:u8.subarray(veriBas,veriBas+sikBoy)};
+    p+=46+adBoy+ekBoy+yorumBoy;
+  }
+  return {
+    async metin(ad){
+      const x=parcalar[ad]; if(!x)return null;
+      if(x.yontem===0)return cozucu.decode(x.veri);
+      if(x.yontem!==8)throw new Error('Desteklenmeyen sıkıştırma yöntemi.');
+      if(typeof DecompressionStream==='undefined')
+        throw new Error('Tarayıcınız Excel okumayı desteklemiyor. Güncel Chrome veya Edge kullanın.');
+      const akis=new Blob([x.veri]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+      return cozucu.decode(await new Response(akis).arrayBuffer());
+    },
+    adlar:Object.keys(parcalar)
+  };
+}
+
+const harfSayi=h=>{let n=0;for(const c of h)n=n*26+(c.charCodeAt(0)-64);return n-1};
+
+/* sayfa XML'ini satir/sutun dizisine cevirir */
+function sayfaCoz(xml,ortak){
+  const doc=new DOMParser().parseFromString(xml,'application/xml');
+  if(doc.querySelector('parsererror'))throw new Error('Excel içeriği okunamadı.');
+  const satirlar=[];
+  doc.querySelectorAll('row').forEach(r=>{
+    const no=+r.getAttribute('r'); const sat=[];
+    r.querySelectorAll('c').forEach(c=>{
+      const ref=(c.getAttribute('r')||'').replace(/[0-9]/g,'');
+      const i=ref?harfSayi(ref):sat.length;
+      const t=c.getAttribute('t');
+      let d='';
+      if(t==='s'){const v=c.querySelector('v');d=v?(ortak[+v.textContent]??''):''}
+      else if(t==='inlineStr'){d=[...c.querySelectorAll('is t')].map(x=>x.textContent).join('')}
+      else if(t==='str'){const v=c.querySelector('f')?c.querySelector('v'):c.querySelector('v');d=v?v.textContent:''}
+      else{const v=c.querySelector('v');d=v?v.textContent:''}
+      sat[i]={ham:d,sayisal:!t||t==='n'};
+    });
+    satirlar[no-1]=sat;
+  });
+  return satirlar.filter(Boolean);
+}
+
+/* --- deger cozumleyiciler --- */
+const seriTarih=n=>{
+  const d=new Date(Date.UTC(1899,11,30)+Math.round(n)*864e5);
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
+};
+function tarihCoz(h){
+  if(!h)return null;
+  const m=String(h.ham).trim(); if(!m)return null;
+  if(h.sayisal&&/^-?\d+(\.\d+)?$/.test(m)){
+    const n=parseFloat(m);
+    if(n>=1&&n<80000)return seriTarih(n);
+  }
+  let x=m.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})/);       // GG.AA.YYYY
+  if(x)return `${x[3]}-${pad(+x[2])}-${pad(+x[1])}`;
+  x=m.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);                      // YYYY-AA-GG
+  if(x)return `${x[1]}-${pad(+x[2])}-${pad(+x[3])}`;
+  return null;
+}
+function saatCoz(h){
+  if(!h)return null;
+  const m=String(h.ham).trim(); if(!m)return null;
+  if(h.sayisal&&/^0?\.\d+$/.test(m)){                              // gunun kesri
+    const dkk=Math.round(parseFloat(m)*1440);
+    return `${pad(Math.floor(dkk/60))}:${pad(dkk%60)}`;
+  }
+  const x=m.match(/(\d{1,2})[:.](\d{2})/);
+  if(x&&+x[1]<24&&+x[2]<60)return `${pad(+x[1])}:${pad(+x[2])}`;
+  return null;
+}
+const metinCoz=h=>h?String(h.ham).trim():'';
+
+/* tanimda yoksa olusturur — hicbir veri kaybolmaz */
+function turEslestir(ad,zamanliMi_){
+  let t=ayar.turler.find(x=>x.ad.toLocaleLowerCase('tr')===ad.toLocaleLowerCase('tr'));
+  if(t)return t;
+  const pal=['#2E5A72','#A86A1F','#6E7A63','#B03A24','#4A5568','#6D4E8C','#1E5A46'];
+  t={id:yeniTurId(),ad,sinif:zamanliMi_?'zaman':'hatirlatma',
+     renk:pal[ayar.turler.length%pal.length],alanlar:ayar.alanlar.map(a=>a.id)};
+  ayar.turler.push(t); return t;
+}
+function secenekEslestir(alan,ad){
+  let x=alan.secenekler.find(y=>y.ad.toLocaleLowerCase('tr')===ad.toLocaleLowerCase('tr'));
+  if(!x){x={id:yeniSecId(alan),ad};alan.secenekler.push(x)}
+  return x.id;
+}
+function kisiEslestir(ad){
+  let k=ayar.kisiler.find(x=>x.ad.toLocaleLowerCase('tr')===ad.toLocaleLowerCase('tr'));
+  if(!k){k={id:yeniKisiId(),ad};ayar.kisiler.push(k)}
+  return k.id;
+}
+
+/* --- ana akis --- */
+const SABIT_BASLIK={konu:'Konu',tur:'Tür',sorumlular:'Sorumlular',tarih:'Tarih',
+  bas:'Başlangıç',bit:'Bitiş',bitis:'Son Tarih',durum:'Durum',sonDurum:'Son Durum',kayit:'Kayıt Tarihi'};
+
+async function excelAl(dosya){
+  let satirlar;
+  try{
+    const zip=await zipAc(await dosya.arrayBuffer());
+    const ortakXml=await zip.metin('xl/sharedStrings.xml');
+    const ortak=[];
+    if(ortakXml){
+      new DOMParser().parseFromString(ortakXml,'application/xml')
+        .querySelectorAll('si').forEach(si=>
+          ortak.push([...si.querySelectorAll('t')].map(t=>t.textContent).join('')));
+    }
+    let sayfaXml=await zip.metin('xl/worksheets/sheet1.xml');
+    if(!sayfaXml){
+      const ilk=zip.adlar.find(a=>/^xl\/worksheets\/.*\.xml$/.test(a));
+      if(ilk)sayfaXml=await zip.metin(ilk);
+    }
+    if(!sayfaXml)throw new Error('Excel dosyasında sayfa bulunamadı.');
+    satirlar=sayfaCoz(sayfaXml,ortak);
+  }catch(e){alert('Dosya okunamadı.\n\n'+e.message);return}
+
+  if(satirlar.length<2){alert('Dosyada veri satırı bulunamadı.');return}
+
+  /* baslik satirini eslestir */
+  const baslik=satirlar[0].map(h=>metinCoz(h).toLocaleLowerCase('tr'));
+  const bul=ad=>baslik.indexOf(ad.toLocaleLowerCase('tr'));
+  const S={}; Object.entries(SABIT_BASLIK).forEach(([k,v])=>S[k]=bul(v));
+  if(S.konu<0||S.tur<0){
+    alert('Başlık satırı tanınmadı.\n\n"Konu" ve "Tür" sütunları zorunludur.\n'+
+          'Şablondaki başlık satırını silmediğinden ve isimleri değiştirmediğinden emin ol.');
+    return;
+  }
+  const alanSut=ayar.alanlar.map(a=>({alan:a,i:bul(a.ad)})).filter(x=>x.i>=0);
+
+  /* satirlari coz */
+  const yeni=[], hata=[]; let atlanan=0;
+  for(let r=1;r<satirlar.length;r++){
+    const sat=satirlar[r], no=r+1;
+    const konu=metinCoz(sat[S.konu]);
+    if(!konu){
+      /* tamamen bos satir (sadece bicimlendirme) sessizce gecilir;
+         icinde veri olup konusu bos olan satir kullaniciya bildirilir */
+      if(sat.some(h=>h&&metinCoz(h)))atlanan++;
+      continue;
+    }
+    const turAdi_=metinCoz(sat[S.tur]);
+    if(!turAdi_){hata.push(`Satır ${no}: Tür boş`);continue}
+
+    const tarih=tarihCoz(sat[S.tarih]), bas=saatCoz(sat[S.bas]), bit=saatCoz(sat[S.bit]);
+    const bitis=tarihCoz(sat[S.bitis]);
+    const zamanli=!!(tarih||bas||bit)||!bitis;
+    const t=turEslestir(turAdi_,zamanli);
+    const zt=t.sinif==='zaman';
+
+    if(zt&&bas&&bit&&dk(bit)<=dk(bas)){hata.push(`Satır ${no}: Bitiş saati başlangıçtan önce`);continue}
+    if(!zt&&!bitis){hata.push(`Satır ${no}: "${turAdi_}" hatırlatma türü, Son Tarih gerekli`);continue}
+
+    const alanlar={};
+    alanSut.forEach(({alan,i})=>{
+      const v=metinCoz(sat[i]);
+      if(v&&(t.alanlar||[]).includes(alan.id))alanlar[alan.id]=secenekEslestir(alan,v);
+    });
+    const sorumlular=metinCoz(sat[S.sorumlular]).split(/[,;]/)
+      .map(x=>x.trim()).filter(Boolean).map(kisiEslestir);
+
+    yeni.push({id:0,turId:t.id,konu,alanlar,sorumlular,
+      sonDurum:metinCoz(sat[S.sonDurum]),
+      kayitTarihi:tarihCoz(sat[S.kayit])||BUGUN,
+      tarih: zt?(tarih||null):null,
+      bas: zt&&tarih&&bas&&bit?bas:null,
+      bit: zt&&tarih&&bas&&bit?bit:null,
+      bitis: zt?null:bitis,
+      tamam: /tamam/i.test(metinCoz(sat[S.durum]))});
+  }
+
+  if(!yeni.length){
+    alert('Aktarılabilir kayıt bulunamadı.'+(hata.length?'\n\nSorunlar:\n'+hata.slice(0,12).join('\n'):''));
+    return;
+  }
+
+  /* ozet + onay */
+  let ozet=`${yeni.length} kayıt okundu.\n`;
+  if(atlanan)ozet+=`${atlanan} satır Konu sütunu boş olduğu için atlandı.\n`;
+  if(hata.length)ozet+=`\n${hata.length} satır alınamadı:\n`+hata.slice(0,10).join('\n')+
+    (hata.length>10?`\n… ve ${hata.length-10} tane daha`:'')+'\n';
+  ozet+=`\nMevcut kayıt sayınız: ${kayitlar.length}\n\n`+
+        `TAMAM: yeni kayıtlar mevcutların üzerine EKLENİR\n`+
+        `İPTAL: hiçbir şey yapılmaz`;
+  if(!confirm(ozet))return;
+
+  if(kayitlar.length&&confirm(
+      `Mevcut ${kayitlar.length} kaydınız da duruyor.\n\n`+
+      `TAMAM: mevcut kayıtlar SİLİNSİN, sadece Excel'dekiler kalsın\n`+
+      `İPTAL: mevcut kayıtlar korunsun, yeniler eklensin`)){
+    kayitlar=[];
+  }
+  yeni.forEach(k=>{k.id=sonrakiId++;kayitlar.push(k)});
+  yaz(); secenekleriCiz(); ciz();
+  bildir(`${yeni.length} kayıt aktarıldı · toplam ${kayitlar.length}`);
+}
+
 /* ---------- başlat ---------- */
 function uygulamayiBaslat(){
+  window.scrollTo(0,0);
   document.getElementById('kapi').hidden=true;
   document.getElementById('uygulama').hidden=false;
   const demo=mod==='demo';
@@ -1682,6 +1916,9 @@ function moduSec(yeni){
   uygulamayiBaslat();
 }
 function kapiyaDon(){
+  window.scrollTo(0,0);
+  modalKapat();
+  document.getElementById('ayarPerde').hidden=true;
   mod=null;
   try{localStorage.removeItem(MOD_ANAHTAR)}catch(e){}
   document.getElementById('uygulama').hidden=true;
@@ -1730,6 +1967,8 @@ document.getElementById('geriYukleBtn').onclick=()=>document.getElementById('dos
 document.getElementById('dosyaSec').onchange=e=>{if(e.target.files[0])yedekYukle(e.target.files[0]);e.target.value=''};
 document.getElementById('icsBtn').onclick=icsAktar;
 document.getElementById('excelBtn').onclick=excelAktar;
+document.getElementById('excelAlBtn').onclick=()=>document.getElementById('excelSec').click();
+document.getElementById('excelSec').onchange=e=>{if(e.target.files[0])excelAl(e.target.files[0]);e.target.value=''};
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){modalKapat();document.getElementById('ayarPerde').hidden=true}
   if(e.key==='n'&&(e.ctrlKey||e.metaKey)){e.preventDefault();modalAc()}
@@ -1738,7 +1977,9 @@ window.addEventListener('dragover',e=>e.preventDefault());
 window.addEventListener('drop',e=>{
   e.preventDefault();
   const f=e.dataTransfer.files[0];
-  if(f&&f.name.endsWith('.json'))yedekYukle(f);
+  if(!f)return;
+  if(f.name.endsWith('.json'))yedekYukle(f);
+  else if(f.name.endsWith('.xlsx'))excelAl(f);
 });
 
 /* onceki secim hatirlanir; yoksa giris ekrani gosterilir */
