@@ -24,6 +24,35 @@ input,select,textarea{font:inherit;color:inherit}
 h1,h2,h3{font-family:'Archivo',system-ui,sans-serif;letter-spacing:-.02em;font-weight:700}
 .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
 .app{max-width:1180px;margin:0 auto;padding:16px 16px 40px}
+.app[hidden]{display:none}
+
+/* --- giris ekrani --- */
+.kapi{min-height:100vh;display:grid;place-items:center;padding:28px 18px}
+.kapi[hidden]{display:none}
+.kapi-ic{max-width:560px;width:100%;background:var(--paper);border:1px solid var(--rule);
+  border-radius:14px;padding:34px 34px 26px;box-shadow:0 10px 34px rgba(28,35,41,.09)}
+.kapi-marka{font-family:'Archivo';font-weight:700;font-size:12px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink-faint);margin-bottom:14px}
+.kapi-ic h1{font-size:27px;letter-spacing:-.035em;line-height:1.15;margin-bottom:13px}
+.kapi-ozet{font-size:13.5px;line-height:1.6;color:var(--ink-soft);margin-bottom:24px}
+.kapi-ozet b{color:var(--ink);font-weight:700}
+.kapi-dugmeler{display:grid;gap:9px;margin-bottom:20px}
+.kapi-birincil,.kapi-ikincil{display:grid;gap:2px;text-align:left;padding:13px 17px;border-radius:9px;
+  border:1px solid transparent;transition:background .12s,border-color .12s}
+.kapi-birincil .bas,.kapi-ikincil .bas{font-family:'Archivo';font-weight:700;font-size:14.5px;letter-spacing:-.015em}
+.kapi-birincil .alt,.kapi-ikincil .alt{font-size:11.5px;opacity:.72}
+.kapi-birincil{background:var(--ink);color:var(--paper)}
+.kapi-birincil:hover{background:#2C3742}
+.kapi-ikincil{background:var(--paper-2);border-color:var(--rule);color:var(--ink-soft)}
+.kapi-ikincil:hover{border-color:var(--ink-faint);color:var(--ink)}
+.kapi-not{font-size:11.5px;line-height:1.55;color:var(--ink-faint);
+  border-left:2px solid var(--rule);padding-left:11px;margin-bottom:16px}
+.kapi-kaynak{font-size:12px;color:var(--ink-soft);text-decoration:none;font-weight:500}
+.kapi-kaynak:hover{color:var(--ink);text-decoration:underline}
+
+.modrozet{font-family:'IBM Plex Mono';font-size:9.5px;font-weight:600;letter-spacing:.09em;
+  background:var(--c-calisma);color:#fff;padding:2px 7px;border-radius:4px}
+.serit.demo{background:#F0EDE4;border-color:#DCD3BE;border-left-color:var(--c-calisma)}
 .topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 0 14px}
 .brand{font-family:'Archivo';font-weight:700;font-size:17px;letter-spacing:-.03em}
 .tabs{display:flex;gap:2px;background:var(--paper-2);border:1px solid var(--rule);border-radius:7px;padding:3px}
@@ -65,7 +94,7 @@ h1,h2,h3{font-family:'Archivo',system-ui,sans-serif;letter-spacing:-.02em;font-w
 .flag .konu{font-size:12.5px;font-weight:500;line-height:1.35;cursor:pointer}
 .flag .konu:hover{text-decoration:underline}
 .flag .alt{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:var(--ink-faint)}
-.flag .tik{width:21px;height:21px;border:1.5px solid var(--rule);border-radius:6px;flex:none;display:grid;place-items:center;font-size:13px;line-height:1;color:var(--rule);background:var(--paper);transition:border-color .12s,color .12s}
+.flag .tik{width:19px;height:19px;border:1.5px solid var(--rule);border-radius:5px;flex:none;display:grid;place-items:center;font-size:12px;line-height:1;color:var(--rule);background:var(--paper);transition:border-color .12s,color .12s}
 .flag .tik:hover{border-color:var(--ink-soft);color:var(--ink-soft)}
 .flag.tamam .tik{background:var(--ink-soft);border-color:var(--ink-soft);color:#fff}
 .chip{background:var(--paper);border:1px dashed var(--rule);border-radius:7px;padding:8px 10px;margin-bottom:6px;cursor:grab}
@@ -90,7 +119,7 @@ h1,h2,h3{font-family:'Archivo',system-ui,sans-serif;letter-spacing:-.02em;font-w
 .block .sil-x{background:rgba(0,0,0,.25);color:#fff}
 .block .sil-x:hover{background:rgba(0,0,0,.55)}
 .flag .konu,.chip .konu{padding-right:6px}
-.flag .ust{padding-right:46px}
+.flag .ust{padding-right:30px}
 .flag .alt{min-height:0}
 .saatsiz-rozet{font-family:'IBM Plex Mono';font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:4px;background:var(--paper-2);color:var(--ink-soft)}
 
@@ -113,9 +142,10 @@ h1,h2,h3{font-family:'Archivo',system-ui,sans-serif;letter-spacing:-.02em;font-w
 .block.kisa{padding:1px 8px;display:flex;align-items:center;gap:7px}
 .block.kisa .bk2{font-size:11px}
 .block.kisa .bmeta{margin-top:0;font-size:10px}
-.nowline{position:absolute;left:38px;right:8px;height:0;pointer-events:none;z-index:5}
-.nowline::before{content:'';position:absolute;left:18px;right:0;top:0;border-top:1.5px solid var(--now)}
-.nowline .etiket{position:absolute;left:0;top:-7px;background:var(--now);color:#fff;font-family:'IBM Plex Mono';font-size:9.5px;font-weight:600;padding:1px 4px;border-radius:3px}
+.nowline{position:absolute;left:0;right:8px;height:0;pointer-events:none;z-index:6}
+.nowline::before{content:'';position:absolute;left:56px;right:0;top:0;border-top:1.5px solid var(--now)}
+.nowline .nokta{position:absolute;left:53px;top:-3.5px;width:7px;height:7px;border-radius:50%;background:var(--now)}
+.nowline .etiket{position:absolute;left:5px;top:-7px;background:var(--now);color:#fff;font-family:'IBM Plex Mono';font-size:9.5px;font-weight:600;padding:1px 5px;border-radius:3px;letter-spacing:-.02em}
 
 .hafta{background:var(--paper);border:1px solid var(--rule);border-radius:9px;overflow:auto}
 .hgrid{min-width:820px}
@@ -277,9 +307,36 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="kapi" id="kapi" hidden>
+  <div class="kapi-ic">
+    <div class="kapi-marka">Planner</div>
+    <h1>Yöneticiler için gün planlama aracı</h1>
+    <p class="kapi-ozet">Takvim uygulamaları her şeyi saat ızgarasına tıkıştırır. Oysa bir yöneticinin gününde
+    iki farklı şey vardır: <b>zaman kaplayan işler</b> (toplantılar, çalışma dilimleri) ve
+    <b>zaman kaplamayan işler</b> (son tarihi olan takipler). Bu araç ikisini renkle değil
+    konumla ayırır — hatırlatmalar ızgaranın tamamen dışında durur.</p>
+
+    <div class="kapi-dugmeler">
+      <button class="kapi-birincil" id="demoGir">
+        <span class="bas">Demo olarak incele</span>
+        <span class="alt">Kurgu verilerle, hesap gerekmez</span>
+      </button>
+      <button class="kapi-ikincil" id="uyeGir">
+        <span class="bas">Google ile giriş yap</span>
+        <span class="alt">Davetli kullanıcılar için · yakında</span>
+      </button>
+    </div>
+
+    <p class="kapi-not">Demo modunda girdikleriniz yalnızca kendi tarayıcınızda kalır.
+    Hiçbir sunucuya gönderilmez, kimse göremez. Örnek kayıtlar tamamen kurgudur.</p>
+    <a class="kapi-kaynak" href="https://github.com/ecemyilmazz/planner" target="_blank" rel="noopener">Kaynak kodu GitHub'da →</a>
+  </div>
+</div>
+
+<div class="app" id="uygulama" hidden>
   <div class="topbar">
     <div class="brand">Planner</div>
+    <span class="modrozet" id="modRozet" hidden>DEMO</span>
     <div class="tabs" role="tablist">
       <button role="tab" data-gorunum="gun" aria-selected="true">Bugün</button>
       <button role="tab" data-gorunum="hafta" aria-selected="false">Hafta</button>
@@ -293,6 +350,14 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
     <button class="ghost" id="geriYukleBtn">Yedek yükle</button>
     <button class="ghost" id="ayarBtn">Ayarlar</button>
     <button class="solid" id="yeniBtn">Yeni kayıt</button>
+    <button class="ghost" id="cikisBtn" hidden title="Giriş ekranına dön">Çıkış</button>
+  </div>
+
+  <div class="serit demo" id="demoSerit" hidden>
+    <span><b>Demo modu.</b> Girdikleriniz yalnızca bu tarayıcıda saklanır, hiçbir sunucuya gönderilmez.
+    Örnek kayıtlar kurgudur — Ayarlar'dan temizleyip kendi denemenizi yapabilirsiniz.</span>
+    <span class="spacer"></span>
+    <button class="ghost" id="demoSeritKapat">Gizle</button>
   </div>
 
   <div class="serit" id="serit" hidden>
@@ -404,7 +469,12 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
 
 <script>
 'use strict';
-const ANAHTAR='planner-veri-v1';
+/* Calisma modu: 'demo' (yerel, kurgu veri) veya 'uye' (ileride Firebase).
+   Her modun kendi deposu var; demo verisi uye verisine karismaz. */
+const MOD_ANAHTAR='planner-mod';
+const DEPO={demo:'planner-demo-v1', uye:'planner-veri-v1'};
+let mod=null;
+const anahtar=()=>DEPO[mod]||DEPO.uye;
 const GUNLER=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 const AYLAR=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 /* --- kimlikten tanima --- */
@@ -516,12 +586,13 @@ let kayitlar=ornekVeri(), sonrakiId=11;
 /* ---------- kalıcılık ---------- */
 let depoVar=true;
 function yaz(){
-  try{localStorage.setItem(ANAHTAR,JSON.stringify({kayitlar,sonrakiId,ayar,sonYedek}))}
-  catch(e){if(depoVar){depoVar=false;bildir('Tarayıcı kaydetmeye izin vermiyor — yedek al düğmesini kullan')}}
+  try{localStorage.setItem(anahtar(),JSON.stringify({kayitlar,sonrakiId,ayar,sonYedek}))}
+  catch(e){console.warn('Kaydedilemedi:',e);
+    if(depoVar){depoVar=false;bildir('Tarayıcı kaydetmeye izin vermiyor — yedek al düğmesini kullan')}}
 }
 function yukle(){
   try{
-    const h=localStorage.getItem(ANAHTAR);
+    const h=localStorage.getItem(anahtar());
     if(!h)return;
     const v=JSON.parse(h);
     if(Array.isArray(v.kayitlar))kayitlar=v.kayitlar;
@@ -688,6 +759,7 @@ function lejant(){
 }
 function seritKontrol(){
   const s=document.getElementById('serit');
+  if(mod==='demo'){s.hidden=true;return}   // demoda yedek uyarisi anlamsiz
   if(!depoVar){document.getElementById('seritYazi').textContent='Bu tarayıcı veriyi kaydedemiyor. Kapatmadan önce mutlaka yedek al.';s.hidden=false;return}
   if(!sonYedek){s.hidden=true;return}
   const f=farkGun(sonYedek,BUGUN);
@@ -700,10 +772,21 @@ function gunEkrani(){
   const hat=hatirlatmalar(aktifTarih), atan=atanmamis(), blok=gunun(aktifTarih), sz=gunSaatsiz(aktifTarih);
   const toplam=blok.reduce((s,k)=>s+dk(k.bit)-dk(k.bas),0);
   const N=slotSayi(), P=slotPx();
+  /* simdi cizgisinin dikey konumu: cok yakinsa o saatin etiketini gizle,
+     yoksa kirmizi rozetle ust uste biner */
+  let simdiUst=-999;
+  if(aktifTarih===BUGUN){
+    const n=new Date(), dkk=n.getHours()*60+n.getMinutes();
+    if(dkk>=ayar.bas*60&&dkk<=ayar.bit*60)simdiUst=(dkk-ayar.bas*60)/ayar.dilim*P;
+  }
   let satir='';
   for(let i=0;i<N;i++){
     const t=ayar.bas*60+i*ayar.dilim, tam=t%60===0, yarim=t%60===30;
-    satir+=`<div class="row ${tam?'saatbasi':''} ${yarim?'yarim':''}"><div class="saat">${tam?saatFmt(t):''}</div><div class="lane" data-slot="${i}"></div></div>`;
+    /* rozet dikeyde [simdiUst-7, simdiUst+7], saat etiketi [satirUst+2, satirUst+13]
+       araligini kaplar; ikisi kesisiyorsa saat etiketini gizle */
+    const fark=simdiUst-i*P;
+    const cakisiyor=tam&&fark>-5&&fark<20;
+    satir+=`<div class="row ${tam?'saatbasi':''} ${yarim?'yarim':''}"><div class="saat">${tam&&!cakisiyor?saatFmt(t):''}</div><div class="lane" data-slot="${i}"></div></div>`;
   }
   const bloklar=blok.map(k=>{
     const ust=(dk(k.bas)-ayar.bas*60)/ayar.dilim*P, yuk=(dk(k.bit)-dk(k.bas))/ayar.dilim*P, kisa=yuk<34;
@@ -742,7 +825,8 @@ function gunEkrani(){
 function nowline(){
   const n=new Date(), t=n.getHours()*60+n.getMinutes();
   if(t<ayar.bas*60||t>ayar.bit*60)return '';
-  return `<div class="nowline" style="top:${(t-ayar.bas*60)/ayar.dilim*slotPx()}px"><span class="etiket">${pad(n.getHours())}:${pad(n.getMinutes())}</span></div>`;
+  return `<div class="nowline" style="top:${(t-ayar.bas*60)/ayar.dilim*slotPx()}px">`+
+    `<span class="etiket">${pad(n.getHours())}:${pad(n.getMinutes())}</span><span class="nokta"></span></div>`;
 }
 function flagHtml(k){
   const f=farkGun(aktifTarih,k.bitis);
@@ -1579,8 +1663,43 @@ function excelAktar(){
 }
 
 /* ---------- başlat ---------- */
-yukle();
-secenekleriCiz();
+function uygulamayiBaslat(){
+  document.getElementById('kapi').hidden=true;
+  document.getElementById('uygulama').hidden=false;
+  const demo=mod==='demo';
+  document.getElementById('modRozet').hidden=!demo;
+  document.getElementById('cikisBtn').hidden=!demo;
+  document.getElementById('demoSerit').hidden=!demo;
+  kayitlar=ornekVeri(); sonrakiId=11; ayar=kopya(VARSAYILAN_AYAR); sonYedek=null;
+  yukle();
+  secenekleriCiz();
+  aktifTarih=BUGUN; gorunum='gun';
+  ciz();
+}
+function moduSec(yeni){
+  mod=yeni;
+  try{localStorage.setItem(MOD_ANAHTAR,yeni)}catch(e){}
+  uygulamayiBaslat();
+}
+function kapiyaDon(){
+  mod=null;
+  try{localStorage.removeItem(MOD_ANAHTAR)}catch(e){}
+  document.getElementById('uygulama').hidden=true;
+  document.getElementById('kapi').hidden=false;
+}
+
+document.getElementById('demoGir').onclick=()=>moduSec('demo');
+document.getElementById('uyeGir').onclick=()=>{
+  alert('Google ile giriş henüz açık değil.\n\n'+
+        'Bu bölüm hazırlanıyor: davetli kullanıcılar kendi hesaplarıyla girip '+
+        'verilerini telefon ve bilgisayar arasında eşitleyebilecek.\n\n'+
+        'Şimdilik "Demo olarak incele" ile tüm özellikleri deneyebilirsiniz.');
+};
+document.getElementById('cikisBtn').onclick=()=>{
+  if(confirm('Giriş ekranına dönülecek.\n\nDemo verileriniz bu tarayıcıda saklı kalır, geri döndüğünüzde yerinde olur.\n\nDevam edilsin mi?'))kapiyaDon();
+};
+document.getElementById('demoSeritKapat').onclick=()=>document.getElementById('demoSerit').hidden=true;
+
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{gorunum=b.dataset.gorunum;ciz()});
 document.getElementById('yeniBtn').onclick=()=>modalAc();
 document.getElementById('kapat').onclick=modalKapat;
@@ -1621,7 +1740,13 @@ window.addEventListener('drop',e=>{
   const f=e.dataTransfer.files[0];
   if(f&&f.name.endsWith('.json'))yedekYukle(f);
 });
-ciz();
+
+/* onceki secim hatirlanir; yoksa giris ekrani gosterilir */
+try{
+  const kayitliMod=localStorage.getItem(MOD_ANAHTAR);
+  if(kayitliMod&&DEPO[kayitliMod]){mod=kayitliMod;uygulamayiBaslat()}
+  else document.getElementById('kapi').hidden=false;
+}catch(e){document.getElementById('kapi').hidden=false}
 </script>
 </body>
 </html>
