@@ -407,25 +407,44 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
 const ANAHTAR='planner-veri-v1';
 const GUNLER=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 const AYLAR=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-const turBul=ad=>ayar.turler.find(t=>t.ad===ad);
-const alanBul=id=>ayar.alanlar.find(a=>a.id===id);
+/* --- kimlikten tanima --- */
+const turBul   = id=>ayar.turler.find(t=>t.id===id);
+const alanBul  = id=>ayar.alanlar.find(a=>a.id===id);
+const kisiBul  = id=>ayar.kisiler.find(k=>k.id===id);
+const secBul   = (alan,sid)=>alan?alan.secenekler.find(x=>x.id===sid):null;
+
+/* --- kimlikten okunabilir ada --- */
+const turAd    = k=>(turBul(k.turId)||{}).ad||'(silinmiş tür)';
+const kisiAd   = id=>(kisiBul(id)||{}).ad||'(silinmiş kişi)';
+const sorumluAdlari = k=>(k.sorumlular||[]).map(kisiAd);
+const alanDeger    = (k,alanId)=>(k.alanlar||{})[alanId]||'';        // secenek KIMLIGI
+const alanDegerAd  = (k,alanId)=>{const sc=secBul(alanBul(alanId),alanDeger(k,alanId));return sc?sc.ad:''};
+
 const zamanTurleri=()=>ayar.turler.filter(t=>t.sinif==='zaman');
 const hatirlatmaTurleri=()=>ayar.turler.filter(t=>t.sinif==='hatirlatma');
 const aktifTurler=()=>ayar.turler.filter(t=>!t.pasif);
-const aktifKisiler=()=>ayar.kisiler.filter(k=>!k.pasif).map(k=>k.ad);
-const tumKisiler=()=>ayar.kisiler.map(k=>k.ad);
-// bir turde gorunecek alanlar
-const turAlanlari=ad=>{const t=turBul(ad);return t?(t.alanlar||[]).map(alanBul).filter(Boolean):[]};
-// kayittan alan degeri oku
-const alanDeger=(k,id)=>(k.alanlar||{})[id]||'';
-// bir alanin secenekleri: aktif olanlar + su an secili olan (pasif olsa bile kaybolmasin)
-function alanSecenekleri(alan,mevcut){
-  const l=alan.secenekler.filter(x=>!x.pasif).map(x=>x.ad);
-  if(mevcut&&!l.includes(mevcut))l.unshift(mevcut);
+const aktifKisiler=()=>ayar.kisiler.filter(k=>!k.pasif);
+const turAlanlari=turId=>{const t=turBul(turId);return t?(t.alanlar||[]).map(alanBul).filter(Boolean):[]};
+
+/* secenek listesi: aktifler + su an secili olan (pasif olsa da kaybolmasin) */
+function alanSecenekleri(alan,mevcutId){
+  const l=alan.secenekler.filter(x=>!x.pasif);
+  if(mevcutId&&!l.some(x=>x.id===mevcutId)){
+    const x=secBul(alan,mevcutId); if(x)l.unshift(x);
+  }
   return l;
 }
-// yeni benzersiz alan kimligi
-function yeniAlanId(){let i=1;while(ayar.alanlar.some(a=>a.id==='alan'+i))i++;return 'alan'+i}
+function kisiSecenekleri(seciliIdler){
+  const l=aktifKisiler();
+  (seciliIdler||[]).forEach(id=>{if(!l.some(x=>x.id===id)){const k=kisiBul(id);if(k)l.unshift(k)}});
+  return l;
+}
+/* benzersiz kimlik ureticileri */
+const yeniId=(onek,liste)=>{let i=1;while(liste.some(x=>x.id===onek+i))i++;return onek+i};
+const yeniTurId  =()=>yeniId('t',ayar.turler);
+const yeniAlanId =()=>yeniId('f',ayar.alanlar);
+const yeniKisiId =()=>yeniId('k',ayar.kisiler);
+const yeniSecId  =alan=>{let i=1;while(alan.secenekler.some(x=>x.id===alan.id+'s'+i))i++;return alan.id+'s'+i};
 
 /* ---------- tarih ---------- */
 const pad=n=>String(n).padStart(2,'0');
@@ -442,21 +461,26 @@ function dk(t){const [s,d]=t.split(':').map(Number);return s*60+d}
 function saatFmt(m){return `${pad(Math.floor(m/60))}:${pad(m%60)}`}
 
 /* ---------- varsayılan ayarlar ---------- */
+/* Tanimlar kalici KIMLIK tasir. Kayitlar ada degil kimlige baglanir;
+   boylece bir tanimin adi degistiginde hicbir kayit kopmaz. */
 const VARSAYILAN_ALANLAR=[
-  {id:'grup',      ad:'Grup',         secenekler:[{ad:'Koçluk'},{ad:'MTB'},{ad:'YK'}]},
-  {id:'format',    ad:'Görüşme Türü', secenekler:[{ad:'Yüzyüze'},{ad:'Online'}]},
-  {id:'departman', ad:'Departman',    secenekler:[{ad:'Yönetim'},{ad:'İK'},{ad:'Satış Geliştirme'},{ad:'Şahsi'}]}
+  {id:'f1', ad:'Grup', secenekler:[
+    {id:'f1s1',ad:'Koçluk'},{id:'f1s2',ad:'MTB'},{id:'f1s3',ad:'YK'}]},
+  {id:'f2', ad:'Görüşme Türü', secenekler:[
+    {id:'f2s1',ad:'Yüzyüze'},{id:'f2s2',ad:'Online'}]},
+  {id:'f3', ad:'Departman', secenekler:[
+    {id:'f3s1',ad:'Yönetim'},{id:'f3s2',ad:'İK'},{id:'f3s3',ad:'Satış Geliştirme'},{id:'f3s4',ad:'Şahsi'}]}
 ];
 const VARSAYILAN_TURLER=[
-  {ad:'Toplantı',       sinif:'zaman',      renk:'#2E5A72', alanlar:['grup','format','departman']},
-  {ad:'Çalışma Dilimi', sinif:'zaman',      renk:'#A86A1F', alanlar:['departman']},
-  {ad:'Bireysel Zaman', sinif:'zaman',      renk:'#6E7A63', alanlar:['departman']},
-  {ad:'İş Takibi',      sinif:'hatirlatma', renk:'#B03A24', alanlar:['departman']},
-  {ad:'Bireysel Konu',  sinif:'hatirlatma', renk:'#4A5568', alanlar:['departman']}
+  {id:'t1', ad:'Toplantı',       sinif:'zaman',      renk:'#2E5A72', alanlar:['f1','f2','f3']},
+  {id:'t2', ad:'Çalışma Dilimi', sinif:'zaman',      renk:'#A86A1F', alanlar:['f3']},
+  {id:'t3', ad:'Bireysel Zaman', sinif:'zaman',      renk:'#6E7A63', alanlar:['f3']},
+  {id:'t4', ad:'İş Takibi',      sinif:'hatirlatma', renk:'#B03A24', alanlar:['f3']},
+  {id:'t5', ad:'Bireysel Konu',  sinif:'hatirlatma', renk:'#4A5568', alanlar:['f3']}
 ];
 const kopya=x=>JSON.parse(JSON.stringify(x));
 const VARSAYILAN_AYAR={bas:8,bit:17,dilim:15,
-  kisiler:[{ad:'Ayşe'},{ad:'Mehmet'},{ad:'Zeynep'}],
+  kisiler:[{id:'k1',ad:'Ayşe'},{id:'k2',ad:'Mehmet'},{id:'k3',ad:'Zeynep'}],
   turler:kopya(VARSAYILAN_TURLER),
   alanlar:kopya(VARSAYILAN_ALANLAR)};
 let ayar={...VARSAYILAN_AYAR};
@@ -465,29 +489,26 @@ let sonYedek=null;
 /* ---------- örnek veri ---------- */
 function ornekVeri(){
   const g=n=>ekleGun(BUGUN,n);
-  const K=(id,tur,konu,alanlar,ek)=>({id,tur,konu,alanlar,sonDurum:'',sorumlular:[],
+  const K=(id,turId,konu,alanlar,ek)=>({id,turId,konu,alanlar,sonDurum:'',sorumlular:[],
     kayitTarihi:BUGUN,tarih:null,bas:null,bit:null,bitis:null,tamam:false,...ek});
   return [
-   K(1,'Toplantı','Aylık birebir görüşme',{grup:'Koçluk',format:'Yüzyüze',departman:'Yönetim'},
-     {sonDurum:'Geçen ayın hedefleri gözden geçirilecek',sorumlular:['Ayşe'],tarih:g(0),bas:'09:00',bit:'10:00'}),
-   K(2,'Toplantı','Haftalık ekip toplantısı',{grup:'MTB',format:'Online',departman:'Yönetim'},
-     {sorumlular:['Ayşe','Mehmet'],tarih:g(0),bas:'11:00',bit:'11:45'}),
-   K(3,'Toplantı','Eğitim programı planlaması',{grup:'MTB',format:'Yüzyüze',departman:'İK'},
-     {sorumlular:['Mehmet'],tarih:g(1),bas:'14:00',bit:'15:00'}),
-   K(4,'Toplantı','Çeyrek değerlendirme sunumu',{grup:'YK',format:'Online',departman:'Yönetim'},
-     {sorumlular:['Zeynep']}),
-   K(5,'Toplantı','Yıllık bütçe görüşmesi',{grup:'YK',format:'Yüzyüze',departman:'Yönetim'},
-     {sorumlular:['Zeynep','Ayşe']}),
-   K(6,'İş Takibi','Tedarikçi sözleşmesi yenilenecek',{departman:'Satış Geliştirme'},
-     {sonDurum:'Teklifler toplandı, karşılaştırma tablosu hazırlanacak',sorumlular:['Mehmet'],bitis:g(2)}),
-   K(7,'İş Takibi','Pazar araştırması raporu tamamlanacak',{departman:'Satış Geliştirme'},
-     {sorumlular:['Zeynep','Mehmet'],bitis:g(4)}),
-   K(8,'Çalışma Dilimi','Rapor yazımı — kesintisiz çalışma',{departman:'Yönetim'},
-     {sorumlular:['Ayşe'],tarih:g(0),bas:'13:00',bit:'14:30'}),
-   K(9,'Bireysel Zaman','Okuma / not çıkarma',{departman:'Şahsi'},
-     {sorumlular:['Ayşe'],tarih:g(0),bas:'16:00',bit:'16:45'}),
-   K(10,'Bireysel Konu','Kişisel evrak yenileme',{departman:'Şahsi'},
-     {sorumlular:['Ayşe'],bitis:g(1)})
+   K(1,'t1','Aylık birebir görüşme',{f1:'f1s1',f2:'f2s1',f3:'f3s1'},
+     {sonDurum:'Geçen ayın hedefleri gözden geçirilecek',sorumlular:['k1'],tarih:g(0),bas:'09:00',bit:'10:00'}),
+   K(2,'t1','Haftalık ekip toplantısı',{f1:'f1s2',f2:'f2s2',f3:'f3s1'},
+     {sorumlular:['k1','k2'],tarih:g(0),bas:'11:00',bit:'11:45'}),
+   K(3,'t1','Eğitim programı planlaması',{f1:'f1s2',f2:'f2s1',f3:'f3s2'},
+     {sorumlular:['k2'],tarih:g(1),bas:'14:00',bit:'15:00'}),
+   K(4,'t1','Çeyrek değerlendirme sunumu',{f1:'f1s3',f2:'f2s2',f3:'f3s1'},{sorumlular:['k3']}),
+   K(5,'t1','Yıllık bütçe görüşmesi',{f1:'f1s3',f2:'f2s1',f3:'f3s1'},{sorumlular:['k3','k1']}),
+   K(6,'t4','Tedarikçi sözleşmesi yenilenecek',{f3:'f3s3'},
+     {sonDurum:'Teklifler toplandı, karşılaştırma tablosu hazırlanacak',sorumlular:['k2'],bitis:g(2)}),
+   K(7,'t4','Pazar araştırması raporu tamamlanacak',{f3:'f3s3'},
+     {sorumlular:['k3','k2'],bitis:g(4)}),
+   K(8,'t2','Rapor yazımı — kesintisiz çalışma',{f3:'f3s1'},
+     {sorumlular:['k1'],tarih:g(0),bas:'13:00',bit:'14:30'}),
+   K(9,'t3','Okuma / not çıkarma',{f3:'f3s4'},
+     {sorumlular:['k1'],tarih:g(0),bas:'16:00',bit:'16:45'}),
+   K(10,'t5','Kişisel evrak yenileme',{f3:'f3s4'},{sorumlular:['k1'],bitis:g(1)})
   ];
 }
 let kayitlar=ornekVeri(), sonrakiId=11;
@@ -511,67 +532,121 @@ function yukle(){
     if(gocEt(ham))yaz();   // eski surumden gelindiyse yeni yapiyi kalici yaz
   }catch(e){depoVar=false}
 }
-/* eski surumden gelen veriyi yeni alan yapisina tasir. Degisiklik olduysa true doner. */
+/* Eski surumlerden gelen veriyi guncel yapiya tasir. Degisiklik olduysa true doner.
+   Adim 1: duz listeler -> alan tanimlari    Adim 2: adlar -> kalici kimlikler
+   Hicbir veri kaybolmaz; tanimda olmayan bir deger gorulurse tanima eklenir. */
 function gocEt(ham){
   ham=ham||{};
-  let degisti=false;
+  let d=false;
 
-  // kisiler: ['Ayşe'] -> [{ad:'Ayşe'}]
+  /* --- kisiler: ['Ayşe'] -> [{id,ad}] --- */
   if(Array.isArray(ayar.kisiler)&&ayar.kisiler.length&&typeof ayar.kisiler[0]==='string'){
-    ayar.kisiler=ayar.kisiler.map(ad=>({ad})); degisti=true;
+    ayar.kisiler=ayar.kisiler.map(ad=>({ad})); d=true;
   }
 
-  // eski duz listeler (ayar.gruplar / formatlar / departmanlar) -> alan tanimlari
-  const esle={grup:'gruplar',format:'formatlar',departman:'departmanlar'};
+  /* --- eski duz listeler -> alan tanimlari --- */
+  const esle={f1:'gruplar',f2:'formatlar',f3:'departmanlar'};
   const eskiVar=Object.values(esle).some(x=>Array.isArray(ham[x]));
   if(eskiVar&&!Array.isArray(ham.alanlar)){
     ayar.alanlar=kopya(VARSAYILAN_ALANLAR);
     ayar.alanlar.forEach(a=>{
       const eski=ham[esle[a.id]];
-      if(Array.isArray(eski))a.secenekler=eski.map(ad=>({ad}));
+      if(Array.isArray(eski))a.secenekler=eski.map((ad,n)=>({id:a.id+'s'+(n+1),ad}));
     });
-    degisti=true;
+    d=true;
   }
-  if(!Array.isArray(ayar.alanlar)){ayar.alanlar=kopya(VARSAYILAN_ALANLAR); degisti=true}
+  if(!Array.isArray(ayar.alanlar)){ayar.alanlar=kopya(VARSAYILAN_ALANLAR); d=true}
   ['gruplar','formatlar','departmanlar','departman'].forEach(x=>{
-    if(x in ayar){delete ayar[x]; degisti=true}
+    if(x in ayar){delete ayar[x]; d=true}
   });
 
-  // turler: grup/format bayraklari -> alanlar dizisi
+  /* --- turler: grup/format bayraklari -> alanlar dizisi --- */
   ayar.turler.forEach(t=>{
     if(Array.isArray(t.alanlar))return;
     t.alanlar=[];
-    if(t.grup)t.alanlar.push('grup');
-    if(t.format)t.alanlar.push('format');
-    if(ayar.alanlar.some(a=>a.id==='departman'))t.alanlar.push('departman');
-    delete t.grup; delete t.format; degisti=true;
+    if(t.grup)t.alanlar.push('f1');
+    if(t.format)t.alanlar.push('f2');
+    if(ayar.alanlar.some(a=>a.id==='f3'))t.alanlar.push('f3');
+    delete t.grup; delete t.format; d=true;
+  });
+  /* eski 'grup'/'format'/'departman' alan kimliklerini f1/f2/f3'e cevir */
+  const eskiId={grup:'f1',format:'f2',departman:'f3'};
+  ayar.alanlar.forEach(a=>{if(eskiId[a.id]){a.id=eskiId[a.id];d=true}});
+  ayar.turler.forEach(t=>{
+    const y=(t.alanlar||[]).map(x=>eskiId[x]||x);
+    if(y.join()!==(t.alanlar||[]).join()){t.alanlar=y;d=true}
+  });
+  kayitlar.forEach(k=>{
+    if(!k.alanlar)return;
+    Object.keys(eskiId).forEach(es=>{
+      if(es in k.alanlar){k.alanlar[eskiId[es]]=k.alanlar[es];delete k.alanlar[es];d=true}
+    });
   });
 
-  // kayitlar: k.grup/k.format/k.departman -> k.alanlar{}
+  /* --- tanimlara eksik kimlikleri ver --- */
+  ayar.turler.forEach(t=>{if(!t.id){t.id=yeniTurId();d=true}});
+  ayar.alanlar.forEach(a=>{
+    if(!a.id){a.id=yeniAlanId();d=true}
+    a.secenekler.forEach(x=>{if(!x.id){x.id=yeniSecId(a);d=true}});
+  });
+  ayar.kisiler.forEach(k=>{if(!k.id){k.id=yeniKisiId();d=true}});
+
+  /* --- kayitlar: eski duz alanlar -> k.alanlar{} --- */
   kayitlar.forEach(k=>{
     if(k.alanlar&&typeof k.alanlar==='object'&&!('grup' in k))return;
     k.alanlar=k.alanlar||{};
-    if(k.grup)k.alanlar.grup=k.grup;
-    if(k.format)k.alanlar.format=k.format;
-    if(k.departman)k.alanlar.departman=k.departman;
-    delete k.grup; delete k.format; delete k.departman;
-    degisti=true;
+    if(k.grup)k.alanlar.f1=k.grup;
+    if(k.format)k.alanlar.f2=k.format;
+    if(k.departman)k.alanlar.f3=k.departman;
+    delete k.grup; delete k.format; delete k.departman; d=true;
   });
-  return degisti;
+
+  /* --- kayitlar: adlar -> kimlikler --- */
+  kayitlar.forEach(k=>{
+    // tur
+    if(!k.turId){
+      let t=ayar.turler.find(x=>x.ad===k.tur);
+      if(!t){ // tanimda yoksa kaybolmasin, olustur
+        t={id:yeniTurId(),ad:k.tur||'Tanımsız',sinif:k.bas?'zaman':'hatirlatma',
+           renk:'#8B948F',
+           // kaydin dolu olan alanlarini bagla ki veri ekranda gorunsun
+           alanlar:Object.keys(k.alanlar||{}).filter(x=>alanBul(x))};
+        ayar.turler.push(t);
+      }
+      k.turId=t.id; delete k.tur; d=true;
+    }
+    // alan degerleri
+    const yeni={};
+    Object.entries(k.alanlar||{}).forEach(([aid,val])=>{
+      const a=alanBul(aid); if(!a||!val)return;
+      if(a.secenekler.some(x=>x.id===val)){yeni[aid]=val;return}  // zaten kimlik
+      let sc=a.secenekler.find(x=>x.ad===val);
+      if(!sc){sc={id:yeniSecId(a),ad:val};a.secenekler.push(sc);}  // tanimda yoksa ekle
+      yeni[aid]=sc.id; d=true;
+    });
+    k.alanlar=yeni;
+    // sorumlular
+    k.sorumlular=(k.sorumlular||[]).map(v=>{
+      if(ayar.kisiler.some(x=>x.id===v))return v;
+      let ki=ayar.kisiler.find(x=>x.ad===v);
+      if(!ki){ki={id:yeniKisiId(),ad:v};ayar.kisiler.push(ki); }
+      d=true; return ki.id;
+    });
+  });
+  return d;
 }
 
-/* ---------- yardımcı ---------- */
 const slotPx=()=>ayar.dilim===15?15:26;
 const slotSayi=()=>Math.max(1,(ayar.bit-ayar.bas)*60/ayar.dilim);
-function renkAl(k){return (turBul(k.tur)||{}).renk||'#2E5A72'}
+function renkAl(k){return (turBul(k.turId)||{}).renk||'#8B948F'}
 function turAdi(k){
-  const p=[k.tur];
-  turAlanlari(k.tur).forEach(a=>{const v=alanDeger(k,a.id);if(v)p.push(v)});
+  const p=[turAd(k)];
+  turAlanlari(k.turId).forEach(a=>{const v=alanDegerAd(k,a.id);if(v)p.push(v)});
   return p.join(' · ');
 }
 function kes(s,n){return s.length>n?s.slice(0,n-1)+'…':s}
 function guv(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-const zamanliMi=k=>{const t=turBul(k.tur);return t?t.sinif==='zaman':!!k.bas};
+const zamanliMi=k=>{const t=turBul(k.turId);return t?t.sinif==='zaman':!!k.bas};
 const gunun=t=>kayitlar.filter(k=>zamanliMi(k)&&k.tarih===t&&k.bas).sort((a,b)=>dk(a.bas)-dk(b.bas));
 const gunSaatsiz=t=>kayitlar.filter(k=>zamanliMi(k)&&k.tarih===t&&!k.bas);
 const atanmamis=()=>kayitlar.filter(k=>zamanliMi(k)&&!k.tarih&&!k.tamam);
@@ -674,9 +749,9 @@ function flagHtml(k){
   const s=f<0?'gecti':f<=3?'yakin':'';
   const y=f<0?`${-f} gün geçti`:f===0?'BUGÜN':f===1?'yarın':`${f} gün kaldı`;
   return `<div class="flag kart ${k.tamam?'tamam':''}" style="border-left-color:${renkAl(k)}">
-    <div class="ust"><span class="kalan ${s}">${y}</span><span class="tur">${guv(k.tur)}</span></div>
+    <div class="ust"><span class="kalan ${s}">${y}</span><span class="tur">${guv(turAd(k))}</span></div>
     <div class="konu" data-ac="${k.id}" tabindex="0">${guv(k.konu)}</div>
-    <div class="alt"><span>${guv(k.sorumlular.join(', ')||'—')}</span></div>
+    <div class="alt"><span>${guv(sorumluAdlari(k).join(', ')||'—')}</span></div>
     <div class="kart-aks">
       <button class="tik" data-tik="${k.id}" title="${k.tamam?'Tekrar aç — tamamlandı işaretini kaldır':'Tamamlandı olarak işaretle'}">✓</button></div>
     </div>`;
@@ -686,7 +761,7 @@ function saatsizHtml(k){
     style="border-left-color:${renkAl(k)}">
     <div class="ust"><span class="saatsiz-rozet">saatsiz</span><span class="tur">${guv(turAdi(k))}</span></div>
     <div class="konu" data-ac="${k.id}" tabindex="0">${guv(k.konu)}</div>
-    <div class="alt"><span>${guv(k.sorumlular.join(', ')||'—')}</span></div>
+    <div class="alt"><span>${guv(sorumluAdlari(k).join(', ')||'—')}</span></div>
     <div class="kart-aks">
       <button class="tik" data-tik="${k.id}" title="${k.tamam?'Tekrar aç — tamamlandı işaretini kaldır':'Tamamlandı olarak işaretle'}">✓</button></div>
     </div>`;
@@ -890,14 +965,14 @@ let sirAlan='tarih', sirYon=1;
 const TR=(a,b)=>String(a??'').localeCompare(String(b??''),'tr');
 const SIRALAMA={
   konu:  k=>k.konu,
-  tur:   k=>k.tur,
-  sorumlular: k=>k.sorumlular.join(', '),
+  tur:   k=>turAd(k),
+  sorumlular: k=>sorumluAdlari(k).join(', '),
   tarih: k=>k.tarih?k.tarih+' '+(k.bas||'00:00'):'',
   bitis: k=>k.bitis||'',
   durum: k=>k.tamam?'1':'0'
 };
 function sirAlanFn(){
-  if(sirAlan.startsWith('f:')){const id=sirAlan.slice(2);return k=>alanDeger(k,id)}
+  if(sirAlan.startsWith('f:')){const id=sirAlan.slice(2);return k=>alanDegerAd(k,id)}
   return SIRALAMA[sirAlan]||SIRALAMA.tarih;
 }
 function sirala(liste){
@@ -918,17 +993,17 @@ function basliklar(){
 }
 function kayitEkrani(){
   const liste=sirala(kayitlar.filter(k=>
-    (fTur==='hepsi'||k.tur===fTur)&&
+    (fTur==='hepsi'||k.turId===fTur)&&
     ayar.alanlar.every(a=>!fAlan[a.id]||fAlan[a.id]==='hepsi'||alanDeger(k,a.id)===fAlan[a.id])&&
-    (fKisi==='hepsi'||k.sorumlular.includes(fKisi))&&
+    (fKisi==='hepsi'||(k.sorumlular||[]).includes(fKisi))&&
     (!fAra||(k.konu+' '+k.sonDurum).toLowerCase().includes(fAra.toLocaleLowerCase('tr')))));
   const sec=(id,val,ops,et)=>`<select id="${id}"><option value="hepsi">${et}: hepsi</option>`+
-    ops.map(o=>`<option ${val===o?'selected':''}>${guv(o)}</option>`).join('')+'</select>';
+    ops.map(o=>`<option value="${o.id}" ${val===o.id?'selected':''}>${guv(o.ad)}</option>`).join('')+'</select>';
   return `<div class="dayhead"><div><div class="gun">Veri tabanı</div><div class="tarih">${liste.length} kayıt</div></div></div>
   <div class="filtre">
-    ${sec('flTur',fTur,ayar.turler.map(t=>t.ad),'Tür')}
-    ${ayar.alanlar.map(a=>sec('fl_'+a.id,fAlan[a.id]||'hepsi',a.secenekler.map(x=>x.ad),a.ad)).join('')}
-    ${sec('flKisi',fKisi,tumKisiler(),'Sorumlu')}
+    ${sec('flTur',fTur,ayar.turler,'Tür')}
+    ${ayar.alanlar.map(a=>sec('fl_'+a.id,fAlan[a.id]||'hepsi',a.secenekler,a.ad)).join('')}
+    ${sec('flKisi',fKisi,ayar.kisiler,'Sorumlu')}
     <input id="flAra" placeholder="Konu içinde ara…" value="${guv(fAra)}">
   </div>
   <div class="tablo"><table>
@@ -936,8 +1011,8 @@ function kayitEkrani(){
     <tbody>${liste.map(k=>`<tr class="${k.tamam?'tamam':''}" data-ac="${k.id}" style="cursor:pointer">
       <td><div class="kt">${guv(k.konu)}</div>${k.sonDurum?`<div class="sd">${guv(k.sonDurum)}</div>`:''}</td>
       <td><span class="tag"><i class="dot" style="background:${renkAl(k)}"></i>${guv(turAdi(k))}</span></td>
-      ${ayar.alanlar.map(a=>`<td>${guv(alanDeger(k,a.id))||'<span style="color:var(--ink-faint)">—</span>'}</td>`).join('')}
-      <td>${k.sorumlular.map(s=>`<span class="kisi">${guv(s)}</span>`).join('')||'—'}</td>
+      ${ayar.alanlar.map(a=>`<td>${guv(alanDegerAd(k,a.id))||'<span style="color:var(--ink-faint)">—</span>'}</td>`).join('')}
+      <td>${sorumluAdlari(k).map(s=>`<span class="kisi">${guv(s)}</span>`).join('')||'—'}</td>
       <td class="mono" style="font-size:11.5px">${k.tarih?`${kisaTarih(k.tarih)}<br>${k.bas}–${k.bit}`:'<span style="color:var(--ink-faint)">atanmamış</span>'}</td>
       <td class="mono" style="font-size:11.5px">${k.bitis?kisaTarih(k.bitis):'—'}</td>
       <td style="white-space:nowrap"><button class="tik" data-tik="${k.id}" title="${k.tamam?'Tekrar aç':'Tamamlandı olarak işaretle'}" style="width:19px;height:19px;border:1.5px solid var(--rule);border-radius:5px;display:inline-grid;place-items:center;font-size:12px;color:${k.tamam?'#fff':'transparent'};background:${k.tamam?'var(--ink-soft)':'var(--paper)'};vertical-align:middle">✓</button></td></tr>`).join('')
@@ -970,8 +1045,8 @@ function modalAc(id){
   document.getElementById('mbaslik').textContent=k?'Kaydı düzenle':'Yeni kayıt';
   document.getElementById('sil').hidden=!k;
   document.getElementById('fKonu').value=k?k.konu:'';
-  secenekleriCiz(k?.tur);
-  document.getElementById('fTur').value=k?k.tur:(aktifTurler()[0]||{}).ad||'';
+  secenekleriCiz(k?.turId);
+  document.getElementById('fTur').value=k?k.turId:(aktifTurler()[0]||{}).id||'';
   document.getElementById('fTarih').value=k?.tarih||aktifTarih;
   document.getElementById('fBas').value=k?.bas||'';
   document.getElementById('fBit').value=k?.bit||'';
@@ -994,14 +1069,14 @@ function turDegisti(kayit){
 function kaydetEt(){
   const konu=document.getElementById('fKonu').value.trim();
   if(!konu){bildir('Konu alanı boş olamaz');document.getElementById('fKonu').focus();return}
-  const t=document.getElementById('fTur').value, td=turBul(t)||{sinif:'zaman'}, z=td.sinif==='zaman';
+  const turId=document.getElementById('fTur').value, td=turBul(turId)||{sinif:'zaman'}, z=td.sinif==='zaman';
   const bas=document.getElementById('fBas').value, bit=document.getElementById('fBit').value;
   if(z&&bas&&bit&&dk(bit)<=dk(bas)){bildir('Bitiş saati başlangıçtan sonra olmalı');return}
   const alanlar={};
   document.querySelectorAll('#ozelAlanlar select[data-alan]').forEach(el=>{
     if(el.value)alanlar[el.dataset.alan]=el.value;
   });
-  const v={tur:t,alanlar,konu,
+  const v={turId,alanlar,konu,
     sonDurum:document.getElementById('fSon').value.trim(),
     sorumlular:[...document.querySelectorAll('#fSorumlular input:checked')].map(i=>i.value),
     tarih:z&&bas&&bit?(document.getElementById('fTarih').value||aktifTarih):null,
@@ -1033,18 +1108,17 @@ function ayarKaydetEt(){
   ayar.bas=b;ayar.bit=s;ayar.dilim=+(secili?.dataset.d||15);
   secenekleriCiz();yaz();document.getElementById('ayarPerde').hidden=true;ciz();bildir('Genel ayarlar kaydedildi');
 }
-function kisilerCiz(secili){
-  const l=aktifKisiler();
-  (secili||[]).forEach(x=>{if(!l.includes(x))l.unshift(x)});
-  document.getElementById('fSorumlular').innerHTML=l.map(k=>
-    `<label><input type="checkbox" value="${guv(k)}">${guv(k)}</label>`).join('');
+function kisilerCiz(seciliIdler){
+  document.getElementById('fSorumlular').innerHTML=kisiSecenekleri(seciliIdler).map(k=>
+    `<label><input type="checkbox" value="${k.id}">${guv(k.ad)}</label>`).join('');
 }
-function secenekleriCiz(mevcutTur){
-  const t=document.getElementById('fTur');
-  const liste=aktifTurler().map(x=>x.ad);
-  if(mevcutTur&&!liste.includes(mevcutTur))liste.unshift(mevcutTur);
-  t.innerHTML=liste.map(x=>`<option>${guv(x)}</option>`).join('');
-  kisilerCiz();
+function secenekleriCiz(mevcutTurId){
+  const liste=aktifTurler();
+  if(mevcutTurId&&!liste.some(x=>x.id===mevcutTurId)){
+    const t=turBul(mevcutTurId); if(t)liste.unshift(t);
+  }
+  document.getElementById('fTur').innerHTML=
+    liste.map(x=>`<option value="${x.id}">${guv(x.ad)}</option>`).join('');
 }
 /* secili ture gore ozel alan menulerini olusturur */
 function ozelAlanlariCiz(kayit){
@@ -1056,23 +1130,23 @@ function ozelAlanlariCiz(kayit){
     return `<div class="alan"><label for="fa_${a.id}">${guv(a.ad)}</label>
       <select id="fa_${a.id}" data-alan="${a.id}"><option value="">—</option>${
       alanSecenekleri(a,mevcut).map(x=>
-        `<option ${x===mevcut?'selected':''}>${guv(x)}</option>`).join('')}</select></div>`;
+        `<option value="${x.id}" ${x.id===mevcut?'selected':''}>${guv(x.ad)}</option>`).join('')}</select></div>`;
   }).join('');
 }
 
 
 /* ================= TANIM YONETIMI ================= */
 const KUL={
-  tur:      ad=>kayitlar.filter(k=>k.tur===ad).length,
-  alan:     (id,deger)=>kayitlar.filter(k=>alanDeger(k,id)===deger).length,
-  alanTum:  id=>kayitlar.filter(k=>alanDeger(k,id)).length,
-  kisi:     ad=>kayitlar.filter(k=>k.sorumlular.includes(ad)).length
+  tur:      id=>kayitlar.filter(k=>k.turId===id).length,
+  alan:     (aid,sid)=>kayitlar.filter(k=>alanDeger(k,aid)===sid).length,
+  alanTum:  aid=>kayitlar.filter(k=>alanDeger(k,aid)).length,
+  kisi:     id=>kayitlar.filter(k=>(k.sorumlular||[]).includes(id)).length
 };
 
 function tanimCiz(){
   /* ---- TURLER ---- */
   document.getElementById('turListe').innerHTML=ayar.turler.map((t,i)=>{
-    const n=KUL.tur(t.ad);
+    const n=KUL.tur(t.id);
     return `<div class="tursatir">
       <input type="color" value="${t.renk}" data-trenk="${i}" title="Rengi değiştir">
       <input class="ad" value="${guv(t.ad)}" data-tad="${i}" maxlength="28" title="Adı değiştir — mevcut kayıtlar da güncellenir">
@@ -1103,7 +1177,7 @@ function tanimCiz(){
       </div>
       <div class="tanimnot" style="margin:0 0 6px">${turler.length?'Şu türlerde görünüyor: '+guv(turler.join(', ')):'Hiçbir türe bağlı değil — kayıt formunda çıkmaz.'}</div>
       <div class="cips">${a.secenekler.map((x,j)=>{
-        const m=KUL.alan(a.id,x.ad);
+        const m=KUL.alan(a.id,x.id);
         return `<span class="cip ${x.pasif?'pasif':''}">${guv(x.ad)}
           <button class="pas" data-spas="${i}:${j}" title="${x.pasif?'Tekrar aktif et':'Pasife al'}">${x.pasif?'↺':'◐'}</button>
           <button data-ssil="${i}:${j}" title="${m?m+' kayıtta kullanılıyor':'Sil'}">×</button></span>`;
@@ -1114,7 +1188,7 @@ function tanimCiz(){
   /* ---- SORUMLULAR ---- */
   document.getElementById('lKisiler').innerHTML=`<div class="cips">`+
     ayar.kisiler.map((k,i)=>{
-      const n=KUL.kisi(k.ad);
+      const n=KUL.kisi(k.id);
       return `<span class="cip ${k.pasif?'pasif':''}">${guv(k.ad)}
         <button class="pas" data-kpas="${i}" title="${k.pasif?'Tekrar aktif et':'Pasife al — yeni kayıtlarda görünmez'}">${k.pasif?'↺':'◐'}</button>
         <button data-ksil="${i}" title="${n?n+' kayıtta kullanılıyor':'Sil'}">×</button></span>`;
@@ -1135,14 +1209,12 @@ function tanimBagla(){
     if(!yeni){e.value=eski;bildir('Tür adı boş olamaz');return}
     if(yeni===eski)return;
     if(ayar.turler.some((t,j)=>j!==i&&t.ad===yeni)){e.value=eski;bildir('Bu isimde bir tür zaten var');return}
-    const n=KUL.tur(eski);
-    ayar.turler[i].ad=yeni;
-    kayitlar.forEach(k=>{if(k.tur===eski)k.tur=yeni});
-    tanimKaydet();bildir(n?`"${eski}" → "${yeni}" · ${n} kayıt güncellendi`:'Tür adı değişti');
+    ayar.turler[i].ad=yeni;   // kayitlar kimlige bagli, dokunmaya gerek yok
+    tanimKaydet();bildir(`"${eski}" → "${yeni}"`);
   });
 
   g('[data-tsinif]','onchange',e=>()=>{
-    const i=+e.dataset.tsinif, t=ayar.turler[i], n=KUL.tur(t.ad);
+    const i=+e.dataset.tsinif, t=ayar.turler[i], n=KUL.tur(t.id);
     if(n&&!confirm(`"${t.ad}" türünde ${n} kayıt var.\n\n`+
       (e.value==='hatirlatma'
         ? 'Bu kayıtların saatleri silinecek, son tarihe dönüşecekler ve takvimden çıkacaklar.'
@@ -1150,7 +1222,7 @@ function tanimBagla(){
       '\n\nDevam edilsin mi?')){e.value=t.sinif;return}
     t.sinif=e.value;
     kayitlar.forEach(k=>{
-      if(k.tur!==t.ad)return;
+      if(k.turId!==t.id)return;
       if(e.value==='hatirlatma'){k.bitis=k.bitis||k.tarih||BUGUN;k.tarih=null;k.bas=null;k.bit=null}
       else{k.tarih=k.tarih||k.bitis||null;k.bitis=null}
     });
@@ -1174,7 +1246,7 @@ function tanimBagla(){
 
   g('[data-tsil]','onclick',e=>()=>{
     const i=+e.dataset.tsil, t=ayar.turler[i];
-    if(KUL.tur(t.ad))return;
+    if(KUL.tur(t.id))return;
     if(ayar.turler.length<2){bildir('En az bir tür kalmalı');return}
     if(!confirm(`"${t.ad}" türü silinecek. Hiç kayıtta kullanılmıyor.\n\nEmin misin?`))return;
     ayar.turler.splice(i,1);tanimKaydet();bildir('Tür silindi');
@@ -1185,7 +1257,7 @@ function tanimBagla(){
     let ad='Yeni tür', i=2;
     while(ayar.turler.some(t=>t.ad===ad))ad=`Yeni tür ${i++}`;
     const pal=['#2E5A72','#A86A1F','#6E7A63','#B03A24','#4A5568','#6D4E8C','#1E5A46','#8A5A3C'];
-    ayar.turler.push({ad,sinif:'zaman',renk:pal[ayar.turler.length%pal.length],alanlar:[]});
+    ayar.turler.push({id:yeniTurId(),ad,sinif:'zaman',renk:pal[ayar.turler.length%pal.length],alanlar:[]});
     tanimKaydet();
     const son=document.querySelector(`[data-tad="${ayar.turler.length-1}"]`);
     if(son){son.focus();son.select()}
@@ -1226,10 +1298,10 @@ function tanimBagla(){
   });
   g('[data-ssil]','onclick',e=>()=>{
     const [i,j]=e.dataset.ssil.split(':').map(Number);
-    const a=ayar.alanlar[i], x=a.secenekler[j], n=KUL.alan(a.id,x.ad);
+    const a=ayar.alanlar[i], x=a.secenekler[j], n=KUL.alan(a.id,x.id);
     if(n){
       if(!confirm(`"${x.ad}" ${n} kayıtta kullanılıyor.\n\nSilersen o kayıtların "${a.ad}" bilgisi boşalacak — geri alınamaz.\n\nBunun yerine ◐ ile pasife alabilirsin: yeni kayıtlarda görünmez ama eski kayıtlar korunur.\n\nYine de silinsin mi?`))return;
-      kayitlar.forEach(k=>{if(alanDeger(k,a.id)===x.ad)delete k.alanlar[a.id]});
+      kayitlar.forEach(k=>{if(alanDeger(k,a.id)===x.id)delete k.alanlar[a.id]});
     }
     a.secenekler.splice(j,1);tanimKaydet();bildir('Seçenek silindi');
   });
@@ -1237,7 +1309,7 @@ function tanimBagla(){
     const a=ayar.alanlar[+e.dataset.sekle];
     if(!v)return;
     if(a.secenekler.some(x=>x.ad===v)){bildir('Bu seçenek zaten var');return}
-    a.secenekler.push({ad:v});e.value='';tanimKaydet();bildir(`"${v}" eklendi`);
+    a.secenekler.push({id:yeniSecId(a),ad:v});e.value='';tanimKaydet();bildir(`"${v}" eklendi`);
     const y=document.querySelector(`[data-sekle="${e.dataset.sekle}"]`);if(y)y.focus();
   }));
 
@@ -1248,17 +1320,17 @@ function tanimBagla(){
     bildir(k.pasif?`${k.ad} pasife alındı — geçmiş kayıtlarda adı duruyor`:`${k.ad} tekrar aktif`);
   });
   g('[data-ksil]','onclick',e=>()=>{
-    const i=+e.dataset.ksil, k=ayar.kisiler[i], n=KUL.kisi(k.ad);
+    const i=+e.dataset.ksil, k=ayar.kisiler[i], n=KUL.kisi(k.id);
     if(n){
       if(!confirm(`${k.ad} ${n} kayıtta sorumlu.\n\nSilersen o kayıtlardan adı çıkacak — geri alınamaz.\n\nBunun yerine ◐ ile pasife alabilirsin: yeni kayıtlarda seçilemez ama geçmiş kayıtlarda adı kalır.\n\nYine de silinsin mi?`))return;
-      kayitlar.forEach(x=>{x.sorumlular=x.sorumlular.filter(y=>y!==k.ad)});
+      kayitlar.forEach(x=>{x.sorumlular=(x.sorumlular||[]).filter(y=>y!==k.id)});
     }
     ayar.kisiler.splice(i,1);tanimKaydet();bildir('Kişi silindi');
   });
   g('[data-kekle]','onkeydown',e=>enter(e,v=>{
     if(!v)return;
     if(ayar.kisiler.some(k=>k.ad===v)){bildir('Bu kişi zaten var');return}
-    ayar.kisiler.push({ad:v});e.value='';tanimKaydet();bildir(`${v} eklendi`);
+    ayar.kisiler.push({id:yeniKisiId(),ad:v});e.value='';tanimKaydet();bildir(`${v} eklendi`);
     const y=document.querySelector('[data-kekle]');if(y)y.focus();
   }));
 }
@@ -1268,14 +1340,30 @@ function tanimKaydet(){
 }
 
 /* ---------- yedek / takvim ---------- */
-function indir(ad,icerik,tip){
-  const b=new Blob([icerik],{type:tip}), u=URL.createObjectURL(b);
-  const a=document.createElement('a');a.href=u;a.download=ad;a.click();
-  setTimeout(()=>URL.revokeObjectURL(u),1200);
+/* Blob'u dosya olarak indirir.
+   Baglanti ogesi BELGEYE EKLENMELI; aksi halde bazi tarayicilar download
+   oznitelıgini yok sayip blob adresine gider ve bos bir sayfa acilir. */
+function blobIndir(ad,blob){
+  const u=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=u; a.download=ad; a.rel='noopener'; a.style.display='none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{a.remove();URL.revokeObjectURL(u)},1500);
+}
+function indir(ad,icerik,tip){blobIndir(ad,new Blob([icerik],{type:tip}))}
+/* bayt -> okunabilir boyut */
+function boyutYaz(b){
+  if(b<1024)return b+' bayt';
+  if(b<1024*1024)return (b/1024).toFixed(b<10240?1:0).replace('.',',')+' KB';
+  return (b/1048576).toFixed(1).replace('.',',')+' MB';
 }
 function yedekAl(){
-  indir(`planner-yedek-${BUGUN}.json`,JSON.stringify({kayitlar,sonrakiId,ayar},null,2),'application/json');
-  sonYedek=BUGUN;yaz();seritKontrol();bildir('Yedek indirildi');
+  const metin=JSON.stringify({kayitlar,sonrakiId,ayar},null,2);
+  const blob=new Blob([metin],{type:'application/json'});
+  blobIndir(`planner-yedek-${BUGUN}.json`,blob);
+  sonYedek=BUGUN;yaz();seritKontrol();
+  bildir(`Yedek indirildi · ${kayitlar.length} kayıt (${boyutYaz(blob.size)})`);
 }
 function yedekYukle(dosya){
   const r=new FileReader();
@@ -1312,13 +1400,16 @@ function icsAktar(){
         `DTEND;VALUE=DATE:${ekleGun(k.bitis,1).replace(/-/g,'')}`,'TRANSP:TRANSPARENT',
         'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY',`DESCRIPTION:${icsKac('Son tarih: '+k.konu)}`,'END:VALARM');
     }
-    const not=[k.sonDurum,k.sorumlular.length?'Sorumlu: '+k.sorumlular.join(', '):''].filter(Boolean).join('\n');
+    const not=[k.sonDurum,k.sorumlular.length?'Sorumlu: '+sorumluAdlari(k).join(', '):''].filter(Boolean).join('\n');
     if(not)sat.push(`DESCRIPTION:${icsKac(not)}`);
     sat.push('END:VEVENT');
   });
   sat.push('END:VCALENDAR');
-  indir(`planner-${bas}.ics`,sat.join('\r\n'),'text/calendar');
-  bildir(`${secili.length} kayıt takvim dosyasına yazıldı`);
+  const blob=new Blob([sat.join('\r\n')],{type:'text/calendar'});
+  if(!confirm(`${secili.length} kayıt takvim dosyası olarak indirilecek (${boyutYaz(blob.size)}).\n\n`+
+              `Dosyayı açtığında Google Takvim veya Outlook'a eklenir.\n\nDevam edilsin mi?`))return;
+  blobIndir(`planner-${bas}.ics`,blob);
+  bildir(`${secili.length} kayıt indirildi`);
 }
 
 
@@ -1365,11 +1456,12 @@ const excelSeri=t=>{const [y,a,g]=t.split('-').map(Number);
   return Math.round((Date.UTC(y,a-1,g)-Date.UTC(1899,11,30))/864e5)};
 
 function excelAktar(){
+  if(!kayitlar.length){bildir('Aktarılacak kayıt yok');return}
   const AL=ayar.alanlar;
   const BAS=['Konu','Tür',...AL.map(a=>a.ad),'Sorumlular','Tarih','Başlangıç','Bitiş','Süre (dk)','Son Tarih','Durum','Son Durum','Kayıt Tarihi'];
   const GEN=[44,15,...AL.map(()=>14),24,11,10,10,10,11,12,44,12];
   const satirlar=sirala(kayitlar).map(k=>[
-    k.konu, k.tur, ...AL.map(a=>alanDeger(k,a.id)), k.sorumlular.join(', '),
+    k.konu, turAd(k), ...AL.map(a=>alanDegerAd(k,a.id)), sorumluAdlari(k).join(', '),
     k.tarih?{d:k.tarih}:'', k.bas||'', k.bit||'',
     (k.bas&&k.bit)?{n:dk(k.bit)-dk(k.bas)}:'',
     k.bitis?{d:k.bitis}:'', k.tamam?'Tamamlandı':'Açık', k.sonDurum||'', k.kayitTarihi?{d:k.kayitTarihi}:''
@@ -1479,10 +1571,11 @@ function excelAktar(){
 
   const blob=new Blob([zipYap(dosyalar)],
     {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  const u=URL.createObjectURL(blob), a=document.createElement('a');
-  a.href=u;a.download=`planner-kayitlar-${BUGUN}.xlsx`;a.click();
-  setTimeout(()=>URL.revokeObjectURL(u),1500);
-  bildir(`${satirlar.length} kayıt Excel'e aktarıldı`);
+  const dosyaAdi=`planner-kayitlar-${BUGUN}.xlsx`;
+  if(!confirm(`${satirlar.length} kayıt Excel dosyası olarak indirilecek (${boyutYaz(blob.size)}).\n\n`+
+              `Dosya adı: ${dosyaAdi}\n\nDevam edilsin mi?`))return;
+  blobIndir(dosyaAdi,blob);
+  bildir(`${satirlar.length} kayıt indirildi`);
 }
 
 /* ---------- başlat ---------- */
