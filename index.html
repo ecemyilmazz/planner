@@ -190,9 +190,36 @@ h1,h2,h3{font-family:'Archivo',system-ui,sans-serif;letter-spacing:-.02em;font-w
 .ayoge .bayrak{flex:none;font-size:9px}
 .aysayac{font-size:9px;color:var(--ink-faint);font-family:'IBM Plex Mono';padding-left:3px}
 @media (max-width:820px){.aygun{min-height:78px}.ayliste{max-height:60px}}
-.filtre{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
-.filtre select,.filtre input{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:6px 9px;font-size:12.5px}
-.filtre input{min-width:190px}
+.arac{background:var(--paper);border:1px solid var(--rule);border-radius:9px;margin-bottom:14px;overflow:hidden}
+.arac-ust{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px}
+.ara{flex:1 1 200px;position:relative;display:flex;align-items:center}
+.ara svg{position:absolute;left:10px;width:13px;height:13px;stroke:var(--ink-faint);fill:none;stroke-width:2;pointer-events:none}
+.ara input{width:100%;background:var(--paper-2);border:1px solid var(--rule);border-radius:7px;
+  padding:8px 11px 8px 30px;font-size:13px}
+.ara input:focus{background:var(--paper);border-color:var(--ink-faint);outline:none}
+.suz{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--rule);background:var(--paper-2);
+  border-radius:7px;padding:8px 13px;font-size:12.5px;font-weight:500;color:var(--ink-soft);white-space:nowrap}
+.suz:hover{border-color:var(--ink-faint);color:var(--ink)}
+.suz[aria-expanded="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.suz .ok2{font-size:8px;opacity:.7}
+.suz .say{background:var(--c-toplanti);color:#fff;font-family:'IBM Plex Mono';font-size:10px;
+  border-radius:20px;padding:1px 6px;font-weight:600}
+.suz[aria-expanded="true"] .say{background:var(--paper);color:var(--ink)}
+.arac-alt{padding:0 12px 12px;border-top:1px solid var(--rule-soft);margin-top:2px}
+.arac-alt[hidden]{display:none}
+.suzgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:9px;padding-top:11px}
+.suzalan{display:grid;gap:3px;min-width:0}
+.suzalan label{font-family:'Archivo';font-size:9.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-faint)}
+.suzalan select,.suzalan input{background:var(--paper-2);border:1px solid var(--rule);border-radius:6px;
+  padding:6px 8px;font-size:12.5px;width:100%;min-width:0}
+.suzalan select:focus,.suzalan input:focus{border-color:var(--ink-faint);outline:none}
+.suzalt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:11px;margin-top:11px;
+  border-top:1px dashed var(--rule)}
+.suzalt .not{font-size:11px;color:var(--ink-faint);font-style:italic}
+.temizle{font-size:12px;font-weight:600;color:var(--c-istakibi);padding:4px 0}
+.temizle:hover{text-decoration:underline}
+.sonuc{font-family:'IBM Plex Mono';font-size:11.5px;color:var(--ink-soft);white-space:nowrap}
 .tablo{background:var(--paper);border:1px solid var(--rule);border-radius:9px;overflow:auto}
 table{width:100%;border-collapse:collapse;min-width:780px}
 th{font-family:'Archivo';font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);text-align:left;padding:0;border-bottom:1px solid var(--rule);background:var(--paper-2);position:sticky;top:0}
@@ -303,9 +330,6 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
       <button role="tab" data-gorunum="kayit" aria-selected="false">Kayıtlar</button>
     </div>
     <div class="spacer"></div>
-    <button class="ghost" id="icsBtn" data-baslik="Bu haftayı takvim dosyası olarak indir" title="Bu haftayı takvim dosyası olarak indir">Takvime aktar</button>
-    <button class="ghost" id="excelBtn" data-baslik="Tüm kayıtları Excel dosyası olarak indir" title="Tüm kayıtları Excel dosyası olarak indir">Excel'e aktar</button>
-    <button class="ghost" id="excelAlBtn" data-baslik="Excel dosyasından kayıt yükle" title="Excel dosyasından kayıt yükle">Excel'den al</button>
     <button class="ghost" id="ayarBtn">Ayarlar</button>
     <button class="solid" id="yeniBtn">Yeni kayıt</button>
     <button class="giris" id="girisBtn" title="Google hesabınla giriş yap">Giriş yap</button>
@@ -378,10 +402,12 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
         <div class="satirsec" id="aDilim"><button data-d="15">15 dakika</button><button data-d="30">30 dakika</button></div>
       </div>
       <div class="alan"><label>Veri</label>
-        <div class="tanimnot">Excel aktarımı kayıtları taşır. Tam yedek ayrıca tanımları,
-        renkleri ve ayarları da içerir — cihaz değiştirirken ya da tarayıcı verilerini
-        temizlemeden önce bunu kullan.</div>
+        <div class="tanimnot">Excel'den veri alma, hazırladığın tabloyu kayda dönüştürür.
+        Dışa aktarma "Kayıtlar" sekmesindedir. Tam yedek ayrıca tanımları, renkleri ve
+        ayarları da içerir — cihaz değiştirirken ya da tarayıcı verilerini temizlemeden önce bunu kullan.</div>
         <div style="display:grid;gap:6px">
+          <button class="ghost" id="excelAlBtn" data-kilit style="text-align:left"
+            data-baslik="Excel dosyasından kayıt yükle">Excel'den veri al (.xlsx)</button>
           <button class="ghost" id="yedekBtn" style="text-align:left">Tam yedek al (.json)</button>
           <button class="ghost" id="geriYukleBtn" style="text-align:left">Yedekten geri yükle</button>
           <button class="ghost" id="sifirla" style="text-align:left;color:var(--c-istakibi)">Tüm kayıtları sil ve örnek veriye dön</button>
@@ -714,7 +740,7 @@ function ciz(){
   e.innerHTML = gorunum==='gun'?gunEkrani():gorunum==='hafta'?haftaEkrani():gorunum==='ay'?ayEkrani():kayitEkrani();
   if(gorunum==='gun')gunBagla(); else if(gorunum==='hafta')haftaBagla();
   else if(gorunum==='ay')ayBagla(); else kayitBagla();
-  lejant();seritKontrol();
+  lejant();seritKontrol();kilitUygula();
 }
 function lejant(){
   const bl='font-weight:700;font-family:Archivo;font-size:10px;letter-spacing:.1em;text-transform:uppercase';
@@ -1012,7 +1038,52 @@ function ayBagla(){
 }
 
 /* --- kayıtlar --- */
-let fTur='hepsi',fKisi='hepsi',fAra='',fAlan={};
+let fTur='hepsi',fKisi='hepsi',fAra='',fAlan={},fBas='',fBit='';
+let filtreAcik=false;
+/* bir kaydin takvimdeki etkin tarihi: planlanmis tarih ya da son tarih */
+const etkinTarih=k=>k.tarih||k.bitis||null;
+function aktifFiltreSayisi(){
+  let n=0;
+  if(fTur!=='hepsi')n++;
+  if(fKisi!=='hepsi')n++;
+  if(fAra)n++;
+  if(fBas||fBit)n++;
+  ayar.alanlar.forEach(a=>{if(fAlan[a.id]&&fAlan[a.id]!=='hepsi')n++});
+  return n;
+}
+/* etkin filtreleri okunabilir metne cevirir — disa aktarim onayinda gosterilir */
+function filtreOzeti(){
+  const p=[];
+  if(fAra)p.push(`arama: "${fAra}"`);
+  if(fTur!=='hepsi')p.push(`tür: ${(turBul(fTur)||{}).ad||'?'}`);
+  ayar.alanlar.forEach(a=>{
+    const v=fAlan[a.id];
+    if(v&&v!=='hepsi'){const sc=secBul(a,v);p.push(`${a.ad.toLocaleLowerCase('tr')}: ${sc?sc.ad:'?'}`)}
+  });
+  if(fKisi!=='hepsi')p.push(`sorumlu: ${kisiAd(fKisi)}`);
+  if(fBas||fBit)p.push(`tarih: ${fBas?kisaTarih(fBas):'başlangıç'} – ${fBit?kisaTarih(fBit):'bugünden sonrası'}`);
+  return p;
+}
+function filtreleriTemizle(){
+  fTur='hepsi';fKisi='hepsi';fAra='';fAlan={};fBas='';fBit='';ciz();bildir('Filtreler temizlendi');
+}
+/* ekranda gorunen (filtrelenmis + siralanmis) kayitlar — disa aktarim da bunu kullanir */
+function filtreliKayitlar(){
+  return sirala(kayitlar.filter(k=>
+    (fTur==='hepsi'||k.turId===fTur)&&
+    ayar.alanlar.every(a=>!fAlan[a.id]||fAlan[a.id]==='hepsi'||alanDeger(k,a.id)===fAlan[a.id])&&
+    (fKisi==='hepsi'||(k.sorumlular||[]).includes(fKisi))&&
+    (!fAra||(k.konu+' '+k.sonDurum).toLowerCase().includes(fAra.toLocaleLowerCase('tr')))&&
+    tarihAraliginda(k)));
+}
+function tarihAraliginda(k){
+  if(!fBas&&!fBit)return true;
+  const t=etkinTarih(k);
+  if(!t)return false;                 // tarihsiz kayitlar aralik verilince disarida kalir
+  if(fBas&&t<fBas)return false;
+  if(fBit&&t>fBit)return false;
+  return true;
+}
 let sirAlan='tarih', sirYon=1;
 const TR=(a,b)=>String(a??'').localeCompare(String(b??''),'tr');
 const SIRALAMA={
@@ -1044,45 +1115,90 @@ function basliklar(){
       <button data-sir="${a}">${ad}<span class="ok">${sirAlan===a?(sirYon===1?'▲':'▼'):'▲'}</span></button></th>`).join('');
 }
 function kayitEkrani(){
-  const liste=sirala(kayitlar.filter(k=>
-    (fTur==='hepsi'||k.turId===fTur)&&
-    ayar.alanlar.every(a=>!fAlan[a.id]||fAlan[a.id]==='hepsi'||alanDeger(k,a.id)===fAlan[a.id])&&
-    (fKisi==='hepsi'||(k.sorumlular||[]).includes(fKisi))&&
-    (!fAra||(k.konu+' '+k.sonDurum).toLowerCase().includes(fAra.toLocaleLowerCase('tr')))));
-  const sec=(id,val,ops,et)=>`<select id="${id}"><option value="hepsi">${et}: hepsi</option>`+
-    ops.map(o=>`<option value="${o.id}" ${val===o.id?'selected':''}>${guv(o.ad)}</option>`).join('')+'</select>';
-  return `<div class="dayhead"><div><div class="gun">Veri tabanı</div><div class="tarih">${liste.length} kayıt</div></div></div>
-  <div class="filtre">
-    ${sec('flTur',fTur,ayar.turler,'Tür')}
-    ${ayar.alanlar.map(a=>sec('fl_'+a.id,fAlan[a.id]||'hepsi',a.secenekler,a.ad)).join('')}
-    ${sec('flKisi',fKisi,ayar.kisiler,'Sorumlu')}
-    <input id="flAra" placeholder="Konu içinde ara…" value="${guv(fAra)}">
+  const liste=filtreliKayitlar();
+  const n=aktifFiltreSayisi();
+  const sec=(id,val,ops,et)=>`<div class="suzalan"><label for="${id}">${guv(et)}</label>
+    <select id="${id}"><option value="hepsi">Hepsi</option>${
+    ops.map(o=>`<option value="${o.id}" ${val===o.id?'selected':''}>${guv(o.ad)}</option>`).join('')}</select></div>`;
+
+  return `<div class="dayhead">
+    <div><div class="gun">Veri tabanı</div><div class="tarih">${kayitlar.length} kayıt</div></div>
   </div>
+
+  <div class="arac">
+    <div class="arac-ust">
+      <span class="ara">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input id="flAra" placeholder="Konu ya da not içinde ara…" value="${guv(fAra)}">
+      </span>
+      <button class="suz" id="suzAc" aria-expanded="${filtreAcik}">
+        Filtrele ${n?`<span class="say">${n}</span>`:''}<span class="ok2">${filtreAcik?'▲':'▼'}</span>
+      </button>
+      <span class="spacer"></span>
+      <span class="sonuc">${n?`${liste.length} / ${kayitlar.length}`:`${liste.length}`} kayıt</span>
+      <button class="ghost" id="icsBtn" data-kilit
+        data-baslik="Görünen kayıtları takvim dosyası olarak indir">Takvime aktar</button>
+      <button class="ghost" id="excelBtn" data-kilit
+        data-baslik="Görünen kayıtları Excel dosyası olarak indir">Excel'e aktar</button>
+    </div>
+
+    <div class="arac-alt" ${filtreAcik?'':'hidden'}>
+      <div class="suzgrid">
+        ${sec('flTur',fTur,ayar.turler,'Tür')}
+        ${ayar.alanlar.map(a=>sec('fl_'+a.id,fAlan[a.id]||'hepsi',a.secenekler,a.ad)).join('')}
+        ${sec('flKisi',fKisi,ayar.kisiler,'Sorumlu')}
+        <div class="suzalan"><label for="flBas">Tarihten</label>
+          <input type="date" id="flBas" value="${fBas}"></div>
+        <div class="suzalan"><label for="flBit">Tarihe</label>
+          <input type="date" id="flBit" value="${fBit}"></div>
+      </div>
+      <div class="suzalt">
+        <span class="not">Tarih aralığı, kaydın planlandığı tarihe (hatırlatmalarda son tarihe) bakar.
+        Aralık verildiğinde tarihi olmayan kayıtlar listeye girmez.</span>
+        <span class="spacer"></span>
+        ${n?'<button class="temizle" id="flTemizle">Filtreleri temizle</button>':''}
+      </div>
+    </div>
+  </div>
+
   <div class="tablo"><table>
     <thead><tr>${basliklar()}</tr></thead>
     <tbody>${liste.map(k=>`<tr class="${k.tamam?'tamam':''}" data-ac="${k.id}" style="cursor:pointer">
       <td><div class="kt">${guv(k.konu)}</div>${k.sonDurum?`<div class="sd">${guv(k.sonDurum)}</div>`:''}</td>
       <td><span class="tag"><i class="dot" style="background:${renkAl(k)}"></i>${guv(turAdi(k))}</span></td>
       ${ayar.alanlar.map(a=>`<td>${guv(alanDegerAd(k,a.id))||'<span style="color:var(--ink-faint)">—</span>'}</td>`).join('')}
-      <td>${sorumluAdlari(k).map(s=>`<span class="kisi">${guv(s)}</span>`).join('')||'—'}</td>
-      <td class="mono" style="font-size:11.5px">${k.tarih?`${kisaTarih(k.tarih)}<br>${k.bas}–${k.bit}`:'<span style="color:var(--ink-faint)">atanmamış</span>'}</td>
+      <td>${sorumluAdlari(k).map(x=>`<span class="kisi">${guv(x)}</span>`).join('')||'—'}</td>
+      <td class="mono" style="font-size:11.5px">${k.tarih?`${kisaTarih(k.tarih)}<br>${k.bas?k.bas+'–'+k.bit:'saatsiz'}`:'<span style="color:var(--ink-faint)">atanmamış</span>'}</td>
       <td class="mono" style="font-size:11.5px">${k.bitis?kisaTarih(k.bitis):'—'}</td>
       <td style="white-space:nowrap"><button class="tik" data-tik="${k.id}" title="${k.tamam?'Tekrar aç':'Tamamlandı olarak işaretle'}" style="width:19px;height:19px;border:1.5px solid var(--rule);border-radius:5px;display:inline-grid;place-items:center;font-size:12px;color:${k.tamam?'#fff':'transparent'};background:${k.tamam?'var(--ink-soft)':'var(--paper)'};vertical-align:middle">✓</button></td></tr>`).join('')
-      ||`<tr><td colspan="${6+ayar.alanlar.length}" style="text-align:center;padding:28px;color:var(--ink-faint)">Filtreye uyan kayıt yok.</td></tr>`}
+      ||`<tr><td colspan="${6+ayar.alanlar.length}" style="text-align:center;padding:28px;color:var(--ink-faint)">
+         ${n?'Filtreye uyan kayıt yok.':'Henüz kayıt yok.'}</td></tr>`}
     </tbody></table></div>`;
 }
+
 function kayitBagla(){
-  const b=(id,f)=>{const e=document.getElementById(id);if(e)e.onchange=f};
-  b('flTur',e=>{fTur=e.target.value;ciz()});
-  ayar.alanlar.forEach(a=>b('fl_'+a.id,e=>{fAlan[a.id]=e.target.value;ciz()}));
-  b('flKisi',e=>{fKisi=e.target.value;ciz()});
-  const a=document.getElementById('flAra');
-  a.oninput=e=>{fAra=e.target.value;ciz();const n=document.getElementById('flAra');n.focus();n.setSelectionRange(n.value.length,n.value.length)};
+  const b=(id,olay,fn)=>{const e=document.getElementById(id);if(e)e[olay]=fn};
+
+  b('suzAc','onclick',()=>{filtreAcik=!filtreAcik;ciz()});
+  b('flTemizle','onclick',filtreleriTemizle);
+  b('flTur','onchange',e=>{fTur=e.target.value;ciz()});
+  b('flKisi','onchange',e=>{fKisi=e.target.value;ciz()});
+  b('flBas','onchange',e=>{fBas=e.target.value;ciz()});
+  b('flBit','onchange',e=>{fBit=e.target.value;ciz()});
+  ayar.alanlar.forEach(a=>b('fl_'+a.id,'onchange',e=>{fAlan[a.id]=e.target.value;ciz()}));
+
+  const ara=document.getElementById('flAra');
+  ara.oninput=e=>{fAra=e.target.value;ciz();
+    const y=document.getElementById('flAra');y.focus();y.setSelectionRange(y.value.length,y.value.length)};
+
+  b('icsBtn','onclick',()=>demoMu()?girisGerekli('Takvime aktarma'):icsAktar());
+  b('excelBtn','onclick',()=>demoMu()?girisGerekli("Excel'e aktarma"):excelAktar());
+
   document.querySelectorAll('tr[data-ac]').forEach(r=>r.onclick=e=>{
     if(e.target.closest('.tik'))return; modalAc(+r.dataset.ac)});
-  document.querySelectorAll('[data-sir]').forEach(b=>b.onclick=e=>{
+  document.querySelectorAll('[data-sir]').forEach(x=>x.onclick=e=>{
     e.stopPropagation();
-    const a=b.dataset.sir;
+    const a=x.dataset.sir;
     if(sirAlan===a)sirYon=-sirYon; else {sirAlan=a;sirYon=1}
     ciz();
   });
@@ -1433,10 +1549,8 @@ function yedekYukle(dosya){
 }
 function icsKac(s){return String(s??'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n')}
 function icsAktar(){
-  const bas=haftaBasi(aktifTarih), bit=ekleGun(bas,6);
-  const ic=k=>k.tarih?(k.tarih>=bas&&k.tarih<=bit):(k.bitis&&k.bitis>=bas&&k.bitis<=bit);
-  const secili=kayitlar.filter(k=>!k.tamam&&ic(k));
-  if(!secili.length){bildir('Bu haftada aktarılacak kayıt yok');return}
+  const secili=filtreliKayitlar().filter(k=>!k.tamam&&etkinTarih(k));
+  if(!secili.length){bildir('Tarihi olan, tamamlanmamış kayıt bulunamadı');return}
   const dt=(t,s)=>t.replace(/-/g,'')+'T'+s.replace(':','')+'00';
   const damga=new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
   const sat=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Planner//TR','CALSCALE:GREGORIAN'];
@@ -1458,9 +1572,15 @@ function icsAktar(){
   });
   sat.push('END:VCALENDAR');
   const blob=new Blob([sat.join('\r\n')],{type:'text/calendar'});
-  if(!confirm(`${secili.length} kayıt takvim dosyası olarak indirilecek (${boyutYaz(blob.size)}).\n\n`+
-              `Dosyayı açtığında Google Takvim veya Outlook'a eklenir.\n\nDevam edilsin mi?`))return;
-  blobIndir(`planner-${bas}.ics`,blob);
+  const ozet2=filtreOzeti();
+  const tarihler=secili.map(etkinTarih).sort();
+  if(!confirm(
+      `${secili.length} kayıt takvim dosyasına yazılacak.\n`+
+      `Kapsam: ${kisaTarih(tarihler[0])} – ${kisaTarih(tarihler[tarihler.length-1])}\n`+
+      (ozet2.length?`\nEtkin filtreler:\n• ${ozet2.join('\n• ')}\n`:'')+
+      `\nTamamlanmış kayıtlar dışarıda bırakıldı.\n`+
+      `Dosyayı açtığında Google Takvim veya Outlook'a eklenir. (${boyutYaz(blob.size)})\n\nDevam edilsin mi?`))return;
+  blobIndir(`planner-${BUGUN}.ics`,blob);
   bildir(`${secili.length} kayıt indirildi`);
 }
 
@@ -1508,11 +1628,12 @@ const excelSeri=t=>{const [y,a,g]=t.split('-').map(Number);
   return Math.round((Date.UTC(y,a-1,g)-Date.UTC(1899,11,30))/864e5)};
 
 function excelAktar(){
-  if(!kayitlar.length){bildir('Aktarılacak kayıt yok');return}
+  const secim=filtreliKayitlar();
+  if(!secim.length){bildir('Aktarılacak kayıt yok — filtreyi gevşetmeyi dene');return}
   const AL=ayar.alanlar;
   const BAS=['Konu','Tür',...AL.map(a=>a.ad),'Sorumlular','Tarih','Başlangıç','Bitiş','Süre (dk)','Son Tarih','Durum','Son Durum','Kayıt Tarihi'];
   const GEN=[44,15,...AL.map(()=>14),24,11,10,10,10,11,12,44,12];
-  const satirlar=sirala(kayitlar).map(k=>[
+  const satirlar=secim.map(k=>[
     k.konu, turAd(k), ...AL.map(a=>alanDegerAd(k,a.id)), sorumluAdlari(k).join(', '),
     k.tarih?{d:k.tarih}:'', k.bas||'', k.bit||'',
     (k.bas&&k.bit)?{n:dk(k.bit)-dk(k.bas)}:'',
@@ -1623,9 +1744,14 @@ function excelAktar(){
 
   const blob=new Blob([zipYap(dosyalar)],
     {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const ozet=filtreOzeti();
   const dosyaAdi=`planner-kayitlar-${BUGUN}.xlsx`;
-  if(!confirm(`${satirlar.length} kayıt Excel dosyası olarak indirilecek (${boyutYaz(blob.size)}).\n\n`+
-              `Dosya adı: ${dosyaAdi}\n\nDevam edilsin mi?`))return;
+  if(!confirm(
+      (ozet.length
+        ? `Filtrelenmiş ${satirlar.length} kayıt aktarılacak (toplam ${kayitlar.length} kayıttan).\n\n`+
+          `Etkin filtreler:\n• ${ozet.join('\n• ')}\n\n`
+        : `Tüm kayıtlar aktarılacak: ${satirlar.length} kayıt.\n\n`)+
+      `Dosya: ${dosyaAdi} (${boyutYaz(blob.size)})\n\nDevam edilsin mi?`))return;
   blobIndir(dosyaAdi,blob);
   bildir(`${satirlar.length} kayıt indirildi`);
 }
@@ -1864,12 +1990,7 @@ function uygulamayiBaslat(){
   document.getElementById('girisBtn').hidden=!demo;   // giris yapilinca kaybolur
   document.getElementById('cikisBtn').hidden=demo;    // yalnizca giris yapinca gorunur
   document.getElementById('demoSerit').hidden=!demo;
-  /* dosya aktarimi giris gerektirir — demoda kilitli gorunur */
-  ['icsBtn','excelBtn','excelAlBtn'].forEach(id=>{
-    const b=document.getElementById(id);
-    b.classList.toggle('kilitli',demo);
-    b.title=demo?'Giriş yaptıktan sonra kullanılabilir':b.dataset.baslik||b.title;
-  });
+  kilitUygula();
   kayitlar=ornekVeri(); sonrakiId=11; ayar=kopya(VARSAYILAN_AYAR); sonYedek=null;
   yukle();
   secenekleriCiz();
@@ -1894,6 +2015,15 @@ function girisGerekli(islem){
         `Giriş şu anda davetli kullanıcılara hazırlanıyor.`);
 }
 const demoMu=()=>mod==='demo';
+/* dosya aktarim dugmeleri giris gerektirir; bazilari yeniden cizildigi icin
+   her cizimden sonra tekrar uygulanir */
+function kilitUygula(){
+  const d=demoMu();
+  document.querySelectorAll('[data-kilit]').forEach(b=>{
+    b.classList.toggle('kilitli',d);
+    b.title=d?'Giriş yaptıktan sonra kullanılabilir':(b.dataset.baslik||'');
+  });
+}
 
 /* Google ile giris — Firebase baglanana kadar bilgilendirme veriyor */
 document.getElementById('girisBtn').onclick=()=>{
@@ -1937,8 +2067,6 @@ document.getElementById('seritYedek').onclick=yedekAl;
 document.getElementById('seritKapat').onclick=()=>document.getElementById('serit').hidden=true;
 document.getElementById('geriYukleBtn').onclick=()=>document.getElementById('dosyaSec').click();
 document.getElementById('dosyaSec').onchange=e=>{if(e.target.files[0])yedekYukle(e.target.files[0]);e.target.value=''};
-document.getElementById('icsBtn').onclick=()=>demoMu()?girisGerekli('Takvime aktarma'):icsAktar();
-document.getElementById('excelBtn').onclick=()=>demoMu()?girisGerekli("Excel'e aktarma"):excelAktar();
 document.getElementById('excelAlBtn').onclick=()=>demoMu()
   ?girisGerekli("Excel'den veri alma")
   :document.getElementById('excelSec').click();
