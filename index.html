@@ -371,17 +371,11 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
   </div>
 
   <div class="serit demo" id="demoSerit" hidden>
-    <span><b>Demo modu.</b> Tüm özellikler açık; girdikleriniz yalnızca bu tarayıcıda kalır,
-    hiçbir sunucuya gönderilmez. Örnek kayıtlar kurgudur — Ayarlar'dan temizleyebilirsiniz.
-    Cihazlar arası eşitleme için <b>Giriş yap</b>.</span>
+    <span><b>Demo modu.</b> Tüm özellikler açık ama hiçbir şey kaydedilmez —
+    sayfayı yenilediğinizde örnek verilere döner. Kayıtlarınızın saklanması ve
+    cihazlar arasında eşitlenmesi için <b>Giriş yap</b>.</span>
     <span class="spacer"></span>
     <button class="ghost" id="demoSeritKapat">Gizle</button>
-  </div>
-
-  <div class="serit" id="serit" hidden>
-    <span id="seritYazi"></span><span class="spacer"></span>
-    <button class="ghost" id="seritYedek">Şimdi yedek al</button>
-    <button class="ghost" id="seritKapat">Gizle</button>
   </div>
 
   <div id="ekran"></div>
@@ -522,12 +516,12 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
 
 <script>
 'use strict';
-/* Calisma modu: 'demo' (yerel, kurgu veri) veya 'uye' (ileride Firebase).
-   Her modun kendi deposu var; demo verisi uye verisine karismaz. */
-const MOD_ANAHTAR='planner-mod';
-const DEPO={demo:'planner-demo-v1', uye:'planner-veri-v1'};
-let mod=null;
-const anahtar=()=>DEPO[mod]||DEPO.uye;
+/* Calisma modu oturumdan turer:
+     'demo' → giris yapilmamis; ornek verilerle calisir, hicbir yere kaydedilmez
+     'uye'  → giris yapilmis; tek dogru kaynak Firestore
+   Tarayici depolamasi kullanilmaz — Firestore'un cevrimdisi onbellegi
+   baglanti kopmalarini zaten karsiliyor, ikinci bir kopyaya gerek yok. */
+let mod='demo';
 const GUNLER=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 /* 'Pazartesi'.slice(0,3) ve 'Pazar'.slice(0,3) ikisi de "Paz" verir —
    ayni sorun Cuma/Cumartesi'nde de var, o yuzden kisaltmalar elle yazildi */
@@ -610,7 +604,6 @@ const VARSAYILAN_AYAR={bas:8,bit:17,dilim:15,
   turler:kopya(VARSAYILAN_TURLER),
   alanlar:kopya(VARSAYILAN_ALANLAR)};
 let ayar={...VARSAYILAN_AYAR};
-let sonYedek=null;
 
 /* ---------- örnek veri ---------- */
 function ornekVeri(){
@@ -640,26 +633,9 @@ function ornekVeri(){
 let kayitlar=ornekVeri(), sonrakiId=11;
 
 /* ---------- kalıcılık ---------- */
-let depoVar=true;
-function yaz(){
-  try{localStorage.setItem(anahtar(),JSON.stringify({kayitlar,sonrakiId,ayar,sonYedek}))}
-  catch(e){console.warn('Kaydedilemedi:',e);
-    if(depoVar){depoVar=false;bildir('Tarayıcı kaydetmeye izin vermiyor — yedek al düğmesini kullan')}}
-  bulutaYaz();
-}
-function yukle(){
-  try{
-    const h=localStorage.getItem(anahtar());
-    if(!h)return;
-    const v=JSON.parse(h);
-    if(Array.isArray(v.kayitlar))kayitlar=v.kayitlar;
-    if(v.sonrakiId)sonrakiId=v.sonrakiId;
-    const ham=v.ayar||{};
-    if(v.ayar)ayar={...kopya(VARSAYILAN_AYAR),...v.ayar};
-    sonYedek=v.sonYedek||null;
-    if(gocEt(ham))yaz();   // eski surumden gelindiyse yeni yapiyi kalici yaz
-  }catch(e){depoVar=false}
-}
+/* Tek kayit yeri Firestore. Demo modunda hicbir sey saklanmaz;
+   sayfa yenilenince ornek veriye doner. */
+function yaz(){ bulutaYaz(); }
 /* Eski surumlerden gelen veriyi guncel yapiya tasir. Degisiklik olduysa true doner.
    Adim 1: duz listeler -> alan tanimlari    Adim 2: adlar -> kalici kimlikler
    Hicbir veri kaybolmaz; tanimda olmayan bir deger gorulurse tanima eklenir. */
@@ -803,7 +779,7 @@ function ciz(){
   e.innerHTML = gorunum==='gun'?gunEkrani():gorunum==='hafta'?haftaEkrani():gorunum==='ay'?ayEkrani():kayitEkrani();
   if(gorunum==='gun')gunBagla(); else if(gorunum==='hafta')haftaBagla();
   else if(gorunum==='ay')ayBagla(); else kayitBagla();
-  lejant();seritKontrol();kilitUygula();
+  lejant();kilitUygula();
 }
 function lejant(){
   const bl='font-weight:700;font-family:Archivo;font-size:10px;letter-spacing:.1em;text-transform:uppercase';
@@ -814,16 +790,6 @@ function lejant(){
     (h.length?`<span style="${bl};margin-left:6px">Hatırlatma / Bildirim</span>`+h.map(t=>
       `<span><i class="dot" style="background:${t.renk};border-radius:50%"></i>${guv(t.ad)}</span>`).join(''):'');
 }
-function seritKontrol(){
-  const s=document.getElementById('serit');
-  if(mod==='demo'){s.hidden=true;return}   // demoda yedek uyarisi anlamsiz
-  if(!depoVar){document.getElementById('seritYazi').textContent='Bu tarayıcı veriyi kaydedemiyor. Kapatmadan önce mutlaka yedek al.';s.hidden=false;return}
-  if(!sonYedek){s.hidden=true;return}
-  const f=farkGun(sonYedek,BUGUN);
-  if(f>=7){document.getElementById('seritYazi').textContent=`Son yedeği ${f} gün önce aldın. Tarayıcı verileri silinirse kayıtlar gider.`;s.hidden=false}
-  else s.hidden=true;
-}
-
 /* --- gün --- */
 function gunEkrani(){
   const hat=hatirlatmalar(aktifTarih), atan=atanmamis(), blok=gunun(aktifTarih), sz=gunSaatsiz(aktifTarih);
@@ -1606,8 +1572,7 @@ function yedekAl(){
   const metin=JSON.stringify({kayitlar,sonrakiId,ayar},null,2);
   const blob=new Blob([metin],{type:'application/json'});
   blobIndir(`planner-yedek-${BUGUN}.json`,blob);
-  sonYedek=BUGUN;yaz();seritKontrol();
-  bildir(`Yedek indirildi · ${kayitlar.length} kayıt (${boyutYaz(blob.size)})`);
+    bildir(`Yedek indirildi · ${kayitlar.length} kayıt (${boyutYaz(blob.size)})`);
 }
 function yedekYukle(dosya){
   const r=new FileReader();
@@ -1617,8 +1582,9 @@ function yedekYukle(dosya){
       if(!Array.isArray(v.kayitlar))throw 0;
       if(!confirm(`${v.kayitlar.length} kayıt yüklenecek. Mevcut kayıtların silinecek. Devam?`))return;
       kayitlar=v.kayitlar;sonrakiId=v.sonrakiId||Math.max(0,...v.kayitlar.map(k=>k.id))+1;
-      if(v.ayar)ayar={...VARSAYILAN_AYAR,...v.ayar};
-      kisilerCiz();yaz();ciz();bildir('Yedek geri yüklendi');
+      if(v.ayar)ayar={...kopya(VARSAYILAN_AYAR),...v.ayar};
+      gocEt({});secenekleriCiz();yaz();tanimlariBulutaYaz();ciz();
+      bildir(`Yedek geri yüklendi · ${kayitlar.length} kayıt`);
     }catch(e){bildir('Dosya okunamadı — planner yedeği mi?')}
   };
   r.readAsText(dosya);
@@ -2061,8 +2027,8 @@ async function excelAl(dosya){
 
 /* ================= BULUT SENKRONU ================= */
 /* Veri iki katmanda tutulur:
-   - localStorage : anlık, çevrimdışı çalışır, önbellek görevi görür
-   - Firestore    : kalıcı, cihazlar arası eşitlenir (yalnızca üye modunda)
+   Tek kaynak Firestore'dur. Bağlantı koptuğunda Firestore'un kendi çevrimdışı
+   önbelleği devreye girer; yazmalar kuyruğa alınıp bağlantı gelince gönderilir.
    Tanımlar ortaktır ve sadece yönetici yazabilir; kayıtlar kişiseldir. */
 
 let FB=null, oturum=null, yoneticiMi=false, bulutHazir=false;
@@ -2158,7 +2124,6 @@ async function bulutuYukle(){
     const tr=await FB.tercihOku(oturum.uid);
 
     mod='uye';
-    try{localStorage.setItem(MOD_ANAHTAR,'uye')}catch(e){}
 
     ayar=kopya(VARSAYILAN_AYAR);
     if(t){ ayar.turler=t.turler||ayar.turler; ayar.alanlar=t.alanlar||ayar.alanlar;
@@ -2169,7 +2134,6 @@ async function bulutuYukle(){
       kayitlar=k.liste; sonrakiId=k.sonrakiId||Math.max(0,...kayitlar.map(x=>x.id))+1;
     }else{
       kayitlar=[]; sonrakiId=1;
-      await yerelVeriyiTeklifEt();          // tarayıcıda veri varsa yüklemeyi öner
     }
     gocEt({});
     arayuzuTazele();
@@ -2180,19 +2144,6 @@ async function bulutuYukle(){
     durumYaz('hata','bağlanılamadı');
     bildir('Veriler yüklenemedi — bağlantını kontrol edip sayfayı yenile');
   }
-}
-
-/* girişten önce tarayıcıda biriken kayıtları hesaba taşımayı önerir */
-async function yerelVeriyiTeklifEt(){
-  let yerel=null;
-  try{ yerel=JSON.parse(localStorage.getItem(DEPO.uye)||'null'); }catch(e){}
-  const n=yerel&&Array.isArray(yerel.kayitlar)?yerel.kayitlar.length:0;
-  if(!n)return;
-  if(!confirm(`Bu tarayıcıda kaydedilmiş ${n} kayıt bulundu.\n\n`+
-              `Hesabına yüklensin mi?\n\n`+
-              `TAMAM: yüklensin\nİPTAL: boş başla (yerel kopya silinmez)`))return;
-  kayitlar=yerel.kayitlar; sonrakiId=yerel.sonrakiId||n+1;
-  bulutaYaz();
 }
 
 function arayuzuTazele(){
@@ -2278,17 +2229,12 @@ async function uyeEkleEt(){
 function uygulamayiBaslat(){
   window.scrollTo(0,0);
   oturumArayuzu();
-  kayitlar=ornekVeri(); sonrakiId=11; ayar=kopya(VARSAYILAN_AYAR); sonYedek=null;
-  yukle();
+  if(mod==='demo'){ kayitlar=ornekVeri(); sonrakiId=11; ayar=kopya(VARSAYILAN_AYAR); }
   secenekleriCiz();
   aktifTarih=BUGUN; gorunum='gun';
   ciz();
 }
-function moduSec(yeni){
-  mod=yeni;
-  try{localStorage.setItem(MOD_ANAHTAR,yeni)}catch(e){}
-  uygulamayiBaslat();
-}
+function moduSec(yeni){ mod=yeni; uygulamayiBaslat(); }
 /* Demo modunda dosya aktarimi kapali: kullaniciya nedenini ve
    giris yapinca ne kazanacagini anlatir. */
 function girisGerekli(islem){
@@ -2363,8 +2309,6 @@ document.getElementById('sifirla').onclick=()=>{
   kayitlar=ornekVeri();sonrakiId=11;yaz();secenekleriCiz();
   document.getElementById('ayarPerde').hidden=true;ciz();bildir('Tanımlar ve kayıtlar sıfırlandı')};
 document.getElementById('yedekBtn').onclick=yedekAl;
-document.getElementById('seritYedek').onclick=yedekAl;
-document.getElementById('seritKapat').onclick=()=>document.getElementById('serit').hidden=true;
 document.getElementById('geriYukleBtn').onclick=()=>document.getElementById('dosyaSec').click();
 document.getElementById('dosyaSec').onchange=e=>{if(e.target.files[0])yedekYukle(e.target.files[0]);e.target.value=''};
 document.getElementById('excelAlBtn').onclick=()=>demoMu()
@@ -2391,10 +2335,9 @@ window.addEventListener('drop',e=>{
 
 /* Giris ekrani yok: uygulama dogrudan acilir.
    Onceden giris yapilmissa uye modu, aksi halde demo. */
-try{
-  const kayitliMod=localStorage.getItem(MOD_ANAHTAR);
-  mod=(kayitliMod&&DEPO[kayitliMod])?kayitliMod:'demo';
-}catch(e){mod='demo'}
+/* Uygulama demo moduyla acilir; gecerli bir Firebase oturumu varsa
+   birkac saniye icinde uye moduna gecer. */
+mod='demo';
 uygulamayiBaslat();
 </script>
 
