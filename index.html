@@ -166,30 +166,40 @@ h1,h2,h3{font-family:'Archivo',system-ui,sans-serif;letter-spacing:-.02em;font-w
 .minidead.dragging{opacity:.35}
 
 .ay{background:var(--paper);border:1px solid var(--rule);border-radius:9px;overflow:hidden}
-.aybaslik{display:grid;grid-template-columns:repeat(7,1fr);background:var(--paper-2);border-bottom:1px solid var(--rule)}
-.aybaslik div{padding:7px 6px;text-align:center;font-family:'Archivo';font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-faint);border-left:1px solid var(--rule-soft)}
-.aybaslik div:first-child{border-left:none}
-.aygrid{display:grid;grid-template-columns:repeat(7,1fr)}
-.aygun{border-left:1px solid var(--rule-soft);border-top:1px solid var(--rule-soft);min-height:104px;padding:4px 5px 6px;display:flex;flex-direction:column;gap:2px}
-.aygun:nth-child(7n+1){border-left:none}
-.aygun.disay{background:var(--paper-2);opacity:.55}
-.aygun.hafta-sonu{background:rgba(198,204,192,.16)}
+/* baslik ve gunler AYNI izgarada — boylece sutunlar birebir hizalanir.
+   minmax(0,1fr): uzun bir kayit basligi sutunu genisletemez. */
+.ayizgara{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.aybaslik{padding:8px 6px;text-align:center;font-family:'Archivo';font-size:10px;font-weight:700;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--ink-faint);
+  background:var(--paper-2);border-bottom:1px solid var(--rule);border-left:1px solid var(--rule-soft)}
+.aybaslik:first-child{border-left:none}
+.aybaslik.hs{color:var(--ink-soft)}
+.aygun{border-left:1px solid var(--rule-soft);border-top:1px solid var(--rule-soft);
+  height:116px;padding:4px 5px 5px;display:flex;flex-direction:column;gap:2px;min-width:0;overflow:hidden}
+.ayizgara .aygun:nth-child(7n+1){border-left:none}
+.aygun.disay{background:var(--paper-2)}
+.aygun.disay .no{opacity:.45}
+.aygun.hafta-sonu{background:rgba(198,204,192,.14)}
 .aygun.over{background:rgba(46,90,114,.13);outline:2px dashed var(--c-toplanti);outline-offset:-2px}
-.aygun .no{font-family:'IBM Plex Mono';font-size:11.5px;font-weight:500;color:var(--ink-soft);cursor:pointer;align-self:flex-start;padding:0 4px;border-radius:4px}
-.aygun .no:hover{background:var(--rule)}
+.aygun .no{font-family:'IBM Plex Mono';font-size:11.5px;font-weight:500;color:var(--ink-soft);
+  cursor:pointer;align-self:flex-start;padding:1px 5px;border-radius:4px;flex:none}
+.aygun .no:hover{background:var(--rule);color:var(--ink)}
 .aygun.bugun3 .no{background:var(--ink);color:var(--paper);font-weight:600}
-.ayliste{display:flex;flex-direction:column;gap:2px;overflow-y:auto;max-height:92px;overscroll-behavior:contain}
-.ayliste::-webkit-scrollbar{width:5px}
-.ayliste::-webkit-scrollbar-thumb{background:var(--rule);border-radius:3px}
-.ayoge{display:flex;align-items:center;gap:4px;font-size:10.5px;line-height:1.3;padding:1px 3px;border-radius:3px;cursor:grab;white-space:nowrap;overflow:hidden}
+.ayliste{display:flex;flex-direction:column;gap:2px;flex:1;min-height:0;min-width:0;overflow:hidden}
+.ayoge{display:flex;align-items:center;gap:4px;font-size:10.5px;line-height:1.35;padding:1px 3px;
+  border-radius:3px;cursor:grab;min-width:0;flex:none}
 .ayoge:hover{background:var(--paper-2)}
 .ayoge.dragging{opacity:.35}
+.ayoge .dot{flex:none}
+.ayoge .bayrak{flex:none;font-size:9px;line-height:1}
 .ayoge .t{font-family:'IBM Plex Mono';font-size:9.5px;color:var(--ink-faint);flex:none}
-.ayoge .ad{overflow:hidden;text-overflow:ellipsis}
-.ayoge.bitti{opacity:.45;text-decoration:line-through}
-.ayoge .bayrak{flex:none;font-size:9px}
-.aysayac{font-size:9px;color:var(--ink-faint);font-family:'IBM Plex Mono';padding-left:3px}
-@media (max-width:820px){.aygun{min-height:78px}.ayliste{max-height:60px}}
+.ayoge .ad{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ayoge.bitti{opacity:.45}
+.ayoge.bitti .ad{text-decoration:line-through}
+.ayfazla{font-size:9.5px;color:var(--ink-soft);font-family:'IBM Plex Mono';padding:1px 3px;
+  text-align:left;border-radius:3px;flex:none;font-weight:500}
+.ayfazla:hover{background:var(--rule);color:var(--ink)}
+@media (max-width:820px){.aygun{height:88px}.ayoge .t{display:none}}
 .arac{background:var(--paper);border:1px solid var(--rule);border-radius:9px;margin-bottom:14px;overflow:hidden}
 .arac-ust{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px}
 .ara{flex:1 1 200px;position:relative;display:flex;align-items:center}
@@ -470,6 +480,9 @@ const DEPO={demo:'planner-demo-v1', uye:'planner-veri-v1'};
 let mod=null;
 const anahtar=()=>DEPO[mod]||DEPO.uye;
 const GUNLER=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+/* 'Pazartesi'.slice(0,3) ve 'Pazar'.slice(0,3) ikisi de "Paz" verir —
+   ayni sorun Cuma/Cumartesi'nde de var, o yuzden kisaltmalar elle yazildi */
+const GUN_KISA=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
 const AYLAR=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 /* --- kimlikten tanima --- */
 const turBul   = id=>ayar.turler.find(t=>t.id===id);
@@ -939,7 +952,7 @@ function haftaEkrani(){
   const bas=haftaBasi(aktifTarih), gl=[...Array(7)].map((_,i)=>ekleGun(bas,i));
   const N=slotSayi(), P=slotPx();
   const head='<div class="hhead"><div></div>'+gl.map(t=>
-    `<div class="${t===BUGUN?'bg2':''}"><div class="g">${GUNLER[(tn(t).getDay()+6)%7].slice(0,3)}</div><div class="d">${tn(t).getDate()}</div></div>`).join('')+'</div>';
+    `<div class="${t===BUGUN?'bg2':''}"><div class="g">${GUN_KISA[(tn(t).getDay()+6)%7]}</div><div class="d">${tn(t).getDate()}</div></div>`).join('')+'</div>';
   const dead='<div class="hdead"><div class="lbl">Son<br>tarih</div>'+gl.map(t=>{
     const d=kayitlar.filter(k=>!zamanliMi(k)&&k.bitis===t), sz=gunSaatsiz(t);
     const n=sz.length+d.length;
@@ -976,6 +989,7 @@ function haftaBagla(){
 }
 
 /* --- ay --- */
+const AY_LIMIT=4;   // hucreye sigan kayit sayisi; fazlasi "+N daha" olarak gosterilir
 function ayEkrani(){
   const d=tn(aktifTarih), yil=d.getFullYear(), ay=d.getMonth();
   const ilk=`${yil}-${pad(ay+1)}-01`;
@@ -992,14 +1006,16 @@ function ayEkrani(){
       ...sz.map(k=>({k,t:'',b:'○'})),
       ...dl.map(k=>({k,t:'',b:'⚑'}))];
     hucre+=`<div class="aygun ${disAy?'disay':''} ${hs?'hafta-sonu':''} ${t===BUGUN?'bugun3':''} bolge" data-birak="ay" data-gun="${t}">
-      <span class="no" data-git="${t}" title="Bu güne git">${td.getDate()}</span>
-      <div class="ayliste">${hepsi.map(({k,t:saat,b})=>
-        `<div class="ayoge ${k.tamam?'bitti':''}" draggable="true" data-id="${k.id}" title="${guv(k.konu)}">
+      <span class="no" data-git="${t}" title="${uzunTarih(t)} — bu güne git">${td.getDate()}</span>
+      <div class="ayliste">${hepsi.slice(0,AY_LIMIT).map(({k,t:saat,b})=>
+        `<div class="ayoge ${k.tamam?'bitti':''}" draggable="true" data-id="${k.id}" title="${guv(turAdi(k))} — ${guv(k.konu)}">
           <i class="dot" style="background:${renkAl(k)}"></i>${
           b?`<span class="bayrak" style="color:${renkAl(k)}">${b}</span>`:''}${
           saat?`<span class="t">${saat}</span>`:''}
-          <span class="ad">${guv(kes(k.konu,40))}</span></div>`).join('')}</div>
-      ${hepsi.length>3?`<span class="aysayac">${hepsi.length} kayıt</span>`:''}</div>`;
+          <span class="ad">${guv(k.konu)}</span></div>`).join('')}${
+        hepsi.length>AY_LIMIT
+          ? `<button class="ayfazla" data-git="${t}">+${hepsi.length-AY_LIMIT} daha</button>`
+          : ''}</div></div>`;
   }
   const ozet=kayitlar.filter(k=>zamanliMi(k)&&k.tarih&&k.bas&&tn(k.tarih).getMonth()===ay&&tn(k.tarih).getFullYear()===yil)
     .reduce((a,k)=>a+dk(k.bit)-dk(k.bas),0);
@@ -1010,8 +1026,10 @@ function ayEkrani(){
     <div class="nav"><button id="aygeri">‹</button><button class="bugun" id="aybugun">Bu ay</button><button id="ayileri">›</button></div>
   </div>
   <div class="ay">
-    <div class="aybaslik">${GUNLER.map(g=>`<div>${g.slice(0,3)}</div>`).join('')}</div>
-    <div class="aygrid">${hucre}</div>
+    <div class="ayizgara">
+      ${GUN_KISA.map((g,i)=>`<div class="aybaslik ${i>4?'hs':''}">${g}</div>`).join('')}
+      ${hucre}
+    </div>
   </div>
   <p style="font-size:11.5px;color:var(--ink-faint);margin-top:10px;font-style:italic">
     ○ saatsiz iş · ⚑ son tarih · kayıtları başka güne sürükleyebilirsin · gün numarasına tıklayınca o güne gider</p>`;
