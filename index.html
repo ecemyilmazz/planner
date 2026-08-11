@@ -18,13 +18,13 @@
   --slot:15px; --rail:270px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none !important}
 body{background:var(--ground);color:var(--ink);font-family:'Karla',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
 input,select,textarea{font:inherit;color:inherit}
 h1,h2,h3{font-family:'Archivo',system-ui,sans-serif;letter-spacing:-.02em;font-weight:700}
 .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
 .app{max-width:1180px;margin:0 auto;padding:16px 16px 40px}
-.app[hidden]{display:none}
 
 .ghost.kilitli{opacity:.5}
 .ghost.kilitli:hover{color:var(--ink-soft);border-color:var(--rule)}
@@ -39,7 +39,7 @@ h1,h2,h3{font-family:'Archivo',system-ui,sans-serif;letter-spacing:-.02em;font-w
   background:var(--paper-2);border:1px solid var(--rule);border-radius:20px;padding:3px 10px;max-width:230px}
 .hesap .eposta{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hesap .yrozet{font-family:'IBM Plex Mono';font-size:9px;font-weight:600;letter-spacing:.06em;
-  background:var(--c-yk,#1E5A46);color:#fff;border-radius:4px;padding:1px 5px;flex:none}
+  background:#1E5A46;color:#fff;border-radius:4px;padding:1px 5px;flex:none;margin-left:2px}
 .senkron{font-family:'IBM Plex Mono';font-size:10.5px;padding:3px 9px;border-radius:20px;
   border:1px solid var(--rule);color:var(--ink-faint);background:var(--paper-2)}
 .senkron.bekliyor{color:var(--c-calisma);border-color:#E0C9A8;background:#F6E9D9}
@@ -239,7 +239,6 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
   border-radius:20px;padding:1px 6px;font-weight:600}
 .suz[aria-expanded="true"] .say{background:var(--paper);color:var(--ink)}
 .arac-alt{padding:0 12px 12px;border-top:1px solid var(--rule-soft);margin-top:2px}
-.arac-alt[hidden]{display:none}
 .suzgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:9px;padding-top:11px}
 .suzalan{display:grid;gap:3px;min-width:0}
 .suzalan label{font-family:'Archivo';font-size:9.5px;font-weight:700;letter-spacing:.1em;
