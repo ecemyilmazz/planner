@@ -35,6 +35,29 @@ h1,h2,h3{font-family:'Archivo',system-ui,sans-serif;letter-spacing:-.02em;font-w
 .giris::before{content:'';width:14px;height:14px;flex:none;border-radius:50%;
   background:conic-gradient(#EA4335 0 25%,#FBBC05 0 50%,#34A853 0 75%,#4285F4 0);
   -webkit-mask:radial-gradient(circle,transparent 38%,#000 39%);mask:radial-gradient(circle,transparent 38%,#000 39%)}
+.hesap{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);
+  background:var(--paper-2);border:1px solid var(--rule);border-radius:20px;padding:3px 10px;max-width:230px}
+.hesap .eposta{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hesap .yrozet{font-family:'IBM Plex Mono';font-size:9px;font-weight:600;letter-spacing:.06em;
+  background:var(--c-yk,#1E5A46);color:#fff;border-radius:4px;padding:1px 5px;flex:none}
+.senkron{font-family:'IBM Plex Mono';font-size:10.5px;padding:3px 9px;border-radius:20px;
+  border:1px solid var(--rule);color:var(--ink-faint);background:var(--paper-2)}
+.senkron.bekliyor{color:var(--c-calisma);border-color:#E0C9A8;background:#F6E9D9}
+.senkron.tamam{color:var(--c-bireysel);border-color:var(--rule)}
+.senkron.hata,.senkron.cevrimdisi{color:var(--c-istakibi);border-color:#E3BDB2;background:#F6E3DE}
+.kilit-uyari{background:var(--paper-2);border:1px solid var(--rule);border-left:3px solid var(--c-toplanti);
+  border-radius:0 8px 8px 0;padding:10px 13px;font-size:12.5px;color:var(--ink-soft);margin-bottom:12px}
+.kilit-uyari b{color:var(--ink)}
+fieldset.kilitli-alan{border:none;padding:0;margin:0}
+fieldset.kilitli-alan[disabled]{opacity:.55}
+.uyeler{display:grid;gap:7px}
+.uyesatir{display:flex;align-items:center;gap:8px;background:var(--paper-2);border:1px solid var(--rule);
+  border-radius:7px;padding:8px 10px;flex-wrap:wrap}
+.uyesatir .ep{flex:1;min-width:150px;font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis}
+.uyesatir .rol{font-family:'IBM Plex Mono';font-size:9.5px;padding:1px 6px;border-radius:4px;
+  background:var(--rule);color:var(--ink-soft);white-space:nowrap}
+.uyesatir .rol.yon{background:#1E5A46;color:#fff}
+.uyesatir .rol.pas{background:var(--c-istakibi);color:#fff}
 .modrozet{font-family:'IBM Plex Mono';font-size:9.5px;font-weight:600;letter-spacing:.09em;
   background:var(--c-calisma);color:#fff;padding:2px 7px;border-radius:4px}
 .serit.demo{background:#F0EDE4;border-color:#DCD3BE;border-left-color:var(--c-calisma)}
@@ -333,6 +356,8 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
   <div class="topbar">
     <div class="brand">Planner</div>
     <span class="modrozet" id="modRozet" hidden>DEMO</span>
+    <span class="hesap" id="hesap" hidden></span>
+    <span class="senkron" id="senkron" hidden></span>
     <div class="tabs" role="tablist">
       <button role="tab" data-gorunum="gun" aria-selected="true">Bugün</button>
       <button role="tab" data-gorunum="hafta" aria-selected="false">Hafta</button>
@@ -401,6 +426,7 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
     <div class="atabs" role="tablist">
       <button role="tab" data-at="genel" aria-selected="true">Genel</button>
       <button role="tab" data-at="tanim" aria-selected="false">Tanımlar</button>
+      <button role="tab" data-at="erisim" aria-selected="false" id="erisimSekme" hidden>Erişim</button>
     </div>
 
     <div class="mbody" id="sekGenel">
@@ -426,6 +452,24 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
       <div class="mfoot" style="padding:0;border:none;margin-top:4px"><button class="solid" id="ayarKaydet">Genel ayarları kaydet</button></div>
     </div>
 
+    <div class="mbody" id="sekErisim" hidden>
+      <p class="uyari">Bu uygulamaya yalnızca aşağıdaki adresler girebilir. Listede olmayan
+      bir hesap Google ile giriş yapsa bile içeri alınmaz ve hiçbir veriye erişemez.
+      Yönetici adresi güvenlik kurallarına gömülüdür, listeye eklenmesi gerekmez.</p>
+      <div class="alan">
+        <label>Erişebilecek hesaplar</label>
+        <div id="uyeListe"><div class="bos">Yükleniyor…</div></div>
+      </div>
+      <div class="alan">
+        <label for="yeniUye">Yeni hesap ekle</label>
+        <div style="display:flex;gap:7px">
+          <input id="yeniUye" type="email" placeholder="ornek@gmail.com" style="flex:1">
+          <button class="solid" id="uyeEkle">Ekle</button>
+        </div>
+        <div class="tanimnot">Gmail adresi olmalı. Kişi bu adresle Google girişi yapabilecek.</div>
+      </div>
+    </div>
+
     <div class="mbody" id="sekTanim" hidden>
       <details class="ipucu" open>
         <summary>Bu ekran nasıl çalışır?</summary>
@@ -444,6 +488,11 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
         </div>
       </details>
 
+      <div class="kilit-uyari" id="tanimKilit" hidden>
+        <b>Tanımları yönetici belirler.</b> Türler, alanlar ve sorumlular tüm ekipte ortaktır;
+        değiştirmek istediğin bir şey varsa yöneticiye ilet.
+      </div>
+      <fieldset class="kilitli-alan" id="tanimAlan">
       <div class="alan">
         <label>Türler</label>
         <div class="tanimnot">Adını değiştirirsen mevcut kayıtlar da güncellenir. Davranışını değiştirirsen kayıtların saat/son tarih bilgileri dönüştürülür.</div>
@@ -463,6 +512,7 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
         <div class="tanimnot">Kayıtlara atanabilecek kişiler. Ayrılan biri için silme yerine pasife almayı tercih et.</div>
         <div id="lKisiler"></div>
       </div>
+      </fieldset>
     </div>
   </div>
 </div>
@@ -596,6 +646,7 @@ function yaz(){
   try{localStorage.setItem(anahtar(),JSON.stringify({kayitlar,sonrakiId,ayar,sonYedek}))}
   catch(e){console.warn('Kaydedilemedi:',e);
     if(depoVar){depoVar=false;bildir('Tarayıcı kaydetmeye izin vermiyor — yedek al düğmesini kullan')}}
+  bulutaYaz();
 }
 function yukle(){
   try{
@@ -1280,12 +1331,20 @@ function ayarAc(){
   document.getElementById('aBit').value=ayar.bit;
   document.querySelectorAll('#aDilim button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.d===ayar.dilim));
   tanimCiz();
+  /* tanımlar ortaktır: üye modunda yalnızca yönetici düzenleyebilir.
+     Demo modunda herkes serbestçe deneyebilir. */
+  const duzenleyebilir = (mod==='demo') || yoneticiMi;
+  document.getElementById('tanimAlan').disabled=!duzenleyebilir;
+  document.getElementById('tanimKilit').hidden=duzenleyebilir;
+  document.getElementById('erisimSekme').hidden=!(mod==='uye'&&yoneticiMi);
   document.getElementById('ayarPerde').hidden=false;
 }
 function ayarSekme(ad){
   document.querySelectorAll('.atabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.at===ad));
   document.getElementById('sekGenel').hidden=ad!=='genel';
   document.getElementById('sekTanim').hidden=ad!=='tanim';
+  document.getElementById('sekErisim').hidden=ad!=='erisim';
+  if(ad==='erisim')uyeleriCiz();
 }
 function ayarKaydetEt(){
   const b=+document.getElementById('aBas').value, s=+document.getElementById('aBit').value;
@@ -1522,7 +1581,7 @@ function tanimBagla(){
 }
 
 function tanimKaydet(){
-  yaz();secenekleriCiz();tanimCiz();ciz();
+  yaz();tanimlariBulutaYaz();secenekleriCiz();tanimCiz();ciz();
 }
 
 /* ---------- yedek / takvim ---------- */
@@ -2000,15 +2059,226 @@ async function excelAl(dosya){
   bildir(`${yeni.length} kayıt aktarıldı · toplam ${kayitlar.length}`);
 }
 
+
+/* ================= BULUT SENKRONU ================= */
+/* Veri iki katmanda tutulur:
+   - localStorage : anlık, çevrimdışı çalışır, önbellek görevi görür
+   - Firestore    : kalıcı, cihazlar arası eşitlenir (yalnızca üye modunda)
+   Tanımlar ortaktır ve sadece yönetici yazabilir; kayıtlar kişiseldir. */
+
+let FB=null, oturum=null, yoneticiMi=false, bulutHazir=false;
+let yazZaman=null, bekleyenYazma=false;
+
+function durumYaz(tip,mesaj){
+  const e=document.getElementById('senkron');
+  if(!e)return;
+  const m={bekliyor:'kaydediliyor…',tamam:'kaydedildi',hata:'kaydedilemedi',
+           yukleniyor:'yükleniyor…',cevrimdisi:'çevrimdışı'};
+  e.hidden=!tip;
+  if(!tip)return;
+  e.className='senkron '+tip;
+  e.textContent=mesaj||m[tip]||'';
+}
+
+/* Firestore'a yazma — art arda değişikliklerde tek yazmaya indirger */
+function bulutaYaz(){
+  if(mod!=='uye'||!FB||!oturum)return;
+  bekleyenYazma=true; durumYaz('bekliyor');
+  clearTimeout(yazZaman);
+  yazZaman=setTimeout(async()=>{
+    try{
+      const paket={liste:kayitlar,sonrakiId};
+      const boyut=JSON.stringify(paket).length;
+      if(boyut>900000){
+        durumYaz('hata','veri çok büyük');
+        bildir('Kayıtlar 900 KB sınırına yaklaştı — bir kısmını arşivlemek gerekiyor');
+        bekleyenYazma=false; return;
+      }
+      await FB.kayitlariYaz(oturum.uid,paket);
+      await FB.tercihYaz(oturum.uid,{bas:ayar.bas,bit:ayar.bit,dilim:ayar.dilim});
+      bekleyenYazma=false; durumYaz('tamam');
+      setTimeout(()=>{if(!bekleyenYazma)durumYaz(null)},2000);
+    }catch(e){
+      bekleyenYazma=false; durumYaz('hata');
+      console.warn('buluta yazılamadı:',e);
+    }
+  },1200);
+}
+
+/* tanımlar yalnızca yönetici tarafından yazılır */
+async function tanimlariBulutaYaz(){
+  if(mod!=='uye'||!FB||!yoneticiMi)return;
+  try{
+    await FB.tanimlariYaz({turler:ayar.turler,alanlar:ayar.alanlar,kisiler:ayar.kisiler});
+  }catch(e){
+    console.warn('tanımlar yazılamadı:',e);
+    bildir('Tanımlar kaydedilemedi — bağlantını kontrol et');
+  }
+}
+
+/* ---------- oturum ---------- */
+window.firebaseHazir=api=>{ FB=api; bulutHazir=true; };
+window.firebaseYok=()=>{ bulutHazir=false; if(mod==='uye')durumYaz('cevrimdisi'); };
+
+window.oturumDegisti=async u=>{
+  if(!u){
+    if(mod==='uye'){ oturum=null; yoneticiMi=false; moduSec('demo'); }
+    return;
+  }
+  const eposta=(u.email||'').toLowerCase();
+  yoneticiMi = eposta===FB.yoneticiEpostasi.toLowerCase();
+
+  /* üyelik kontrolü — davetli olmayan hesap içeri alınmaz */
+  if(!yoneticiMi){
+    let kayit=null;
+    try{ kayit=await FB.uyeOku(eposta); }catch(e){ kayit=null; }
+    if(!kayit||kayit.aktif===false){
+      await FB.cikisYap();
+      alert(`${u.email} bu uygulamaya davetli değil.\n\n`+
+            `Erişim yalnızca yöneticinin eklediği hesaplara açıktır.\n`+
+            `Erişim istiyorsan yöneticiye bu adresi ilet.`);
+      return;
+    }
+  }
+  oturum=u;
+  await bulutuYukle();
+};
+
+async function bulutuYukle(){
+  durumYaz('yukleniyor');
+  try{
+    /* 1) ortak tanımlar */
+    let t=await FB.tanimlariOku();
+    if(!t&&yoneticiMi){                       // ilk kurulum: varsayılanları yaz
+      t={turler:kopya(VARSAYILAN_TURLER),alanlar:kopya(VARSAYILAN_ALANLAR),
+         kisiler:kopya(VARSAYILAN_AYAR.kisiler)};
+      await FB.tanimlariYaz(t);
+    }
+    /* 2) kişisel kayıtlar */
+    const k=await FB.kayitlariOku(oturum.uid);
+    const tr=await FB.tercihOku(oturum.uid);
+
+    mod='uye';
+    try{localStorage.setItem(MOD_ANAHTAR,'uye')}catch(e){}
+
+    ayar=kopya(VARSAYILAN_AYAR);
+    if(t){ ayar.turler=t.turler||ayar.turler; ayar.alanlar=t.alanlar||ayar.alanlar;
+           ayar.kisiler=t.kisiler||ayar.kisiler; }
+    if(tr){ ayar.bas=tr.bas??ayar.bas; ayar.bit=tr.bit??ayar.bit; ayar.dilim=tr.dilim??ayar.dilim; }
+
+    if(k&&Array.isArray(k.liste)){
+      kayitlar=k.liste; sonrakiId=k.sonrakiId||Math.max(0,...kayitlar.map(x=>x.id))+1;
+    }else{
+      kayitlar=[]; sonrakiId=1;
+      await yerelVeriyiTeklifEt();          // tarayıcıda veri varsa yüklemeyi öner
+    }
+    gocEt({});
+    arayuzuTazele();
+    durumYaz('tamam'); setTimeout(()=>durumYaz(null),1800);
+    bildir(`Giriş yapıldı · ${kayitlar.length} kayıt yüklendi`);
+  }catch(e){
+    console.warn('bulut okunamadı:',e);
+    durumYaz('hata','bağlanılamadı');
+    bildir('Veriler yüklenemedi — bağlantını kontrol edip sayfayı yenile');
+  }
+}
+
+/* girişten önce tarayıcıda biriken kayıtları hesaba taşımayı önerir */
+async function yerelVeriyiTeklifEt(){
+  let yerel=null;
+  try{ yerel=JSON.parse(localStorage.getItem(DEPO.uye)||'null'); }catch(e){}
+  const n=yerel&&Array.isArray(yerel.kayitlar)?yerel.kayitlar.length:0;
+  if(!n)return;
+  if(!confirm(`Bu tarayıcıda kaydedilmiş ${n} kayıt bulundu.\n\n`+
+              `Hesabına yüklensin mi?\n\n`+
+              `TAMAM: yüklensin\nİPTAL: boş başla (yerel kopya silinmez)`))return;
+  kayitlar=yerel.kayitlar; sonrakiId=yerel.sonrakiId||n+1;
+  bulutaYaz();
+}
+
+function arayuzuTazele(){
+  secenekleriCiz(); kilitUygula(); oturumArayuzu(); ciz();
+}
+
+function oturumArayuzu(){
+  const demo=mod==='demo';
+  const g=document.getElementById('girisBtn'), c=document.getElementById('cikisBtn'),
+        h=document.getElementById('hesap');
+  if(g)g.hidden=!demo;
+  if(c)c.hidden=demo;
+  if(h){
+    h.hidden=demo||!oturum;
+    if(oturum)h.innerHTML=`<span class="eposta">${guv(oturum.email)}</span>`+
+      (yoneticiMi?'<span class="yrozet">yönetici</span>':'');
+  }
+  document.getElementById('modRozet').hidden=!demo;
+  document.getElementById('demoSerit').hidden=!demo;
+  kilitUygula();
+}
+
+
+/* ================= ERİŞİM YÖNETİMİ (yalnızca yönetici) ================= */
+async function uyeleriCiz(){
+  const kutu=document.getElementById('uyeListe');
+  if(!kutu)return;
+  if(!FB||!oturum||!yoneticiMi){kutu.innerHTML='<div class="bos">Bu bölüm yöneticiye açıktır.</div>';return}
+  kutu.innerHTML='<div class="bos">Yükleniyor…</div>';
+  let liste=[];
+  try{ liste=await FB.uyeleriOku(); }
+  catch(e){ kutu.innerHTML='<div class="bos">Liste okunamadı.</div>'; return; }
+
+  const yon=FB.yoneticiEpostasi.toLowerCase();
+  kutu.innerHTML=`<div class="uyeler">
+    <div class="uyesatir">
+      <span class="ep">${guv(yon)}</span>
+      <span class="rol yon">yönetici</span>
+      <span class="kul" style="font-family:'IBM Plex Mono';font-size:10px;color:var(--ink-faint)">kurallarda tanımlı</span>
+    </div>
+    ${liste.filter(u=>u.eposta!==yon).map(u=>`
+      <div class="uyesatir">
+        <span class="ep">${guv(u.eposta)}</span>
+        <span class="rol ${u.aktif===false?'pas':''}">${u.aktif===false?'pasif':'üye'}</span>
+        <button class="ghost" data-uyepas="${guv(u.eposta)}" style="padding:3px 9px;font-size:11.5px">
+          ${u.aktif===false?'Aktif et':'Pasife al'}</button>
+        <button class="tsil" data-uyesil="${guv(u.eposta)}" title="Listeden çıkar">×</button>
+      </div>`).join('')
+      ||'<div class="bos">Henüz başka hesap eklenmemiş.</div>'}
+  </div>`;
+
+  kutu.querySelectorAll('[data-uyepas]').forEach(b=>b.onclick=async()=>{
+    const e=b.dataset.uyepas, mevcut=liste.find(x=>x.eposta===e);
+    try{
+      await FB.uyeYaz(e,{aktif:mevcut.aktif===false});
+      bildir(mevcut.aktif===false?`${e} tekrar aktif`:`${e} pasife alındı — girişi kapandı`);
+      uyeleriCiz();
+    }catch(err){bildir('Değiştirilemedi')}
+  });
+  kutu.querySelectorAll('[data-uyesil]').forEach(b=>b.onclick=async()=>{
+    const e=b.dataset.uyesil;
+    if(!confirm(`${e} listeden çıkarılacak ve bir daha giriş yapamayacak.\n\n`+
+                `Kendi kayıtları silinmez, sadece erişimi kapanır.\n\nEmin misin?`))return;
+    try{ await FB.uyeSil(e); bildir('Erişim kaldırıldı'); uyeleriCiz(); }
+    catch(err){ bildir('Silinemedi'); }
+  });
+}
+
+async function uyeEkleEt(){
+  const g=document.getElementById('yeniUye');
+  const e=(g.value||'').trim().toLowerCase();
+  if(!e){bildir('E-posta gir');g.focus();return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){bildir('Geçerli bir e-posta değil');return}
+  if(e===FB.yoneticiEpostasi.toLowerCase()){bildir('Yönetici zaten erişebiliyor');return}
+  try{
+    await FB.uyeYaz(e,{aktif:true,eklenme:Date.now()});
+    g.value=''; bildir(`${e} eklendi — Google ile giriş yapabilir`);
+    uyeleriCiz();
+  }catch(err){ bildir('Eklenemedi — bağlantını kontrol et'); }
+}
+
 /* ---------- başlat ---------- */
 function uygulamayiBaslat(){
   window.scrollTo(0,0);
-  const demo=mod==='demo';
-  document.getElementById('modRozet').hidden=!demo;
-  document.getElementById('girisBtn').hidden=!demo;   // giris yapilinca kaybolur
-  document.getElementById('cikisBtn').hidden=demo;    // yalnizca giris yapinca gorunur
-  document.getElementById('demoSerit').hidden=!demo;
-  kilitUygula();
+  oturumArayuzu();
   kayitlar=ornekVeri(); sonrakiId=11; ayar=kopya(VARSAYILAN_AYAR); sonYedek=null;
   yukle();
   secenekleriCiz();
@@ -2044,16 +2314,27 @@ function kilitUygula(){
 }
 
 /* Google ile giris — Firebase baglanana kadar bilgilendirme veriyor */
-document.getElementById('girisBtn').onclick=()=>{
-  alert('Google ile giriş henüz açık değil.\n\n'+
-        'Hazırlanıyor: davetli kullanıcılar kendi Gmail hesaplarıyla girip '+
-        'verilerini telefon ve bilgisayar arasında eşitleyebilecek. Herkes yalnızca '+
-        'kendi verisini görecek.\n\n'+
-        'Şu anda demo modundasınız — tüm özellikler açık, verileriniz bu tarayıcıda saklanıyor.');
+document.getElementById('girisBtn').onclick=async()=>{
+  if(!bulutHazir||!FB){
+    alert('Giriş servisine ulaşılamıyor.\n\nİnternet bağlantını kontrol edip sayfayı yenile.');
+    return;
+  }
+  try{ await FB.girisYap(); }
+  catch(e){
+    const k=e.code||'';
+    if(k==='auth/unauthorized-domain')
+      alert('Bu adres Firebase\'de yetkili değil.\n\nAuthentication > Settings > Authorized domains bölümüne '+location.hostname+' eklenmeli.');
+    else if(k==='auth/popup-blocked')
+      alert('Tarayıcı açılır pencereyi engelledi.\n\nAdres çubuğundaki engel simgesinden bu siteye izin verip tekrar dene.');
+    else if(k!=='auth/popup-closed-by-user'&&k!=='auth/cancelled-popup-request')
+      alert('Giriş yapılamadı.\n\n'+(e.message||k));
+  }
 };
-document.getElementById('cikisBtn').onclick=()=>{
-  if(!confirm('Oturum kapatılacak ve demo moduna dönülecek.\n\nDevam edilsin mi?'))return;
-  moduSec('demo');
+document.getElementById('cikisBtn').onclick=async()=>{
+  if(bekleyenYazma&&!confirm('Kaydedilmemiş değişiklik var.\n\nYine de çıkılsın mı?'))return;
+  if(!confirm('Oturum kapatılacak ve demo moduna dönülecek.\n\nVerilerin hesabında saklı kalır.\n\nDevam edilsin mi?'))return;
+  try{ if(FB)await FB.cikisYap(); }catch(e){}
+  oturum=null;yoneticiMi=false;moduSec('demo');
 };
 document.getElementById('demoSeritKapat').onclick=()=>document.getElementById('demoSerit').hidden=true;
 
@@ -2068,6 +2349,8 @@ document.getElementById('sil').onclick=()=>{
   if(!confirm('Bu kayıt silinecek. Emin misin?'))return;
   kayitlar=kayitlar.filter(x=>x.id!==duzenlenen);yaz();modalKapat();ciz();bildir('Kayıt silindi')};
 document.getElementById('ayarBtn').onclick=()=>{ayarSekme('genel');ayarAc()};
+document.getElementById('uyeEkle').onclick=uyeEkleEt;
+document.getElementById('yeniUye').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();uyeEkleEt()}};
 document.querySelectorAll('.atabs button').forEach(b=>b.onclick=()=>ayarSekme(b.dataset.at));
 document.getElementById('ayarKapat').onclick=()=>document.getElementById('ayarPerde').hidden=true;
 document.getElementById('ayarKaydet').onclick=ayarKaydetEt;
@@ -2093,6 +2376,9 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){modalKapat();document.getElementById('ayarPerde').hidden=true}
   if(e.key==='n'&&(e.ctrlKey||e.metaKey)){e.preventDefault();modalAc()}
 });
+window.addEventListener('beforeunload',e=>{
+  if(bekleyenYazma){e.preventDefault();e.returnValue=''}
+});
 window.addEventListener('dragover',e=>e.preventDefault());
 window.addEventListener('drop',e=>{
   e.preventDefault();
@@ -2111,6 +2397,124 @@ try{
   mod=(kayitliMod&&DEPO[kayitliMod])?kayitliMod:'demo';
 }catch(e){mod='demo'}
 uygulamayiBaslat();
+</script>
+
+<!-- =====================================================================
+     Firebase katmanı. Ayrı bir modül olarak yüklenir; ana betik klasik
+     olduğu için buradaki API window üzerinden aktarılır. Modül betikleri
+     ertelenmiş çalışır, yani uygulama önce demo modunda açılır, bağlantı
+     hazır olunca oturum kontrolü devreye girer.
+===================================================================== -->
+<script type="module">
+const FIREBASE_AYAR = {
+  apiKey:            "AIzaSyAcxSeqaDnsE95XrLNYPI6lCqGOGSYF1Uc",
+  authDomain:        "planner-d4d3d.firebaseapp.com",
+  projectId:         "planner-d4d3d",
+  storageBucket:     "planner-d4d3d.firebasestorage.app",
+  messagingSenderId: "394015087950",
+  appId:             "1:394015087950:web:30d60109a26a744547521f"
+};
+const YONETICI_EPOSTA = "ecemylmz7@gmail.com";
+const SURUM = 'https://www.gstatic.com/firebasejs/10.12.0/';
+
+let A,B,C;
+try{
+  A = await import(SURUM+'firebase-app.js');
+  B = await import(SURUM+'firebase-auth.js');
+  C = await import(SURUM+'firebase-firestore.js');
+}catch(e){
+  console.warn('Firebase yüklenemedi, çevrimdışı devam ediliyor:',e);
+  if(window.firebaseYok) window.firebaseYok(e);
+  throw e;
+}
+
+const { initializeApp } = A;
+const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+        getRedirectResult, signOut, onAuthStateChanged } = B;
+const { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs,
+        enableIndexedDbPersistence } = C;
+
+const app  = initializeApp(FIREBASE_AYAR);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+/* çevrimdışı önbellek — bağlantı koptuğunda son veriyle çalışmayı sürdürür */
+try{ await enableIndexedDbPersistence(db); }catch(e){ /* birden fazla sekme açıksa desteklenmez */ }
+
+try{ await getRedirectResult(auth); }catch(e){ console.warn('yönlendirme dönüşü:',e); }
+
+const epostaAl = u => (u && u.email ? u.email.toLowerCase() : '');
+const yoneticiMi = u => epostaAl(u) === YONETICI_EPOSTA.toLowerCase();
+
+const API = {
+  yoneticiEpostasi: YONETICI_EPOSTA,
+  kullanici: null,
+  yonetici: false,
+
+  async girisYap(){
+    const s = new GoogleAuthProvider();
+    s.setCustomParameters({ prompt:'select_account' });
+    try{
+      return await signInWithPopup(auth, s);
+    }catch(e){
+      /* açılır pencere engellenirse yönlendirmeye düş */
+      if(e.code==='auth/popup-blocked' || e.code==='auth/popup-closed-by-user'
+         || e.code==='auth/cancelled-popup-request'){
+        await signInWithRedirect(auth, s);
+        return null;
+      }
+      throw e;
+    }
+  },
+  cikisYap(){ return signOut(auth); },
+
+  /* --- üyelik --- */
+  async uyeOku(eposta){
+    const g = await getDoc(doc(db,'uyeler',eposta.toLowerCase()));
+    return g.exists() ? g.data() : null;
+  },
+  async uyeleriOku(){
+    const q = await getDocs(collection(db,'uyeler'));
+    const l = []; q.forEach(d=>l.push({eposta:d.id, ...d.data()}));
+    return l.sort((a,b)=>a.eposta.localeCompare(b.eposta,'tr'));
+  },
+  uyeYaz(eposta,veri){ return setDoc(doc(db,'uyeler',eposta.toLowerCase()),veri,{merge:true}); },
+  uyeSil(eposta){ return deleteDoc(doc(db,'uyeler',eposta.toLowerCase())); },
+
+  /* --- ortak tanımlar --- */
+  async tanimlariOku(){
+    const g = await getDoc(doc(db,'sistem','tanimlar'));
+    return g.exists() ? g.data() : null;
+  },
+  tanimlariYaz(veri){
+    return setDoc(doc(db,'sistem','tanimlar'),{...veri,guncelleme:Date.now()});
+  },
+
+  /* --- kişisel veri --- */
+  async kayitlariOku(uid){
+    const g = await getDoc(doc(db,'kullanicilar',uid,'veri','kayitlar'));
+    return g.exists() ? g.data() : null;
+  },
+  kayitlariYaz(uid,veri){
+    return setDoc(doc(db,'kullanicilar',uid,'veri','kayitlar'),{...veri,guncelleme:Date.now()});
+  },
+  async tercihOku(uid){
+    const g = await getDoc(doc(db,'kullanicilar',uid,'veri','tercihler'));
+    return g.exists() ? g.data() : null;
+  },
+  tercihYaz(uid,veri){
+    return setDoc(doc(db,'kullanicilar',uid,'veri','tercihler'),veri,{merge:true});
+  }
+};
+
+onAuthStateChanged(auth, u=>{
+  API.kullanici = u;
+  API.yonetici  = yoneticiMi(u);
+  if(window.oturumDegisti) window.oturumDegisti(u);
+});
+
+window.FB = API;
+if(window.firebaseHazir) window.firebaseHazir(API);
 </script>
 </body>
 </html>
