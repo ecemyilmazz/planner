@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planner — Firebase kurulum testi</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Karla:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{--ground:#DCE0D7;--paper:#FBFBF8;--paper-2:#F2F3EE;--ink:#1C2329;--ink-soft:#5D6870;
+  --ink-faint:#8B948F;--rule:#C6CCC0;--rule-soft:#DFE3DA;--ok:#1E5A46;--hata:#B03A24;--bekle:#A86A1F}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ground);color:var(--ink);font-family:'Karla',system-ui,sans-serif;
+  font-size:14px;line-height:1.5;padding:26px 16px 60px}
+.kutu{max-width:760px;margin:0 auto}
+h1{font-family:'Archivo';font-size:24px;letter-spacing:-.03em;margin-bottom:6px}
+.alt{color:var(--ink-soft);font-size:13px;margin-bottom:22px}
+.kart{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:18px 20px;margin-bottom:14px}
+h2{font-family:'Archivo';font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-faint);margin-bottom:12px}
+button{font:inherit;cursor:pointer;border:none}
+.birincil{background:var(--ink);color:var(--paper);border-radius:7px;padding:10px 18px;
+  font-family:'Archivo';font-weight:700;font-size:14px}
+.birincil:hover{background:#2C3742}
+.birincil[disabled]{opacity:.4;cursor:not-allowed}
+.ikincil{background:var(--paper-2);border:1px solid var(--rule);color:var(--ink-soft);
+  border-radius:7px;padding:9px 15px;font-weight:500;font-size:13px}
+.ikincil:hover{border-color:var(--ink-faint);color:var(--ink)}
+.satir{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--rule-soft)}
+.satir:first-of-type{border-top:none}
+.im{width:19px;height:19px;border-radius:50%;flex:none;display:grid;place-items:center;
+  font-size:11px;font-weight:700;color:#fff;margin-top:1px}
+.im.bekle{background:var(--rule);color:var(--ink-faint)}
+.im.ok{background:var(--ok)}
+.im.hata{background:var(--hata)}
+.im.uyari{background:var(--bekle)}
+.metin{flex:1;min-width:0}
+.metin b{font-weight:700;display:block}
+.metin span{font-size:12.5px;color:var(--ink-soft);display:block;margin-top:2px;word-break:break-word}
+.metin code{font-family:'IBM Plex Mono';font-size:11.5px;background:var(--paper-2);
+  padding:1px 5px;border-radius:4px;border:1px solid var(--rule-soft)}
+.bilgi{background:var(--paper-2);border-left:3px solid var(--rule);border-radius:0 7px 7px 0;
+  padding:11px 14px;font-size:12.5px;color:var(--ink-soft);line-height:1.6}
+.bilgi b{color:var(--ink)}
+.uyari-kutu{background:#F6E3DE;border-left:3px solid var(--hata);border-radius:0 7px 7px 0;
+  padding:12px 14px;font-size:13px;line-height:1.6;margin-bottom:14px}
+.uyari-kutu b{font-weight:700}
+pre{background:var(--ink);color:#DDE3DA;border-radius:8px;padding:14px 16px;overflow-x:auto;
+  font-family:'IBM Plex Mono';font-size:12px;line-height:1.65}
+.durum{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-soft);
+  background:var(--paper-2);border:1px solid var(--rule);border-radius:20px;padding:5px 13px}
+.nokta{width:8px;height:8px;border-radius:50%;background:var(--rule)}
+.nokta.acik{background:var(--ok)}
+.dugmeler{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="kutu">
+  <h1>Firebase kurulum testi</h1>
+  <p class="alt">Bu sayfa Planner'ın Firebase ayarlarını doğrular. Ana uygulamaya dokunmaz,
+  kalıcı veri yazmaz. Yeşile dönen her satır kurulumun bir parçasının çalıştığını gösterir.</p>
+
+  <div class="bilgi" style="margin-bottom:14px">
+    Yapılandırma dolduruldu — proje <b>planner-d4d3d</b>, yönetici <b>ecemylmz7@gmail.com</b>.
+    Dosyayı çift tıklayıp açman ve giriş yapman yeterli.
+  </div>
+
+  <div class="kart">
+    <h2>Oturum</h2>
+    <div id="oturum"><span class="durum"><i class="nokta"></i> Giriş yapılmadı</span></div>
+    <div class="dugmeler">
+      <button class="birincil" id="girisBtn">Google ile giriş yap</button>
+      <button class="ikincil" id="cikisBtn" hidden>Çıkış</button>
+      <button class="ikincil" id="testBtn" hidden>Testleri tekrar çalıştır</button>
+    </div>
+  </div>
+
+  <div class="kart">
+    <h2>Kontroller</h2>
+    <div id="sonuclar">
+      <div class="satir"><span class="im bekle">·</span>
+        <span class="metin"><b>Giriş bekleniyor</b>
+        <span>Yukarıdaki düğmeye bastığında testler otomatik başlar.</span></span></div>
+    </div>
+  </div>
+
+  <div class="kart">
+    <h2>Sonraki adım</h2>
+    <div class="bilgi" id="ozet">Testleri çalıştırdıktan sonra burada ne yapman gerektiği yazacak.</div>
+  </div>
+</div>
+
+<script type="module">
+// =====================================================================
+//  BURAYI DOLDUR
+//  Firebase Console > Proje ayarları (dişli) > Genel > "Uygulamalarınız"
+//  bölümünde web uygulamanı seç, "SDK kurulumu ve yapılandırması" altında
+//  "Yapılandırma" seçeneğindeki değerleri buraya kopyala.
+// =====================================================================
+const FIREBASE_AYAR = {
+  apiKey:            "AIzaSyAcxSeqaDnsE95XrLNYPI6lCqGOGSYF1Uc",
+  authDomain:        "planner-d4d3d.firebaseapp.com",
+  projectId:         "planner-d4d3d",
+  storageBucket:     "planner-d4d3d.firebasestorage.app",
+  messagingSenderId: "394015087950",
+  appId:             "1:394015087950:web:30d60109a26a744547521f"
+};
+
+// Tanımları düzenleyebilecek yönetici. Güvenlik kurallarındaki adresle
+// birebir aynı olmalı.
+const YONETICI_EPOSTA = "ecemylmz7@gmail.com";
+// =====================================================================
+
+
+window.__plannerModulCalisti = true;
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, deleteDoc }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const $ = id => document.getElementById(id);
+const sonuclar = $('sonuclar');
+
+function temizle(){ sonuclar.innerHTML=''; }
+function ekle(durum, baslik, aciklama){
+  const im = {ok:'✓', hata:'✕', uyari:'!', bekle:'·'}[durum];
+  const d=document.createElement('div');
+  d.className='satir';
+  d.innerHTML=`<span class="im ${durum}">${im}</span>
+    <span class="metin"><b>${baslik}</b><span>${aciklama||''}</span></span>`;
+  sonuclar.appendChild(d);
+  return d;
+}
+function ozet(html){ $('ozet').innerHTML=html; }
+
+/* ---------- yapılandırma kontrolü ---------- */
+const doldurulmamis = Object.values(FIREBASE_AYAR).some(v=>String(v).startsWith('BURAYA'));
+if(doldurulmamis){
+  temizle();
+  ekle('hata','Yapılandırma boş',
+    'FIREBASE_AYAR bloğundaki değerler henüz doldurulmamış. Bu dosyayı düzenleyip Firebase Console\'daki değerleri yapıştır.');
+  $('girisBtn').disabled=true;
+  ozet('Önce yukarıdaki yapılandırmayı doldur, sonra bu sayfayı yenile.');
+} else {
+  $('yapKutu').hidden=true;
+}
+
+let auth, db, kullanici=null;
+
+if(!doldurulmamis){
+  try{
+    const app = initializeApp(FIREBASE_AYAR);
+    auth = getAuth(app);
+    db   = getFirestore(app);
+    temizle();
+    ekle('ok','Firebase bağlantısı kuruldu', `Proje: <code>${FIREBASE_AYAR.projectId}</code>`);
+    ekle('bekle','Giriş bekleniyor','Google ile giriş yap düğmesine bas.');
+  }catch(e){
+    temizle();
+    ekle('hata','Firebase başlatılamadı', e.message);
+    $('girisBtn').disabled=true;
+  }
+}
+
+/* ---------- giriş ---------- */
+$('girisBtn').onclick = async () => {
+  try{
+    const saglayici = new GoogleAuthProvider();
+    saglayici.setCustomParameters({ prompt:'select_account' });
+    await signInWithPopup(auth, saglayici);
+  }catch(e){
+    temizle();
+    if(e.code==='auth/unauthorized-domain'){
+      ekle('hata','Bu alan adı yetkili değil',
+        `Firebase Console > Authentication > Settings > Authorized domains bölümüne
+         <code>${location.hostname}</code> adresini ekle.`);
+    } else if(e.code==='auth/operation-not-allowed'){
+      ekle('hata','Google girişi açık değil',
+        'Firebase Console > Authentication > Sign-in method bölümünden Google sağlayıcısını etkinleştir.');
+    } else if(e.code==='auth/popup-blocked'){
+      ekle('uyari','Açılır pencere engellendi','Tarayıcının pop-up engelleyicisine bu siteye izin ver.');
+    } else if(e.code==='auth/popup-closed-by-user'){
+      ekle('uyari','Giriş penceresi kapatıldı','Tekrar dene.');
+    } else {
+      ekle('hata','Giriş başarısız', `<code>${e.code||''}</code> ${e.message}`);
+    }
+  }
+};
+
+$('cikisBtn').onclick = () => signOut(auth);
+$('testBtn').onclick  = () => testleriCalistir();
+
+onAuthStateChanged(auth || {}, (u) => {
+  kullanici = u;
+  if(u){
+    $('oturum').innerHTML =
+      `<span class="durum"><i class="nokta acik"></i> ${u.email}</span>`;
+    $('girisBtn').hidden=true; $('cikisBtn').hidden=false; $('testBtn').hidden=false;
+    testleriCalistir();
+  }else{
+    $('oturum').innerHTML='<span class="durum"><i class="nokta"></i> Giriş yapılmadı</span>';
+    $('girisBtn').hidden=false; $('cikisBtn').hidden=true; $('testBtn').hidden=true;
+    temizle();
+    ekle('bekle','Giriş bekleniyor','Google ile giriş yap düğmesine bas.');
+    ozet('Testleri çalıştırdıktan sonra burada ne yapman gerektiği yazacak.');
+  }
+});
+
+/* ---------- testler ---------- */
+async function testleriCalistir(){
+  temizle();
+  const u = kullanici;
+  const eposta = (u.email||'').toLowerCase();
+  const yoneticiMi = eposta === YONETICI_EPOSTA.toLowerCase();
+  let hata=0, uyari=0;
+
+  ekle('ok','Google girişi çalışıyor',
+    `Hesap: <code>${u.email}</code><br>Kullanıcı kimliği: <code>${u.uid}</code>`);
+
+  ekle(yoneticiMi?'ok':'uyari',
+    yoneticiMi?'Yönetici olarak tanındın':'Normal üye olarak giriş yapıldı',
+    yoneticiMi
+      ? 'Tanımları düzenleyebilir ve üye listesini yönetebilirsin.'
+      : `Yönetici adresi <code>${YONETICI_EPOSTA}</code> olarak ayarlı. Farklı bir hesapla girdin.`);
+  if(!yoneticiMi) uyari++;
+
+  // 1) üye kaydı okunabiliyor mu
+  try{
+    const s = await getDoc(doc(db,'uyeler',eposta));
+    if(s.exists()){
+      const v=s.data();
+      ekle(v.aktif===false?'uyari':'ok','Üye listesinde kaydın var',
+        `aktif: <code>${v.aktif}</code>${v.ad?` · ad: <code>${v.ad}</code>`:''}`);
+      if(v.aktif===false) uyari++;
+    }else{
+      ekle(yoneticiMi?'ok':'uyari','Üye listesinde kayıt yok',
+        yoneticiMi
+          ? 'Yönetici için gerekli değil — kurallar yönetici adresini doğrudan tanıyor.'
+          : 'Bu hesap için /uyeler koleksiyonunda kayıt bulunamadı, erişimin olmayacak.');
+      if(!yoneticiMi) uyari++;
+    }
+  }catch(e){
+    ekle('hata','Üye kaydı okunamadı',
+      `Kurallar yayınlanmamış olabilir. <code>${e.code||e.message}</code>`); hata++;
+  }
+
+  // 2) kişisel alana yazma
+  const kendiYol = doc(db,'kullanicilar',u.uid,'test','baglanti');
+  try{
+    await setDoc(kendiYol,{zaman:new Date().toISOString(),not:'kurulum testi'});
+    const g=await getDoc(kendiYol);
+    ekle(g.exists()?'ok':'hata','Kendi alanına yazma ve okuma',
+      g.exists()?'Kayıtların buraya yazılacak: <code>/kullanicilar/'+u.uid+'</code>':'Yazıldı ama geri okunamadı.');
+    if(!g.exists()) hata++;
+    await deleteDoc(kendiYol);
+  }catch(e){
+    ekle('hata','Kendi alanına yazılamadı',
+      `Firestore açılmamış ya da kurallar hatalı olabilir. <code>${e.code||e.message}</code>`); hata++;
+  }
+
+  // 3) BAŞKASININ alanına yazma DENENİYOR — reddedilmesi gerekir
+  try{
+    await setDoc(doc(db,'kullanicilar','baskasinin-kimligi','test','sizinti'),{x:1});
+    ekle('hata','GÜVENLİK AÇIĞI: başkasının alanına yazılabildi',
+      'Kurallar doğru uygulanmamış. Bu haliyle yayına alma — kuralları yeniden yapıştırıp Publish de.'); hata++;
+    try{ await deleteDoc(doc(db,'kullanicilar','baskasinin-kimligi','test','sizinti')); }catch(_){}
+  }catch(e){
+    ekle('ok','Başkasının verisine erişim engellendi',
+      'Denenen yazma işlemi kurallar tarafından reddedildi — beklenen davranış bu.');
+  }
+
+  // 4) ortak tanımları okuma
+  try{
+    const s=await getDoc(doc(db,'sistem','tanimlar'));
+    ekle('ok','Ortak tanımlar okunabiliyor',
+      s.exists()?'Tanım belgesi mevcut.':'Belge henüz yok — ilk girişte otomatik oluşturulacak.');
+  }catch(e){
+    ekle('hata','Ortak tanımlar okunamadı',`<code>${e.code||e.message}</code>`); hata++;
+  }
+
+  // 5) ortak tanımlara yazma (yalnızca yönetici başarabilmeli)
+  try{
+    await setDoc(doc(db,'sistem','yazma-testi'),{zaman:Date.now()});
+    if(yoneticiMi){
+      ekle('ok','Yönetici olarak tanımlara yazabiliyorsun','Tür ve alan düzenlemesi çalışacak.');
+    }else{
+      ekle('hata','GÜVENLİK AÇIĞI: üye tanımlara yazabildi',
+        'Yönetici olmayan hesap ortak tanımları değiştirebiliyor. Kuralları kontrol et.'); hata++;
+    }
+    try{ await deleteDoc(doc(db,'sistem','yazma-testi')); }catch(_){}
+  }catch(e){
+    if(yoneticiMi){
+      ekle('hata','Yönetici tanımlara yazamadı',
+        `Kurallardaki yönetici adresi bu hesapla eşleşmiyor olabilir. <code>${e.code||e.message}</code>`); hata++;
+    }else{
+      ekle('ok','Üye tanımlara yazamıyor','Reddedildi — beklenen davranış bu.');
+    }
+  }
+
+  // özet
+  if(hata){
+    ozet(`<b>${hata} sorun bulundu.</b> Yukarıdaki kırmızı satırlardaki açıklamaları uygula,
+      sonra "Testleri tekrar çalıştır" düğmesine bas. Sorunlar çözülmeden ana uygulamayı bağlamayalım.`);
+  }else if(uyari){
+    ozet(`<b>Bağlantı ve güvenlik çalışıyor</b>, ${uyari} uyarı var (turuncu satırlar).
+      Bunlar genelde beklenen durumlardır. Hazırsan bu sonucu bana ilet, ana uygulamayı bağlayalım.`);
+  }else{
+    ozet(`<b>Her şey çalışıyor.</b> Kimlik doğrulama, kişisel veri izolasyonu ve
+      yönetici yetkisi doğru kurulmuş. Bu sonucu bana ilet, entegrasyon koduna geçelim.`);
+  }
+}
+</script>
+<script>
+/* Modul script'ler file:// adresinden calismaz; bu klasik script her zaman
+   calisir ve modulun basladigina dair bayrak yoksa kullaniciyi uyarir. */
+setTimeout(function(){
+  if(window.__plannerModulCalisti)return;
+  var yerel = location.protocol === 'file:';
+  document.getElementById('sonuclar').innerHTML =
+    '<div class="satir"><span class="im hata">✕</span><span class="metin">'+
+    '<b>' + (yerel
+      ? 'Bu sayfa dosyaya çift tıklayarak açılamaz'
+      : 'Sayfa betiği yüklenemedi') + '</b><span>' +
+    (yerel
+      ? 'Tarayıcılar <code>file://</code> adresinden modül betiği yüklemez ve Google girişi ' +
+        'geçerli bir alan adı ister. Bu dosyayı GitHub deponuza koyup ' +
+        '<code>https://kullaniciadin.github.io/planner/firebase-test.html</code> ' +
+        'adresinden açın.'
+      : 'İnternet bağlantısını ve tarayıcı konsolundaki hatayı kontrol edin.') +
+    '</span></span></div>';
+  var b=document.getElementById('girisBtn'); if(b)b.disabled=true;
+  document.getElementById('ozet').innerHTML = yerel
+    ? 'Dosyayı depoya yükleyip <b>https://</b> adresinden açın, sonra tekrar deneyin.'
+    : 'Betik yüklenemedi.';
+}, 2500);
+</script>
+</body>
+</html>
