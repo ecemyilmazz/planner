@@ -110,6 +110,12 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
   letter-spacing:-.01em;text-transform:none;color:var(--ink)}
 .secim .ic i{display:block;font-style:normal;font-size:11.5px;color:var(--ink-soft);
   margin-top:2px;letter-spacing:normal;text-transform:none;line-height:1.5}
+.onayMesaj{font-size:14px;line-height:1.55}
+.onayMesaj b{display:block;font-family:'Archivo';font-weight:700;font-size:15px;
+  letter-spacing:-.015em;margin-bottom:5px}
+.onayMesaj i{display:block;font-style:normal;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.solid.tehlike{background:var(--c-istakibi)}
+.solid.tehlike:hover{background:#96301D}
 .hataKutu{display:flex;gap:12px;align-items:flex-start;background:#F6E3DE;border:1px solid #E3BDB2;
   border-left:3px solid var(--c-istakibi);border-radius:0 8px 8px 0;padding:14px 16px}
 .hataKutu .im2{width:22px;height:22px;border-radius:50%;background:var(--c-istakibi);color:#fff;
@@ -137,10 +143,26 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
 .zanahtar input:checked ~ .yol{background:#1E5A46}
 .zanahtar input:checked ~ .top{transform:translateX(17px)}
 .zanahtar input:disabled ~ .yol{opacity:.5}
+.kisiler-liste{display:grid;gap:6px}
+.ksatir{display:flex;align-items:center;gap:9px;background:var(--paper-2);border:1px solid var(--rule);
+  border-radius:8px;padding:8px 10px}
+.ksatir.pasif{opacity:.55}
+.ksatir .kic{flex:1;min-width:0}
+.ksatir .kic b{display:block;font-size:13px;font-weight:600}
+.ksatir .kic i{display:block;font-style:normal;font-size:11px;color:var(--ink-soft);
+  margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ksatir .kic i.etiketsiz{color:var(--ink-faint)}
+.krol{font-family:'IBM Plex Mono';font-size:9.5px;background:var(--rule);color:var(--ink-soft);
+  border-radius:3px;padding:1px 5px}
+.krol.yon{background:#1E5A46;color:#fff}
+.krol.yok{background:#F6E3DE;color:var(--c-istakibi)}
 .uyeler{display:grid;gap:7px}
 .uyesatir{display:flex;align-items:center;gap:8px;background:var(--paper-2);border:1px solid var(--rule);
   border-radius:7px;padding:8px 10px;flex-wrap:wrap}
-.uyesatir .ep{flex:1;min-width:150px;font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis}
+.uyesatir .ep{flex:1;min-width:150px;overflow:hidden}
+.uyesatir .ep b{display:block;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uyesatir .ep i{display:block;font-style:normal;font-size:11px;color:var(--ink-soft);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .uyesatir .rol{font-family:'IBM Plex Mono';font-size:9.5px;padding:1px 6px;border-radius:4px;
   background:var(--rule);color:var(--ink-soft);white-space:nowrap}
 .uyesatir .rol.yon{background:#1E5A46;color:#fff}
@@ -447,6 +469,105 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
 .durum{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--ink);color:var(--paper);padding:9px 17px;border-radius:7px;font-size:12.5px;font-weight:500;transition:transform .22s;z-index:60;box-shadow:0 6px 18px rgba(28,35,41,.3)}
 .durum.gor{transform:translateX(-50%) translateY(0)}
 @media (max-width:820px){.gunwrap{grid-template-columns:1fr}.ikili{grid-template-columns:1fr}}
+
+/* ============================================================
+   MOBİL DÜZEN — 820 pikselden dar ekranlar
+   İlke: telefonda planlama değil, bakma ve küçük dokunuşlar yapılır.
+   Ayarlar, Excel aktarımı ve tanım yönetimi masaüstüne bırakılır.
+   ============================================================ */
+body.mobil{font-size:15px}
+body.mobil .app{padding:10px 10px 84px}   /* altta gezinme çubuğu için yer */
+
+  /* --- üst bar --- */
+body.mobil .topbar{gap:8px;padding-bottom:10px;position:sticky;top:0;z-index:30;
+    background:var(--ground);margin:-10px -10px 0;padding:10px}
+body.mobil .brand{font-size:16px}
+body.mobil .tabs{display:none}            /* sekmeler alta taşındı */
+body.mobil .hesap{max-width:150px;font-size:11px;padding:2px 8px}
+body.mobil .hesap .yrozet{display:none}
+body.mobil .topbar .solid{padding:8px 13px;font-size:13px}
+body.mobil .mobil-gizle{display:none !important}
+
+  /* --- alt gezinme --- */
+body.mobil .altbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;
+    grid-template-columns:repeat(4,1fr);background:var(--paper);
+    border-top:1px solid var(--rule);box-shadow:0 -2px 12px rgba(28,35,41,.07);
+    padding-bottom:env(safe-area-inset-bottom,0)}
+body.mobil .altbar button{padding:9px 4px 8px;display:grid;gap:3px;justify-items:center;
+    font-size:10.5px;font-weight:600;color:var(--ink-faint);font-family:'Archivo';
+    letter-spacing:.02em;background:none;border:none}
+body.mobil .altbar button svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.9}
+body.mobil .altbar button[aria-selected="true"]{color:var(--ink)}
+body.mobil .altbar button[aria-selected="true"] svg{stroke-width:2.3}
+
+  /* --- gün görünümü: ray üstte, takvim altta --- */
+body.mobil .gunwrap{grid-template-columns:1fr;gap:14px}
+body.mobil .dayhead .tarih{font-size:23px}
+body.mobil .rail section{margin-bottom:14px}
+body.mobil .liste{max-height:none}
+
+  /* --- zaman ızgarası --- */
+  :root{--slot:19px}                    /* dokunulabilir yükseklik */
+body.mobil .row{grid-template-columns:44px 1fr}
+body.mobil .blocks{left:44px;right:4px}
+body.mobil .block{padding:3px 7px}
+body.mobil .block .bk2{font-size:12.5px}
+body.mobil .block .bmeta{font-size:10.5px}
+body.mobil .nowline::before{left:44px}
+body.mobil .nowline .nokta{left:41px}
+
+  /* --- hafta ve ay: yatay kaydırma --- */
+body.mobil .hafta, body.mobil .ay{overflow-x:auto;-webkit-overflow-scrolling:touch}
+body.mobil .hgrid{min-width:660px}
+body.mobil .ayizgara{min-width:560px}
+body.mobil .aygun{height:78px}
+body.mobil .ayoge .t{display:none}
+
+  /* --- araç çubuğu --- */
+body.mobil .arac-ust{padding:9px 10px}
+body.mobil .ara{flex:1 1 100%}
+body.mobil .suz{flex:1;justify-content:center}
+body.mobil .sonuc{order:3}
+body.mobil .suzgrid{grid-template-columns:1fr 1fr}
+
+  /* --- kayıt kartları (tablo yerine) --- */
+body.mobil .tablo{display:none}
+body.mobil .kliste{display:grid;gap:8px}
+body.mobil .kkart{background:var(--paper);border:1px solid var(--rule);border-radius:9px;
+    padding:11px 12px;position:relative;cursor:pointer}
+body.mobil .kkart.bitti{opacity:.55}
+body.mobil .kkart.bitti .kk-konu{text-decoration:line-through}
+body.mobil .kk-ust{display:flex;align-items:center;gap:7px;margin-bottom:5px;padding-right:30px}
+body.mobil .kk-tur{font-size:10.5px;font-family:'Archivo';font-weight:700;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--ink-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.mobil .kk-konu{font-size:14px;font-weight:500;line-height:1.4}
+body.mobil .kk-alt{display:flex;gap:10px;flex-wrap:wrap;margin-top:7px;font-size:11.5px;color:var(--ink-soft)}
+body.mobil .kk-alt .z{font-family:'IBM Plex Mono'}
+body.mobil .kk-tik{position:absolute;top:9px;right:9px;width:24px;height:24px;border:1.5px solid var(--rule);
+    border-radius:6px;display:grid;place-items:center;font-size:14px;color:var(--rule);background:var(--paper)}
+body.mobil .kkart.bitti .kk-tik{background:var(--ink-soft);border-color:var(--ink-soft);color:#fff}
+
+  /* --- paneller tam ekrana yakın --- */
+body.mobil .perde{padding:0;align-items:flex-end}
+body.mobil .modal, body.mobil .modal.genis, body.mobil .modal.enis{max-width:100%;width:100%;max-height:92vh;
+    border-radius:14px 14px 0 0}
+body.mobil .mbody{padding:15px 14px}
+body.mobil .mhead{padding:14px 14px;position:sticky;top:0;background:var(--paper);z-index:2}
+body.mobil .mfoot{padding:12px 14px;position:sticky;bottom:0;background:var(--paper)}
+body.mobil .mfoot button{flex:1}
+body.mobil .ikili{grid-template-columns:1fr}
+body.mobil .ozet{grid-template-columns:1fr 1fr}
+
+  /* --- dokunma hedefleri --- */
+body.mobil .flag .tik, body.mobil .kk-tik{width:26px;height:26px}
+body.mobil .sil-x, body.mobil .cop{width:28px;height:28px}
+body.mobil .sil-x{opacity:1}          /* mobilde hover yok, hep görünsün */
+body.mobil .lejant{font-size:10.5px;gap:9px}
+
+
+/* mobil sınıfı yokken alt çubuk ve kart listesi hiç görünmez */
+.altbar,.kliste{display:none}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 :focus-visible{outline:2px solid var(--c-toplanti);outline-offset:2px}
 </style>
@@ -465,10 +586,11 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
       <button role="tab" data-gorunum="kayit" aria-selected="false">Kayıtlar</button>
     </div>
     <div class="spacer"></div>
-    <button class="ghost" id="ayarBtn">Ayarlar</button>
+    <button class="ghost mobil-gizle" id="ayarBtn">Ayarlar</button>
     <button class="solid" id="yeniBtn">Yeni kayıt</button>
     <button class="giris" id="girisBtn" title="Google hesabınla giriş yap">Giriş yap</button>
-    <button class="ghost" id="cikisBtn" hidden title="Oturumu kapat">Çıkış</button>
+    <button class="ghost" id="genisBtn" hidden title="Masaüstü düzenine geç">Geniş görünüm</button>
+    <button class="ghost mobil-gizle" id="cikisBtn" hidden title="Oturumu kapat">Çıkış</button>
   </div>
 
   <div class="serit demo" id="demoSerit" hidden>
@@ -480,6 +602,8 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
   </div>
 
   <div id="ekran"></div>
+
+  <nav class="altbar" id="altbar" role="tablist" aria-label="Görünüm"></nav>
   <div class="lejant" id="lejant"></div>
 </div>
 
@@ -587,12 +711,14 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
         <div id="uyeListe"><div class="bos">Yükleniyor…</div></div>
       </div>
       <div class="alan">
-        <label for="yeniUye">Yeni hesap ekle</label>
-        <div style="display:flex;gap:7px">
-          <input id="yeniUye" type="email" placeholder="ornek@gmail.com" style="flex:1">
-          <button class="solid" id="uyeEkle">Ekle</button>
+        <label for="yeniUyeAd">Yeni hesap ekle</label>
+        <div class="ikili" style="margin-bottom:7px">
+          <input id="yeniUyeAd" placeholder="Ad soyad" maxlength="40">
+          <input id="yeniUye" type="email" placeholder="ornek@gmail.com">
         </div>
-        <div class="tanimnot">Gmail adresi olmalı. Kişi bu adresle Google girişi yapabilecek.</div>
+        <button class="solid" id="uyeEkle" style="width:100%">Ekle</button>
+        <div class="tanimnot">Gmail adresi olmalı. Eklenen kişi hem giriş yapabilir hem de
+        kayıtlara sorumlu olarak atanabilir; kişi listesine otomatik eklenir.</div>
       </div>
     </div>
 
@@ -643,6 +769,15 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
   </div>
 </div>
 
+<div class="perde" id="onayPerde" hidden>
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="mhead"><h2 id="onayBaslik">Onay</h2>
+      <button class="ghost" id="onayKapat">Kapat</button></div>
+    <div class="mbody" id="onayGovde"></div>
+    <div class="mfoot" id="onayAyak"></div>
+  </div>
+</div>
+
 <div class="perde" id="icePerde" hidden>
   <div class="modal enis" role="dialog" aria-modal="true">
     <div class="mhead"><h2 id="iceBaslik">Excel'den veri al</h2>
@@ -664,6 +799,17 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
    Tarayici depolamasi kullanilmaz — Firestore'un cevrimdisi onbellegi
    baglanti kopmalarini zaten karsiliyor, ikinci bir kopyaya gerek yok. */
 let mod='demo';
+
+/* --- cihaz algılama ---
+   Kullanıcıya "hangi cihazdasın" diye sorulmaz; ekran genişliği ve dokunmatik
+   olup olmadığından anlaşılır. Yine de üst bardan geniş görünüme geçilebilir
+   (tablet ya da yatay tutulan telefon için). */
+const DAR_ESIK=820;
+let genisZorla=false;                 // kullanıcı elle geniş görünümü seçtiyse
+function mobilMi(){
+  if(genisZorla)return false;
+  return window.innerWidth<DAR_ESIK;
+}
 const GUNLER=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 /* 'Pazartesi'.slice(0,3) ve 'Pazar'.slice(0,3) ikisi de "Paz" verir —
    ayni sorun Cuma/Cumartesi'nde de var, o yuzden kisaltmalar elle yazildi */
@@ -686,6 +832,12 @@ const zamanTurleri=()=>ayar.turler.filter(t=>t.sinif==='zaman');
 const hatirlatmaTurleri=()=>ayar.turler.filter(t=>t.sinif==='hatirlatma');
 const aktifTurler=()=>ayar.turler.filter(t=>!t.pasif);
 const aktifKisiler=()=>ayar.kisiler.filter(k=>!k.pasif);
+/* E-postası olan kişiler uygulamayı kullanabilir: davet gönderilebilir,
+   müsaitliği görülebilir. E-postasız kişiler yalnızca etikettir —
+   kayıtlarda sorumlu olarak görünür ama sisteme giremez. */
+const kullaniciKisiler=()=>ayar.kisiler.filter(k=>!k.pasif&&k.eposta);
+const kisiEpostaIle=e=>ayar.kisiler.find(k=>(k.eposta||'').toLowerCase()===(e||'').toLowerCase());
+const benKimim=()=>oturum?kisiEpostaIle(oturum.email):null;
 const turAlanlari=turId=>{const t=turBul(turId);return t?(t.alanlar||[]).map(alanBul).filter(Boolean):[]};
 
 /* secenek listesi: aktifler + su an secili olan (pasif olsa da kaybolmasin) */
@@ -924,7 +1076,12 @@ function gocEt(ham){
   return d;
 }
 
-const slotPx=()=>ayar.dilim===15?15:26;
+/* Mobilde satırlar parmakla dokunulabilir olmalı; aynı zaman dilimi
+   daha yüksek çizilir. */
+const slotPx=()=>{
+  const temel=ayar.dilim===15?15:26;
+  return mobilMi()?Math.round(temel*1.3):temel;
+};
 const slotSayi=()=>Math.max(1,(ayar.bit-ayar.bas)*60/ayar.dilim);
 function renkAl(k){return (turBul(k.turId)||{}).renk||'#8B948F'}
 function turAdi(k){
@@ -963,7 +1120,7 @@ function ciz(){
   e.innerHTML = gorunum==='gun'?gunEkrani():gorunum==='hafta'?haftaEkrani():gorunum==='ay'?ayEkrani():kayitEkrani();
   if(gorunum==='gun')gunBagla(); else if(gorunum==='hafta')haftaBagla();
   else if(gorunum==='ay')ayBagla(); else kayitBagla();
-  lejant();kilitUygula();
+  lejant();kilitUygula();altbarCiz();genisGorunumGuncelle();
 }
 function lejant(){
   const bl='font-weight:700;font-family:Archivo;font-size:10px;letter-spacing:.1em;text-transform:uppercase';
@@ -1081,11 +1238,14 @@ function tikBagla(){
     bildir(k.tamam?'Tamamlandı':'Tekrar açıldı')});
 }
 function silBagla(){
-  document.querySelectorAll('[data-sil]').forEach(b=>b.onclick=e=>{
+  document.querySelectorAll('[data-sil]').forEach(b=>b.onclick=async e=>{
     e.preventDefault();
     e.stopPropagation();
     const k=kayitlar.find(x=>x.id==b.dataset.sil);
-    if(!confirm(`"${kes(k.konu,60)}"\n\nBu kayıt silinecek. Emin misin?`))return;
+    if(!await onayla({baslik:'Kaydı sil',tehlike:true,
+      mesaj:'Bu kayıt silinecek',
+      detay:`"${guv(kes(k.konu,80))}"<br>${guv(turAdi(k))}${k.tarih?' · '+kisaTarih(k.tarih):''} — geri alınamaz.`,
+      onayMetni:'Sil'}))return;
     kayitlar=kayitlar.filter(x=>x.id!=b.dataset.sil);yaz();ciz();bildir('Kayıt silindi');
   });
 }
@@ -1354,9 +1514,7 @@ function kayitEkrani(){
       </button>
       <span class="spacer"></span>
       <span class="sonuc">${n?`${liste.length} / ${kayitlar.length}`:`${liste.length}`} kayıt</span>
-      <button class="ghost" id="icsBtn" data-kilit
-        data-baslik="Görünen kayıtları takvim dosyası olarak indir">Takvime aktar</button>
-      <button class="ghost" id="excelBtn" data-kilit
+      <button class="ghost mobil-gizle" id="excelBtn" data-kilit
         data-baslik="Kayıtları Excel olarak indir — aynı dosyayı doldurup geri yükleyebilirsin">Excel'e aktar</button>
     </div>
 
@@ -1378,6 +1536,20 @@ function kayitEkrani(){
       </div>
     </div>
   </div>
+
+  <div class="kliste">${liste.map(k=>{
+    const zaman=k.tarih
+      ? `${kisaTarih(k.tarih)}${k.bas?' · '+k.bas+'–'+k.bit:' · saatsiz'}`
+      : (k.bitis?`son tarih ${kisaTarih(k.bitis)}`:'atanmamış');
+    const sor=sorumluAdlari(k).join(', ');
+    return `<div class="kkart ${k.tamam?'bitti':''}" data-ac="${k.id}">
+      <div class="kk-ust"><i class="dot" style="background:${renkAl(k)}"></i>
+        <span class="kk-tur">${guv(turAdi(k))}</span></div>
+      <div class="kk-konu">${guv(k.konu)}</div>
+      <div class="kk-alt"><span class="z">${guv(zaman)}</span>${sor?`<span>${guv(sor)}</span>`:''}</div>
+      <button class="kk-tik" data-tik="${k.id}" title="${k.tamam?'Tekrar aç':'Tamamlandı'}">✓</button>
+    </div>`;
+  }).join('')||`<div class="bos">${n?'Filtreye uyan kayıt yok.':'Henüz kayıt yok.'}</div>`}</div>
 
   <div class="tablo"><table>
     <thead><tr>${basliklar()}</tr></thead>
@@ -1409,8 +1581,7 @@ function kayitBagla(){
   ara.oninput=e=>{fAra=e.target.value;ciz();
     const y=document.getElementById('flAra');y.focus();y.setSelectionRange(y.value.length,y.value.length)};
 
-  b('icsBtn','onclick',()=>demoMu()?girisGerekli('Takvime aktarma'):icsAktar());
-  b('excelBtn','onclick',()=>demoMu()?girisGerekli("Excel'e aktarma"):excelAktar());
+  b('excelBtn','onclick',async()=>demoMu()?girisGerekli("Excel'e aktarma"):await excelAktar());
 
   document.querySelectorAll('tr[data-ac]').forEach(r=>r.onclick=e=>{
     if(e.target.closest('.tik'))return; modalAc(+r.dataset.ac)});
@@ -1488,6 +1659,7 @@ function ayarAc(){
   document.getElementById('aBas').value=ayar.bas;
   document.getElementById('aBit').value=ayar.bit;
   document.querySelectorAll('#aDilim button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.d===ayar.dilim));
+  uyeOnbellegiTazele().then(()=>{if(!document.getElementById('sekTanim').hidden)tanimCiz()});
   tanimCiz();
   /* tanımlar ortaktır: üye modunda yalnızca yönetici düzenleyebilir.
      Demo modunda herkes serbestçe deneyebilir. */
@@ -1592,14 +1764,31 @@ function tanimCiz(){
     </div>`;
   }).join('')||'<div class="bos">Hiç alan yok.</div>';
 
-  /* ---- SORUMLULAR ---- */
-  document.getElementById('lKisiler').innerHTML=`<div class="cips">`+
-    ayar.kisiler.map((k,i)=>{
-      const n=KUL.kisi(k.id);
-      return `<span class="cip ${k.pasif?'pasif':''}">${guv(k.ad)}
-        <button class="pas" data-kpas="${i}" title="${k.pasif?'Tekrar aktif et':'Pasife al — yeni kayıtlarda görünmez'}">${k.pasif?'↺':'◐'}</button>
-        <button data-ksil="${i}" title="${n?n+' kayıtta sorumlu — silinirse adı kayıtlardan çıkar':'Sil'}">${copSvg(11)}</button></span>`;
-    }).join('')+`<input class="cipekle" data-kekle="1" placeholder="+ kişi" maxlength="28"></div>`;
+  /* ---- KİŞİLER ---- */
+  document.getElementById('lKisiler').innerHTML=
+    (ayar.kisiler.length?`<div class="kisiler-liste">`+
+      ayar.kisiler.map((k,i)=>{
+        const n=KUL.kisi(k.id);
+        const uye=k.eposta?uyeDurumu(k.eposta):null;
+        return `<div class="ksatir ${k.pasif?'pasif':''}">
+          <span class="kic">
+            <b>${guv(k.ad)}</b>
+            ${k.eposta
+              ? `<i>${guv(k.eposta)}${uye?` · <span class="krol ${uye.rol==='yonetici'?'yon':''}">${
+                  uye.aktif===false?'erişimi kapalı':(uye.rol==='yonetici'?'yönetici':'üye')}</span>`
+                 :' · <span class="krol yok">erişim tanımlı değil</span>'}</i>`
+              : '<i class="etiketsiz">e-posta yok — yalnızca etiket, davet alamaz</i>'}
+          </span>
+          <span class="kul">${n} kayıt</span>
+          ${k.pasif?'<span class="satirdurum">PASİF</span>':''}
+          <button class="tsil" data-keposta="${i}" title="${k.eposta?'E-postayı değiştir':'E-posta ekle — davet alabilsin'}">@</button>
+          <button class="tsil" data-kpas="${i}" title="${k.pasif?'Tekrar aktif et':'Pasife al'}">${k.pasif?'↺':'◐'}</button>
+          <button class="cop" data-ksil="${i}" title="${n?n+' kayıtta sorumlu':'Sil'}">${copSvg(12)}</button>
+        </div>`;
+      }).join('')+`</div>`:'<div class="bos">Henüz kişi yok.</div>')+
+    `<div style="display:flex;gap:7px;margin-top:8px">
+      <input class="cipekle" data-kekle="1" placeholder="+ kişi adı" maxlength="40" style="flex:1;border-radius:7px">
+    </div>`;
 
   tanimBagla();
 }
@@ -1620,13 +1809,25 @@ function tanimBagla(){
     tanimKaydet();bildir(`"${eski}" → "${yeni}"`);
   });
 
-  g('[data-tsinif]','onchange',e=>()=>{
+  g('[data-tsinif]','onchange',e=>async()=>{
     const i=+e.dataset.tsinif, t=ayar.turler[i], n=KUL.tur(t.id);
-    if(n&&!confirm(`"${t.ad}" türünde ${n} kayıt var.\n\n`+
-      (e.value==='hatirlatma'
-        ? 'Bu kayıtların saatleri silinecek, son tarihe dönüşecekler ve takvimden çıkacaklar.'
-        : 'Bu kayıtların son tarihleri silinecek ve takvime yerleştirilebilir hale gelecekler.')+
-      '\n\nDevam edilsin mi?')){e.value=t.sinif;return}
+    const hatirlatmaya=e.value==='hatirlatma';
+    if(n){
+      const etkilenen=kayitlar.filter(k=>k.turId===t.id).map(k=>({
+        baslik:kes(k.konu,60),
+        aciklama:hatirlatmaya
+          ? (k.tarih?`${kisaTarih(k.tarih)}${k.bas?' '+k.bas+'–'+k.bit:''} → son tarih olacak`:'tarihsiz')
+          : (k.bitis?`son tarih ${kisaTarih(k.bitis)} → takvime taşınabilir olacak`:'son tarihsiz')
+      }));
+      if(!await onayla({baslik:'Tür davranışı değişiyor',tehlike:true,
+        mesaj:`"${guv(t.ad)}" türü ${hatirlatmaya?'hatırlatmaya':'takvimde yer kaplayana'} dönüşecek`,
+        detay:hatirlatmaya
+          ? 'Bu türdeki kayıtların <b>saatleri silinecek</b>, son tarihe dönüşecekler ve takvimden çıkacaklar.'
+          : 'Bu türdeki kayıtların <b>son tarihleri silinecek</b> ve takvime yerleştirilebilir hale gelecekler.',
+        sayaclar:[{sayi:n,etiket:'kayıt etkilenecek',sinif:'kotu'}],
+        liste:etkilenen,listeBaslik:'Değişecek kayıtlar',
+        onayMetni:'Değiştir'})){e.value=t.sinif;return}
+    }
     t.sinif=e.value;
     kayitlar.forEach(k=>{
       if(k.turId!==t.id)return;
@@ -1651,11 +1852,14 @@ function tanimBagla(){
     bildir(t.pasif?`"${t.ad}" pasife alındı — eski kayıtlar korunuyor`:`"${t.ad}" tekrar aktif`);
   });
 
-  g('[data-tsil]','onclick',e=>()=>{
+  g('[data-tsil]','onclick',e=>async()=>{
     const i=+e.dataset.tsil, t=ayar.turler[i];
     if(KUL.tur(t.id))return;
     if(ayar.turler.length<2){bildir('En az bir tür kalmalı');return}
-    if(!confirm(`"${t.ad}" türü silinecek. Hiç kayıtta kullanılmıyor.\n\nEmin misin?`))return;
+    if(!await onayla({baslik:'Türü sil',tehlike:true,
+      mesaj:`"${guv(t.ad)}" türü silinecek`,
+      detay:'Hiçbir kayıtta kullanılmıyor, veri kaybı olmaz.',
+      onayMetni:'Sil'}))return;
     ayar.turler.splice(i,1);tanimKaydet();bildir('Tür silindi');
   });
 
@@ -1677,10 +1881,15 @@ function tanimBagla(){
     a.ad=yeni;tanimKaydet();bildir('Alan adı değişti');
   });
 
-  g('[data-asil]','onclick',e=>()=>{
+  g('[data-asil]','onclick',e=>async()=>{
     const i=+e.dataset.asil, a=ayar.alanlar[i];
     if(KUL.alanTum(a.id))return;
-    if(!confirm(`"${a.ad}" alanı silinecek. Hiç kayıtta dolu değil.\n\nEmin misin?`))return;
+    const bagli=ayar.turler.filter(t=>(t.alanlar||[]).includes(a.id)).map(t=>t.ad);
+    if(!await onayla({baslik:'Alanı sil',tehlike:true,
+      mesaj:`"${guv(a.ad)}" alanı silinecek`,
+      detay:'Hiçbir kayıtta dolu değil, veri kaybı olmaz.'+
+        (bagli.length?`<br>Şu türlerden kaldırılacak: ${guv(bagli.join(', '))}`:''),
+      onayMetni:'Sil'}))return;
     ayar.alanlar.splice(i,1);
     ayar.turler.forEach(t=>{t.alanlar=(t.alanlar||[]).filter(x=>x!==a.id)});
     delete fAlan[a.id];
@@ -1703,11 +1912,20 @@ function tanimBagla(){
     x.pasif=!x.pasif;tanimKaydet();
     bildir(x.pasif?`"${x.ad}" pasife alındı — eski kayıtlarda duruyor`:`"${x.ad}" tekrar aktif`);
   });
-  g('[data-ssil]','onclick',e=>()=>{
+  g('[data-ssil]','onclick',e=>async()=>{
     const [i,j]=e.dataset.ssil.split(':').map(Number);
     const a=ayar.alanlar[i], x=a.secenekler[j], n=KUL.alan(a.id,x.id);
     if(n){
-      if(!confirm(`"${x.ad}" ${n} kayıtta kullanılıyor.\n\nSilersen o kayıtların "${a.ad}" bilgisi boşalacak — geri alınamaz.\n\nBunun yerine ◐ ile pasife alabilirsin: yeni kayıtlarda görünmez ama eski kayıtlar korunur.\n\nYine de silinsin mi?`))return;
+      const etkilenen=kayitlar.filter(k=>alanDeger(k,a.id)===x.id).map(k=>({
+        baslik:kes(k.konu,60),
+        aciklama:`${turAdi(k)}${k.tarih?' · '+kisaTarih(k.tarih):''}`}));
+      if(!await onayla({baslik:`"${x.ad}" seçeneğini sil`,tehlike:true,
+        mesaj:`${n} kayıttan "${guv(a.ad)}" bilgisi silinecek`,
+        detay:'Bunun yerine <b>◐ pasife alma</b>yı kullanabilirsin: seçenek yeni kayıtlarda '+
+              'görünmez ama eski kayıtlarda korunur. Silme geri alınamaz.',
+        sayaclar:[{sayi:n,etiket:'kayıt etkilenecek',sinif:'kotu'}],
+        liste:etkilenen,listeBaslik:'Bilgisi silinecek kayıtlar',
+        onayMetni:'Yine de sil'}))return;
       kayitlar.forEach(k=>{if(alanDeger(k,a.id)===x.id)delete k.alanlar[a.id]});
     }
     a.secenekler.splice(j,1);tanimKaydet();bildir('Seçenek silindi');
@@ -1721,23 +1939,48 @@ function tanimBagla(){
   }));
 
   /* --- sorumlular --- */
+  /* e-posta ekleme / değiştirme */
+  g('[data-keposta]','onclick',e=>async()=>{
+    const i=+e.dataset.keposta, k=ayar.kisiler[i];
+    const yeni=await epostaSor(k);
+    if(yeni===null)return;
+    const temiz=yeni.trim().toLowerCase();
+    if(temiz&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(temiz)){bildir('Geçerli bir e-posta değil');return}
+    if(temiz&&ayar.kisiler.some((x,j)=>j!==i&&(x.eposta||'').toLowerCase()===temiz)){
+      bildir('Bu e-posta başka bir kişide tanımlı');return}
+    if(temiz)k.eposta=temiz; else delete k.eposta;
+    tanimKaydet();
+    bildir(temiz?`${k.ad} → ${temiz}`:'E-posta kaldırıldı');
+  });
+
   g('[data-kpas]','onclick',e=>()=>{
     const k=ayar.kisiler[+e.dataset.kpas];
     k.pasif=!k.pasif;tanimKaydet();
     bildir(k.pasif?`${k.ad} pasife alındı — geçmiş kayıtlarda adı duruyor`:`${k.ad} tekrar aktif`);
   });
-  g('[data-ksil]','onclick',e=>()=>{
+  g('[data-ksil]','onclick',e=>async()=>{
     const i=+e.dataset.ksil, k=ayar.kisiler[i], n=KUL.kisi(k.id);
     if(n){
-      if(!confirm(`${k.ad} ${n} kayıtta sorumlu.\n\nSilersen o kayıtlardan adı çıkacak — geri alınamaz.\n\nBunun yerine ◐ ile pasife alabilirsin: yeni kayıtlarda seçilemez ama geçmiş kayıtlarda adı kalır.\n\nYine de silinsin mi?`))return;
+      const etkilenen=kayitlar.filter(x=>(x.sorumlular||[]).includes(k.id)).map(x=>({
+        baslik:kes(x.konu,60),
+        aciklama:`${turAdi(x)}${x.tarih?' · '+kisaTarih(x.tarih):''}`}));
+      if(!await onayla({baslik:`${k.ad} — listeden sil`,tehlike:true,
+        mesaj:`${n} kayıttan adı çıkarılacak`,
+        detay:'Bunun yerine <b>◐ pasife alma</b>yı kullanabilirsin: yeni kayıtlarda seçilemez '+
+              'ama geçmiş kayıtlarda adı kalır. Silme geri alınamaz.',
+        sayaclar:[{sayi:n,etiket:'kayıtta sorumlu',sinif:'kotu'}],
+        liste:etkilenen,listeBaslik:'Adının çıkarılacağı kayıtlar',
+        onayMetni:'Yine de sil'}))return;
       kayitlar.forEach(x=>{x.sorumlular=(x.sorumlular||[]).filter(y=>y!==k.id)});
     }
     ayar.kisiler.splice(i,1);tanimKaydet();bildir('Kişi silindi');
   });
   g('[data-kekle]','onkeydown',e=>enter(e,v=>{
     if(!v)return;
-    if(ayar.kisiler.some(k=>k.ad===v)){bildir('Bu kişi zaten var');return}
-    ayar.kisiler.push({id:yeniKisiId(),ad:v});e.value='';tanimKaydet();bildir(`${v} eklendi`);
+    if(ayar.kisiler.some(k=>k.ad.toLocaleLowerCase('tr')===v.toLocaleLowerCase('tr'))){
+      bildir('Bu kişi zaten var');return}
+    ayar.kisiler.push({id:yeniKisiId(),ad:v});e.value='';tanimKaydet();
+    bildir(`${v} eklendi · e-posta için @ düğmesini kullan`);
     const y=document.querySelector('[data-kekle]');if(y)y.focus();
   }));
 }
@@ -1775,11 +2018,18 @@ function yedekAl(){
 }
 function yedekYukle(dosya){
   const r=new FileReader();
-  r.onload=()=>{
+  r.onload=async()=>{
     try{
       const v=JSON.parse(r.result);
       if(!Array.isArray(v.kayitlar))throw 0;
-      if(!confirm(`${v.kayitlar.length} kayıt yüklenecek. Mevcut kayıtların silinecek. Devam?`))return;
+      const onceki=kayitlar.length;
+      if(!await onayla({baslik:'Yedekten geri yükle',tehlike:true,
+        mesaj:`Mevcut ${onceki} kayıt silinip yedektekiler yüklenecek`,
+        detay:'Yedek dosyası tanımları da içerir; türler, alanlar ve sorumlular da değişebilir. '+
+              '<b>Bu işlem geri alınamaz.</b>',
+        sayaclar:[{sayi:v.kayitlar.length,etiket:'yedekteki kayıt','sinif':'iyi'},
+                  {sayi:onceki,etiket:'silinecek kayıt',sinif:'kotu'}],
+        onayMetni:'Geri yükle'}))return;
       kayitlar=v.kayitlar;sonrakiId=v.sonrakiId||Math.max(0,...v.kayitlar.map(k=>k.id))+1;
       if(v.ayar)ayar={...kopya(VARSAYILAN_AYAR),...v.ayar};
       gocEt({});secenekleriCiz();yaz();tanimlariBulutaYaz();ciz();
@@ -1789,7 +2039,9 @@ function yedekYukle(dosya){
   r.readAsText(dosya);
 }
 function icsKac(s){return String(s??'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n')}
-function icsAktar(){
+/* Takvim (.ics) dışa aktarımı — düğmesi şimdilik arayüzden kaldırıldı,
+   ileride tarih aralığı seçimiyle birlikte geri gelecek. */
+async function icsAktar(){
   const secili=filtreliKayitlar().filter(k=>!k.tamam&&etkinTarih(k));
   if(!secili.length){
     bildir(kayitlar.length
@@ -1820,12 +2072,16 @@ function icsAktar(){
   const blob=new Blob([sat.join('\r\n')],{type:'text/calendar'});
   const ozet2=filtreOzeti();
   const tarihler=secili.map(etkinTarih).sort();
-  if(!confirm(
-      `${secili.length} kayıt takvim dosyasına yazılacak.\n`+
-      `Kapsam: ${kisaTarih(tarihler[0])} – ${kisaTarih(tarihler[tarihler.length-1])}\n`+
-      (ozet2.length?`\nEtkin filtreler:\n• ${ozet2.join('\n• ')}\n`:'')+
-      `\nTamamlanmış kayıtlar dışarıda bırakıldı.\n`+
-      `Dosyayı açtığında Google Takvim veya Outlook'a eklenir. (${boyutYaz(blob.size)})\n\nDevam edilsin mi?`))return;
+  if(!await onayla({baslik:'Takvime aktar',
+    mesaj:`${secili.length} kayıt takvim dosyasına yazılacak`,
+    detay:`Dosyayı açtığında Google Takvim veya Outlook'a eklenir. `+
+      `Tamamlanmış kayıtlar dışarıda bırakıldı.`+
+      (ozet2.length?`<br><br>Etkin filtreler: ${guv(ozet2.join(' · '))}`:''),
+    sayaclar:[
+      {sayi:secili.length,etiket:'kayıt',sinif:'iyi'},
+      {sayi:`${kisaTarih(tarihler[0])} – ${kisaTarih(tarihler[tarihler.length-1])}`,etiket:'kapsam'},
+      {sayi:boyutYaz(blob.size),etiket:'dosya boyutu'}],
+    onayMetni:'İndir'}))return;
   blobIndir(`planner-${BUGUN}.ics`,blob);
   bildir(`${secili.length} kayıt indirildi`);
 }
@@ -1886,7 +2142,7 @@ function dogrulamaXml(sutun,secenekler,baslik,sonSatir){
 const excelSeri=t=>{const [y,a,g]=t.split('-').map(Number);
   return Math.round((Date.UTC(y,a-1,g)-Date.UTC(1899,11,30))/864e5)};
 
-function excelAktar(){
+async function excelAktar(){
   const secim=filtreliKayitlar();
   /* Kayıt yoksa yine de dosya üretilir: başlıklar, açılır menüler ve
      talimat sayfası boş şablon olarak işe yarar. Ama sonuç filtre
@@ -1905,7 +2161,19 @@ function excelAktar(){
         `Boş şablon indirilsin mi?\n\n`+
         `Dosyada sütun başlıkları, açılır menüler ve doldurma talimatı bulunur; `+
         `doldurup "Excel'den veri al" ile yükleyebilirsiniz.`;
-    if(!confirm(mesaj))return;
+    if(!await onayla(n
+      ? {baslik:'Filtreye uyan kayıt yok',
+         mesaj:`${n} filtre etkin, sonuç boş`,
+         detay:`Etkin filtreler: ${guv(filtreOzeti().join(' · '))}<br><br>`+
+           `Filtreleri temizleyip ${kayitlar.length?'tüm kayıtları':'boş şablonu'} indirebilirsin.`,
+         sayaclar:[{sayi:0,etiket:'filtreye uyan',sinif:'kotu'},
+                   {sayi:kayitlar.length,etiket:'toplam kaydın'}],
+         onayMetni:'Filtreleri temizle ve indir'}
+      : {baslik:'Boş şablon',
+         mesaj:'Henüz kaydın yok',
+         detay:'Boş şablon indirilsin mi? Dosyada sütun başlıkları, açılır menüler ve '+
+           'doldurma talimatı bulunur; doldurup "Excel\'den veri al" ile yükleyebilirsin.',
+         onayMetni:'Şablonu indir'}))return;
     if(n){ filtreleriTemizle(); return excelAktar(); }   // temizle ve baştan çalış
   }
   const AL=ayar.alanlar;
@@ -2102,16 +2370,20 @@ ${dogrulamalar?`<dataValidations count="${(dogrulamalar.match(/<dataValidation /
   const dosyaAdi=satirlar.length
     ? `planner-kayitlar-${BUGUN}.xlsx`
     : `planner-sablon-${BUGUN}.xlsx`;
-  if(!confirm(
-      (!satirlar.length
-        ? `Boş şablon indirilecek.\n\n`
-        : ozet.length
-        ? `Filtrelenmiş ${satirlar.length} kayıt aktarılacak (toplam ${kayitlar.length} kayıttan).\n\n`+
-          `Etkin filtreler:\n• ${ozet.join('\n• ')}\n\n`
-        : `Tüm kayıtlar aktarılacak: ${satirlar.length} kayıt.\n\n`)+
-      `Dosya: ${dosyaAdi} (${boyutYaz(blob.size)})\n\n`+
-      `Bu dosya aynı zamanda şablondur: açılır menüleri ve doldurma talimatını içerir.\n`+
-      `Doldurup "Excel'den veri al" ile geri yükleyebilirsin.\n\nDevam edilsin mi?`))return;
+  if(!await onayla({baslik:satirlar.length?"Excel'e aktar":'Boş şablon indir',
+    mesaj:!satirlar.length
+      ? 'Boş şablon indirilecek'
+      : ozet.length
+      ? `Filtrelenmiş ${satirlar.length} kayıt aktarılacak`
+      : `${satirlar.length} kayıt aktarılacak`,
+    detay:`Bu dosya aynı zamanda şablondur: açılır menüleri ve doldurma talimatını içerir. `+
+      `Doldurup "Excel'den veri al" ile geri yükleyebilirsin.`+
+      (ozet.length?`<br><br>Etkin filtreler: ${guv(ozet.join(' · '))}`:''),
+    sayaclar:[
+      {sayi:satirlar.length,etiket:satirlar.length?'kayıt':'kayıt (boş şablon)',sinif:satirlar.length?'iyi':''},
+      ...(ozet.length?[{sayi:kayitlar.length,etiket:'toplam kaydın'}]:[]),
+      {sayi:boyutYaz(blob.size),etiket:'dosya boyutu'}],
+    onayMetni:'İndir'}))return;
   blobIndir(dosyaAdi,blob);
   bildir(satirlar.length?`${satirlar.length} kayıt indirildi`:'Boş şablon indirildi');
 }
@@ -2265,6 +2537,125 @@ function kisiEslestir(ad){
 /* --- ana akis --- */
 const SABIT_BASLIK={konu:'Konu',tur:'Tür',sorumlular:'Sorumlular',tarih:'Tarih',
   bas:'Başlangıç',bit:'Bitiş',bitis:'Son Tarih',durum:'Durum',sonDurum:'Son Durum',kayit:'Kayıt Tarihi'};
+
+
+/* ================= MOBİL DÜZEN ================= */
+const ALT_SIMGE={
+  gun:'<path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>',
+  hafta:'<path d="M3 4h18v16H3zM3 10h18M9 10v10M15 10v10"/>',
+  ay:'<path d="M3 4h18v16H3zM3 9h18M8 4v16M13 4v16M18 4v16M3 14h18"/>',
+  kayit:'<path d="M4 6h16M4 12h16M4 18h10"/>'
+};
+const ALT_AD={gun:'Bugün',hafta:'Hafta',ay:'Ay',kayit:'Kayıtlar'};
+
+function altbarCiz(){
+  const n=document.getElementById('altbar');
+  if(!n)return;
+  n.innerHTML=Object.keys(ALT_AD).map(g=>
+    `<button role="tab" data-gorunum="${g}" aria-selected="${gorunum===g}">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${ALT_SIMGE[g]}</svg>
+      ${ALT_AD[g]}</button>`).join('');
+  n.querySelectorAll('button').forEach(b=>b.onclick=()=>{gorunum=b.dataset.gorunum;ciz()});
+}
+
+/* Ekran genişliği değişince (döndürme, pencere boyutlandırma) düzeni tazele */
+let boyutZaman;
+window.addEventListener('resize',()=>{
+  clearTimeout(boyutZaman);
+  boyutZaman=setTimeout(()=>{const m=mobilMi();if(m!==sonMobil){sonMobil=m;ciz()}},180);
+});
+let sonMobil=null;
+
+function genisGorunumGuncelle(){
+  document.body.classList.toggle('mobil',mobilMi());
+  const b=document.getElementById('genisBtn');
+  if(!b)return;
+  const dar=window.innerWidth<DAR_ESIK;
+  b.hidden=!dar;                       // yalnızca dar ekranlarda anlamlı
+  b.textContent=genisZorla?'Mobil görünüm':'Geniş görünüm';
+  b.title=genisZorla?'Telefona uygun düzene dön':'Masaüstü düzenini kullan';
+}
+
+/* ================= ORTAK ONAY PANELİ ================= */
+/* Tarayıcının confirm/alert kutuları yerine tek bir panel.
+   Söz (Promise) döndürür: kullanıcı onaylarsa true, vazgeçerse false.
+   Kullanım:  if(!await onayla({...})) return;                        */
+
+let onaySoz=null;
+
+function panelKapat(){
+  document.getElementById('onayPerde').hidden=true;
+  if(onaySoz){onaySoz(false);onaySoz=null}
+}
+
+/* seçenek:
+   baslik    : pencere başlığı
+   mesaj     : ana metin (HTML)
+   detay     : küçük gri açıklama
+   liste     : [{baslik, aciklama, satir}] — etkilenen kayıtlar
+   sayaclar  : [{sayi, etiket, sinif}]
+   tehlike   : true ise kırmızı uyarı kutusu ve kırmızı onay düğmesi
+   onayMetni : onay düğmesinin yazısı
+   iptalMetni: vazgeç düğmesinin yazısı
+   yalnizBilgi: true ise tek "Tamam" düğmesi olur                       */
+function onayla(sec){
+  const {baslik='Emin misin?',mesaj='',detay='',liste=[],sayaclar=[],
+         tehlike=false,onayMetni='Devam et',iptalMetni='Vazgeç',
+         yalnizBilgi=false,listeBaslik='Etkilenen kayıtlar'}=sec||{};
+
+  document.getElementById('onayBaslik').textContent=baslik;
+  document.getElementById('onayGovde').innerHTML=
+    (tehlike
+      ? `<div class="hataKutu"><span class="im2">!</span><span><b>${mesaj}</b>${detay?`<i>${detay}</i>`:''}</span></div>`
+      : `<div class="onayMesaj"><b>${mesaj}</b>${detay?`<i>${detay}</i>`:''}</div>`)+
+    (sayaclar.length?`<div class="ozet">${sayaclar.map(x=>ozetKart(x.sayi,x.etiket,x.sinif)).join('')}</div>`:'')+
+    (liste.length?sorunListesi(listeBaslik,liste.slice(0,25))+
+      (liste.length>25?`<p class="tanimnot">İlk 25 tanesi gösteriliyor · toplam ${liste.length}</p>`:''):'');
+  document.getElementById('onayAyak').innerHTML= yalnizBilgi
+    ? `<button class="solid" data-onay="evet">Tamam</button>`
+    : `<button class="ghost" data-onay="hayir">${guv(iptalMetni)}</button>
+       <button class="solid ${tehlike?'tehlike':''}" data-onay="evet">${guv(onayMetni)}</button>`;
+  document.getElementById('onayPerde').hidden=false;
+
+  return new Promise(coz=>{
+    onaySoz=coz;
+    document.getElementById('onayAyak').querySelectorAll('[data-onay]').forEach(b=>b.onclick=()=>{
+      const e=b.dataset.onay==='evet';
+      document.getElementById('onayPerde').hidden=true;
+      onaySoz=null; coz(e);
+    });
+  });
+}
+
+/* Kişiye e-posta atamak için küçük giriş paneli.
+   İptal edilirse null, boş bırakılırsa '' döner (e-postayı kaldırmak için). */
+function epostaSor(k){
+  const mevcut=k.eposta||'';
+  document.getElementById('onayBaslik').textContent=`${k.ad} — e-posta`;
+  document.getElementById('onayGovde').innerHTML=
+    `<div class="onayMesaj"><b>Bu kişi uygulamayı kullanacak mı?</b>
+      <i>E-posta tanımlarsan bu kişiye toplantı daveti gönderebilir, müsait saatlerini görebilirsin.
+      Boş bırakırsan yalnızca kayıtlarda etiket olarak kalır.</i></div>
+     <div class="alan"><label for="kEposta">Google hesabı</label>
+       <input type="email" id="kEposta" placeholder="ornek@gmail.com" value="${guv(mevcut)}"></div>
+     <p class="uyari">E-posta tanımlamak tek başına giriş yetkisi vermez.
+     Erişim için Ayarlar → Erişim bölümünden de eklenmeli.</p>`;
+  document.getElementById('onayAyak').innerHTML=
+    `<button class="ghost" data-onay="hayir">Vazgeç</button>
+     <button class="solid" data-onay="evet">Kaydet</button>`;
+  document.getElementById('onayPerde').hidden=false;
+  setTimeout(()=>document.getElementById('kEposta').focus(),50);
+  return new Promise(coz=>{
+    onaySoz=()=>coz(null);
+    document.getElementById('onayAyak').querySelectorAll('[data-onay]').forEach(b=>b.onclick=()=>{
+      const deger=b.dataset.onay==='evet'?document.getElementById('kEposta').value:null;
+      document.getElementById('onayPerde').hidden=true; onaySoz=null; coz(deger);
+    });
+  });
+}
+
+/* yalnızca bilgi veren pencere — eski alert() yerine */
+const bilgiVer=sec=>onayla({...sec,yalnizBilgi:true});
 
 /* ================= İÇE AKTARMA PANELİ ================= */
 /* Tarayıcının alert/confirm kutuları yerine uygulamanın kendi dilinde
@@ -2622,11 +3013,14 @@ window.oturumDegisti=async u=>{
     oturum=null; yoneticiMi=false;
     try{ await FB.cikisYap(); }catch(e){}
     moduSec('demo');                       // reddedilen hesap demo moduna düşer
-    alert(`${u.email} bu uygulamaya davetli değil.\n\n`+
-          (kayit&&kayit.aktif===false
-            ? 'Erişimin geçici olarak kapatılmış.'
-            : 'Erişim yalnızca yöneticinin eklediği hesaplara açıktır.')+
-          `\nErişim istiyorsan yöneticine bu adresi ilet.`);
+    await bilgiVer({baslik:'Erişim yok',tehlike:true,
+      mesaj:kayit&&kayit.aktif===false?'Erişimin geçici olarak kapatılmış':'Bu hesap davetli değil',
+      detay:`Giriş yapılan hesap: <code>${guv(u.email)}</code><br><br>`+
+        (kayit&&kayit.aktif===false
+          ? 'Yöneticin erişimini pasife almış. Tekrar açılması için kendisine ulaşabilirsin.'
+          : 'Erişim yalnızca yöneticinin eklediği hesaplara açıktır. '+
+            'Erişim istiyorsan yöneticine bu adresi ilet.')+
+        '<br><br>Demo modunda uygulamayı incelemeye devam edebilirsin.'});
     return;
   }
   oturum=u;
@@ -2691,6 +3085,18 @@ function oturumArayuzu(){
 }
 
 
+/* Üye listesi, kişi kartlarında erişim durumunu göstermek için önbelleğe alınır.
+   Yalnızca yönetici okuyabildiği için diğerlerinde boş kalır. */
+let uyeOnbellek=null;
+function uyeDurumu(eposta){
+  if(!uyeOnbellek)return null;
+  return uyeOnbellek.find(u=>u.eposta===(eposta||'').toLowerCase())||null;
+}
+async function uyeOnbellegiTazele(){
+  if(!FB||!yoneticiMi){uyeOnbellek=null;return}
+  try{ uyeOnbellek=await FB.uyeleriOku(); }catch(e){ uyeOnbellek=null; }
+}
+
 /* ================= ZORUNLU ALANLAR ================= */
 function zorunluCiz(){
   const kutu=id=>document.getElementById(id);
@@ -2739,7 +3145,7 @@ async function uyeleriCiz(){
   if(!FB||!oturum||!yoneticiMi){kutu.innerHTML='<div class="bos">Bu bölüm yöneticiye açıktır.</div>';return}
   kutu.innerHTML='<div class="bos">Yükleniyor…</div>';
   let liste=[];
-  try{ liste=await FB.uyeleriOku(); }
+  try{ liste=await FB.uyeleriOku(); uyeOnbellek=liste; }
   catch(e){ kutu.innerHTML='<div class="bos">Liste okunamadı.</div>'; return; }
 
   const ben=(oturum.email||'').toLowerCase();
@@ -2747,9 +3153,14 @@ async function uyeleriCiz(){
   kutu.innerHTML=`<div class="uyeler">
     ${liste.map(u=>{
       const kendisi=u.eposta===ben, yon=u.rol==='yonetici';
+      const kisi=kisiEpostaIle(u.eposta);
       const sonYonetici=yon&&yoneticiSayisi<2;
       return `<div class="uyesatir">
-        <span class="ep">${guv(u.eposta)}${kendisi?' <span class="kul" style="font-family:\'IBM Plex Mono\';font-size:10px;color:var(--ink-faint)">(sen)</span>':''}</span>
+        <span class="ep">
+          <b>${guv(kisi?kisi.ad:u.eposta.split('@')[0])}</b>${
+            kendisi?' <span style="font-family:\'IBM Plex Mono\';font-size:10px;color:var(--ink-faint)">(sen)</span>':''}
+          <i>${guv(u.eposta)}${kisi?'':' · <span class="krol yok">kişi listesinde yok</span>'}</i>
+        </span>
         <span class="rol ${u.aktif===false?'pas':(yon?'yon':'')}">${
           u.aktif===false?'pasif':(yon?'yönetici':'üye')}</span>
         ${kendisi?'':`
@@ -2766,10 +3177,12 @@ async function uyeleriCiz(){
     const e=b.dataset.uyerol, mevcut=liste.find(x=>x.eposta===e);
     const yeniRol=mevcut.rol==='yonetici'?'uye':'yonetici';
     if(yeniRol==='uye'&&yoneticiSayisi<2){bildir('En az bir yönetici kalmalı');return}
-    if(!confirm(`${e} ${yeniRol==='yonetici'?'YÖNETİCİ yapılacak':'normal üyeye çevrilecek'}.\n\n`+
-      (yeniRol==='yonetici'
-        ? 'Tanımları düzenleyebilecek ve üye listesini yönetebilecek.'
-        : 'Tanımları düzenleyemeyecek.')+'\n\nEmin misin?'))return;
+    if(!await onayla({baslik:'Yetki değişikliği',
+      mesaj:`${guv(e)} ${yeniRol==='yonetici'?'yönetici yapılacak':'normal üyeye çevrilecek'}`,
+      detay:yeniRol==='yonetici'
+        ? 'Tanımları düzenleyebilecek, zorunlu alanları belirleyebilecek ve üye listesini yönetebilecek.'
+        : 'Tanımları ve üye listesini artık değiştiremeyecek. Kendi kayıtlarına erişimi sürer.',
+      onayMetni:yeniRol==='yonetici'?'Yönetici yap':'Üye yap'}))return;
     try{ await FB.uyeYaz(e,{rol:yeniRol}); bildir('Yetki güncellendi'); uyeleriCiz(); }
     catch(err){ bildir('Değiştirilemedi'); }
   });
@@ -2786,8 +3199,11 @@ async function uyeleriCiz(){
   });
   kutu.querySelectorAll('[data-uyesil]').forEach(b=>b.onclick=async()=>{
     const e=b.dataset.uyesil;
-    if(!confirm(`${e} listeden çıkarılacak ve bir daha giriş yapamayacak.\n\n`+
-                `Kendi kayıtları silinmez, sadece erişimi kapanır.\n\nEmin misin?`))return;
+    if(!await onayla({baslik:'Erişimi kaldır',tehlike:true,
+      mesaj:`${guv(e)} bir daha giriş yapamayacak`,
+      detay:'Kendi kayıtları silinmez, yalnızca erişimi kapanır. '+
+            'Geçici olarak kapatmak istiyorsan <b>◐ pasife alma</b>yı kullanabilirsin.',
+      onayMetni:'Erişimi kaldır'}))return;
     try{ await FB.uyeSil(e); bildir('Erişim kaldırıldı'); uyeleriCiz(); }
     catch(err){ bildir('Silinemedi'); }
   });
@@ -2795,12 +3211,25 @@ async function uyeleriCiz(){
 
 async function uyeEkleEt(){
   const g=document.getElementById('yeniUye');
+  const ad=(document.getElementById('yeniUyeAd').value||'').trim();
   const e=(g.value||'').trim().toLowerCase();
   if(!e){bildir('E-posta gir');g.focus();return}
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){bildir('Geçerli bir e-posta değil');return}
   try{
     await FB.uyeYaz(e,{aktif:true,rol:'uye',eklenme:Date.now()});
-    g.value=''; bildir(`${e} eklendi — Google ile giriş yapabilir`);
+    /* Kişi listesinde karşılığı yoksa oluştur — böylece kayıtlara sorumlu
+       olarak atanabilir ve davet gönderilebilir. */
+    let kisi=kisiEpostaIle(e);
+    if(!kisi){
+      kisi={id:yeniKisiId(),ad:ad||e.split('@')[0],eposta:e};
+      ayar.kisiler.push(kisi);
+      await tanimlariBulutaYaz(); yaz(); secenekleriCiz();
+    }else if(ad&&kisi.ad!==ad){
+      kisi.ad=ad; await tanimlariBulutaYaz(); yaz(); secenekleriCiz();
+    }
+    g.value=''; document.getElementById('yeniUyeAd').value='';
+    bildir(`${kisi.ad} eklendi — Google ile giriş yapabilir`);
+    await uyeOnbellegiTazele();
     uyeleriCiz();
   }catch(err){ bildir('Eklenemedi — bağlantını kontrol et'); }
 }
@@ -2818,14 +3247,14 @@ function moduSec(yeni){ mod=yeni; uygulamayiBaslat(); }
 /* Demo modunda dosya aktarimi kapali: kullaniciya nedenini ve
    giris yapinca ne kazanacagini anlatir. */
 function girisGerekli(islem){
-  alert(`${islem} için giriş yapmanız gerekiyor.\n\n`+
-        `Şu anda demo modundasınız. Buradaki kayıtlar örnek verilerdir ve `+
-        `yalnızca bu tarayıcıda tutulur.\n\n`+
-        `Google hesabınızla giriş yaptığınızda:\n`+
-        `• Kayıtlarınız hesabınıza bağlanır\n`+
-        `• Telefon ve bilgisayar arasında eşitlenir\n`+
-        `• Excel ve takvim aktarımı açılır\n\n`+
-        `Giriş şu anda davetli kullanıcılara hazırlanıyor.`);
+  bilgiVer({baslik:'Giriş gerekiyor',
+    mesaj:`${guv(islem)} için giriş yapmalısın`,
+    detay:'Şu anda demo modundasın — buradaki kayıtlar örnektir ve hiçbir yere kaydedilmez.<br><br>'+
+      'Google hesabınla giriş yaptığında:<br>'+
+      '• Kayıtların hesabına bağlanır ve saklanır<br>'+
+      '• Telefon ve bilgisayar arasında eşitlenir<br>'+
+      '• Excel ve takvim aktarımı açılır<br><br>'+
+      'Erişim davetlidir; listede değilsen yöneticine ulaş.'});
 }
 const demoMu=()=>mod==='demo';
 /* dosya aktarim dugmeleri giris gerektirir; bazilari yeniden cizildigi icin
@@ -2841,23 +3270,38 @@ function kilitUygula(){
 /* Google ile giris — Firebase baglanana kadar bilgilendirme veriyor */
 document.getElementById('girisBtn').onclick=async()=>{
   if(!bulutHazir||!FB){
-    alert('Giriş servisine ulaşılamıyor.\n\nİnternet bağlantını kontrol edip sayfayı yenile.');
+    bilgiVer({baslik:'Bağlantı yok',tehlike:true,
+      mesaj:'Giriş servisine ulaşılamıyor',
+      detay:'İnternet bağlantını kontrol edip sayfayı yenile. '+
+            'Sorun sürerse reklam engelleyici ya da ağ kısıtlaması engelliyor olabilir.'});
     return;
   }
   try{ await FB.girisYap(); }
   catch(e){
     const k=e.code||'';
-    if(k==='auth/unauthorized-domain')
-      alert('Bu adres Firebase\'de yetkili değil.\n\nAuthentication > Settings > Authorized domains bölümüne '+location.hostname+' eklenmeli.');
-    else if(k==='auth/popup-blocked')
-      alert('Tarayıcı açılır pencereyi engelledi.\n\nAdres çubuğundaki engel simgesinden bu siteye izin verip tekrar dene.');
-    else if(k!=='auth/popup-closed-by-user'&&k!=='auth/cancelled-popup-request')
-      alert('Giriş yapılamadı.\n\n'+(e.message||k));
+    if(k==='auth/popup-closed-by-user'||k==='auth/cancelled-popup-request')return;
+    const bilgi={
+      'auth/unauthorized-domain':{m:'Bu adres yetkili değil',
+        d:`<code>${guv(location.hostname)}</code> Firebase'de tanımlı değil.<br>`+
+          `Yönetici: Authentication → Settings → Authorized domains bölümüne bu adresi eklemeli.`},
+      'auth/popup-blocked':{m:'Açılır pencere engellendi',
+        d:'Tarayıcın giriş penceresini engelledi.<br>'+
+          'Adres çubuğundaki engel simgesinden bu siteye izin verip tekrar dene.'},
+      'auth/network-request-failed':{m:'Bağlantı kurulamadı',
+        d:'İnternet bağlantını kontrol edip tekrar dene.'}
+    }[k]||{m:'Giriş yapılamadı',d:guv(e.message||k)};
+    bilgiVer({baslik:'Giriş hatası',tehlike:true,mesaj:bilgi.m,detay:bilgi.d});
   }
 };
 document.getElementById('cikisBtn').onclick=async()=>{
-  if(bekleyenYazma&&!confirm('Kaydedilmemiş değişiklik var.\n\nYine de çıkılsın mı?'))return;
-  if(!confirm('Oturum kapatılacak ve demo moduna dönülecek.\n\nVerilerin hesabında saklı kalır.\n\nDevam edilsin mi?'))return;
+  if(!await onayla({baslik:'Oturumu kapat',
+    tehlike:bekleyenYazma,
+    mesaj:bekleyenYazma?'Kaydedilmemiş değişiklik var':'Oturum kapatılacak',
+    detay:bekleyenYazma
+      ? 'Son değişikliklerin henüz buluta yazılmadı. Şimdi çıkarsan kaybolabilir — '+
+        'birkaç saniye bekleyip "kaydedildi" yazısını görmek daha güvenli.'
+      : 'Demo moduna dönülecek. Verilerin hesabında saklı kalır, tekrar giriş yaptığında yerinde olur.',
+    onayMetni:'Çıkış yap'}))return;
   try{ if(FB)await FB.cikisYap(); }catch(e){}
   oturum=null;yoneticiMi=false;moduSec('demo');
 };
@@ -2870,12 +3314,22 @@ document.getElementById('vazgec').onclick=modalKapat;
 document.getElementById('kaydet').onclick=kaydetEt;
 document.getElementById('fTur').onchange=()=>turDegisti();
 document.getElementById('perde').onclick=e=>{if(e.target.id==='perde')modalKapat()};
-document.getElementById('sil').onclick=()=>{
-  if(!confirm('Bu kayıt silinecek. Emin misin?'))return;
+document.getElementById('sil').onclick=async()=>{
+  const k=kayitlar.find(x=>x.id===duzenlenen);
+  if(!await onayla({baslik:'Kaydı sil',tehlike:true,
+    mesaj:'Bu kayıt silinecek',
+    detay:k?`"${guv(kes(k.konu,80))}" — geri alınamaz.`:'Geri alınamaz.',
+    onayMetni:'Sil'}))return;
   kayitlar=kayitlar.filter(x=>x.id!==duzenlenen);yaz();modalKapat();ciz();bildir('Kayıt silindi')};
+document.getElementById('genisBtn').onclick=()=>{
+  genisZorla=!genisZorla; sonMobil=mobilMi(); ciz();
+  bildir(genisZorla?'Masaüstü düzenine geçildi':'Mobil düzene dönüldü');
+};
 document.getElementById('ayarBtn').onclick=()=>{ayarSekme('genel');ayarAc()};
 document.getElementById('uyeEkle').onclick=uyeEkleEt;
 document.getElementById('yeniUye').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();uyeEkleEt()}};
+document.getElementById('yeniUyeAd').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();
+  document.getElementById('yeniUye').focus()}};
 document.querySelectorAll('.atabs button').forEach(b=>b.onclick=()=>ayarSekme(b.dataset.at));
 document.getElementById('ayarKapat').onclick=()=>document.getElementById('ayarPerde').hidden=true;
 document.getElementById('ayarKaydet').onclick=ayarKaydetEt;
@@ -2883,15 +3337,23 @@ document.getElementById('ayarPerde').onclick=e=>{if(e.target.id==='ayarPerde')e.
 document.querySelectorAll('#aDilim button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#aDilim button').forEach(x=>x.setAttribute('aria-pressed','false'));
   b.setAttribute('aria-pressed','true')});
-document.getElementById('sifirla').onclick=()=>{
+document.getElementById('sifirla').onclick=async()=>{
   const uyeMi=mod==='uye';
-  if(!confirm(uyeMi
-      ? `${kayitlar.length} kaydın tamamı silinecek ve hesabın boşalacak.\n\n`+
-        `Tanımların (türler, alanlar, sorumlular) korunur.\n`+
-        `Bu işlem geri alınamaz — önce Excel'e aktar ile yedek almak istersen İptal'e bas.\n\nEmin misin?`
-      : 'Tüm kayıtlar silinecek ve örnek veri geri gelecek. Emin misin?'))return;
+  const tarihli=kayitlar.map(etkinTarih).filter(Boolean).sort();
+  if(!await onayla({baslik:uyeMi?'Tüm kayıtları sil':'Örnek veriye dön',tehlike:true,
+    mesaj:uyeMi?`${kayitlar.length} kaydın tamamı silinecek`:'Tüm kayıtlar silinecek',
+    detay:uyeMi
+      ? 'Tanımların (türler, alanlar, sorumlular) korunur. <b>Bu işlem geri alınamaz.</b><br>'+
+        'Vazgeçip önce Kayıtlar sekmesinden "Excel\'e aktar" ile yedek alabilirsin.'
+      : 'Yerine örnek veriler gelecek.',
+    sayaclar:uyeMi?[
+      {sayi:kayitlar.length,etiket:'kayıt silinecek',sinif:'kotu'},
+      {sayi:kayitlar.filter(k=>k.tamam).length,etiket:'tamamlanmış'},
+      {sayi:tarihli.length?`${kisaTarih(tarihli[0])} – ${kisaTarih(tarihli[tarihli.length-1])}`:'—',
+       etiket:'tarih aralığı'}
+    ]:[],
+    onayMetni:uyeMi?'Kalıcı olarak sil':'Sıfırla'}))return;
   if(uyeMi){
-    if(!confirm('Son onay: kayıtlar kalıcı olarak silinsin mi?'))return;
     kayitlar=[];sonrakiId=1;yaz();
     bildir('Tüm kayıtlar silindi');
   }else{
@@ -2903,6 +3365,8 @@ document.getElementById('sifirla').onclick=()=>{
 document.getElementById('yedekBtn').onclick=yedekAl;
 document.getElementById('geriYukleBtn').onclick=()=>document.getElementById('dosyaSec').click();
 document.getElementById('dosyaSec').onchange=e=>{if(e.target.files[0])yedekYukle(e.target.files[0]);e.target.value=''};
+document.getElementById('onayKapat').onclick=panelKapat;
+document.getElementById('onayPerde').onclick=e=>{if(e.target.id==='onayPerde')panelKapat()};
 document.getElementById('iceKapat').onclick=icePanelKapat;
 document.getElementById('icePerde').onclick=e=>{if(e.target.id==='icePerde')icePanelKapat()};
 document.getElementById('iceAyak').addEventListener('click',e=>{
@@ -2913,7 +3377,8 @@ document.getElementById('excelAlBtn').onclick=()=>demoMu()
   :document.getElementById('excelSec').click();
 document.getElementById('excelSec').onchange=e=>{if(e.target.files[0])excelAl(e.target.files[0]);e.target.value=''};
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){modalKapat();document.getElementById('ayarPerde').hidden=true;icePanelKapat()}
+  if(e.key==='Escape'){modalKapat();document.getElementById('ayarPerde').hidden=true;
+    icePanelKapat();panelKapat()}
   if(e.key==='n'&&(e.ctrlKey||e.metaKey)){e.preventDefault();modalAc()}
 });
 window.addEventListener('beforeunload',e=>{
