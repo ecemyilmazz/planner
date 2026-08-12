@@ -73,8 +73,22 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
 .sorunsatir .sme{flex:1;min-width:0;font-size:12.5px}
 .sorunsatir .sme b{display:block;font-weight:600}
 .sorunsatir .sme i{display:block;color:var(--ink-soft);font-size:11.5px;font-style:normal;margin-top:1px}
-.onizleme{border:1px solid var(--rule);border-radius:8px;overflow:auto;max-height:200px;background:var(--paper)}
-.onizleme table{width:100%;border-collapse:collapse;min-width:470px}
+.onizleme{border:1px solid var(--rule);border-radius:8px;background:var(--paper);
+  overflow:auto;max-height:230px;
+  /* sağ kenarda solan gölge: yana kaydırılabildiğini gösterir */
+  background-image:linear-gradient(to right,var(--paper) 30%,rgba(251,251,248,0)),
+                   linear-gradient(to left,var(--paper) 30%,rgba(251,251,248,0)),
+                   linear-gradient(to right,rgba(28,35,41,.10),rgba(28,35,41,0)),
+                   linear-gradient(to left,rgba(28,35,41,.10),rgba(28,35,41,0));
+  background-position:left center,right center,left center,right center;
+  background-repeat:no-repeat;
+  background-size:28px 100%,28px 100%,10px 100%,10px 100%;
+  background-attachment:local,local,scroll,scroll}
+.onizleme table{border-collapse:collapse;width:max-content;min-width:100%}
+.onizleme::-webkit-scrollbar{height:9px;width:9px}
+.onizleme::-webkit-scrollbar-thumb{background:var(--rule);border-radius:5px}
+.onizleme::-webkit-scrollbar-thumb:hover{background:var(--ink-faint)}
+.onizleme::-webkit-scrollbar-track{background:var(--paper-2)}
 .onizleme th{position:sticky;top:0;background:var(--paper-2);font-family:'Archivo';font-size:9.5px;
   letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);text-align:left;
   padding:7px 10px;border-bottom:1px solid var(--rule);font-weight:700}
@@ -350,6 +364,7 @@ tr.tamam .kt{text-decoration:line-through}
 .satirsec button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:700}
 .anahtar{display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer}
 .modal.genis{max-width:620px}
+.modal.enis{max-width:860px}
 .atabs{display:flex;gap:3px;padding:11px 19px 0;border-bottom:1px solid var(--rule)}
 .atabs button{padding:7px 16px;font-size:13px;font-weight:500;color:var(--ink-faint);border-bottom:2px solid transparent;margin-bottom:-1px}
 .atabs button:hover{color:var(--ink)}
@@ -566,7 +581,7 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
 </div>
 
 <div class="perde" id="icePerde" hidden>
-  <div class="modal genis" role="dialog" aria-modal="true">
+  <div class="modal enis" role="dialog" aria-modal="true">
     <div class="mhead"><h2 id="iceBaslik">Excel'den veri al</h2>
       <button class="ghost" id="iceKapat">Kapat</button></div>
     <div class="mbody" id="iceGovde"></div>
@@ -2140,19 +2155,26 @@ function sorunListesi(baslik,liste){
 }
 
 function onizlemeTablosu(liste){
-  const ilk=liste.slice(0,5);
+  const ilk=liste.slice(0,6);
   if(!ilk.length)return '';
   const h=v=>v?guv(String(v)):'<span class="bos2">—</span>';
+  /* Kullanıcının tanımladığı alanlar da gösterilir; yalnızca en az bir
+     kayıtta dolu olanlar sütun açar, boş sütunlarla yer israf edilmez. */
+  const dolu=ayar.alanlar.filter(a=>ilk.some(k=>alanDegerAd(k,a.id)));
   return `<div class="onizleme"><table>
-    <thead><tr><th>Konu</th><th>Tür</th><th>Ne zaman</th><th>Son tarih</th><th>Sorumlular</th></tr></thead>
+    <thead><tr><th>Konu</th><th>Tür</th>${dolu.map(a=>`<th>${guv(a.ad)}</th>`).join('')}<th>Ne zaman</th><th>Son tarih</th><th>Sorumlular</th><th>Durum</th></tr></thead>
     <tbody>${ilk.map(k=>`<tr>
-      <td>${h(kes(k.konu,44))}</td>
-      <td>${h(turAd(k))}</td>
-      <td class="mono" style="font-size:11px">${k.tarih?kisaTarih(k.tarih)+(k.bas?'<br>'+k.bas+'–'+k.bit:'<br>saatsiz'):'<span class="bos2">atanmamış</span>'}</td>
-      <td class="mono" style="font-size:11px">${k.bitis?kisaTarih(k.bitis):'<span class="bos2">—</span>'}</td>
-      <td style="font-size:11.5px">${h(sorumluAdlari(k).join(', '))}</td>
+      <td style="min-width:170px">${h(kes(k.konu,60))}</td>
+      <td style="white-space:nowrap">${h(turAd(k))}</td>
+      ${dolu.map(a=>`<td style="white-space:nowrap">${h(alanDegerAd(k,a.id))}</td>`).join('')}
+      <td class="mono" style="font-size:11px;white-space:nowrap">${k.tarih?kisaTarih(k.tarih)+(k.bas?'<br>'+k.bas+'–'+k.bit:'<br>saatsiz'):'<span class="bos2">atanmamış</span>'}</td>
+      <td class="mono" style="font-size:11px;white-space:nowrap">${k.bitis?kisaTarih(k.bitis):'<span class="bos2">—</span>'}</td>
+      <td style="font-size:11.5px;min-width:110px">${h(sorumluAdlari(k).join(', '))}</td>
+      <td style="white-space:nowrap;font-size:11.5px">${k.tamam?'Tamamlandı':'<span class="bos2">Açık</span>'}</td>
     </tr>`).join('')}</tbody></table></div>
-    ${liste.length>5?`<p class="tanimnot" style="margin:6px 0 0">İlk 5 kayıt gösteriliyor · toplam ${liste.length}</p>`:''}`;
+    <p class="tanimnot" style="margin:6px 0 0">
+      ${liste.length>6?`İlk 6 kayıt gösteriliyor · toplam ${liste.length}`:`${liste.length} kayıt`}
+      · tabloyu yana kaydırarak tüm sütunları görebilirsin</p>`;
 }
 
 async function excelAl(dosya){
@@ -2212,10 +2234,14 @@ async function excelAl(dosya){
   }
   const alanSut=ayar.alanlar.map(a=>({alan:a,i:bul(a.ad)})).filter(x=>x.i>=0);
 
-  /* tanınmayan ve eksik sütunlar — sessizce atlanmasınlar */
+  /* tanınmayan ve eksik sütunlar — sessizce atlanmasınlar.
+     "Süre (dk)" dışa aktarımda başlangıç–bitiş farkından hesaplanır;
+     okunmaması normaldir, uyarı üretmez. */
+  const HESAPLANAN=['süre (dk)','sure (dk)','süre','sure'];
   const taninan=new Set([...Object.values(S).filter(x=>x>=0),...alanSut.map(x=>x.i)]);
   const sutunUyari=[
-    ...basliklarHam.map((ad,i)=>({ad,i})).filter(x=>x.ad&&!taninan.has(x.i))
+    ...basliklarHam.map((ad,i)=>({ad,i}))
+      .filter(x=>x.ad&&!taninan.has(x.i)&&!HESAPLANAN.includes(x.ad.toLocaleLowerCase('tr')))
       .map(x=>({baslik:`"${x.ad}" sütunu okunmadı`,
                 aciklama:'Bu başlık tanımlı bir alana karşılık gelmiyor; içindeki veriler alınmayacak.'})),
     ...ayar.alanlar.filter(a=>bul(a.ad)<0)
@@ -2281,11 +2307,35 @@ async function excelAl(dosya){
   if(!yeni.length){
     icePanelAc('Aktarılabilir kayıt bulunamadı',
       `<div class="hataKutu"><span class="im2">!</span><span>
-        <b>${satirlar.length-1} satır okundu, hiçbiri alınamadı</b>
-        <i>Aşağıdaki sorunlar giderildikten sonra tekrar deneyin.</i></span></div>`+
+        <b>${satirlar.length-1} satır okundu, hiçbiri kullanılabilir değil</b>
+        <i>Aşağıdaki sorunları Excel'de düzeltip dosyayı yeniden yükleyin.</i></span></div>`+
       sorunListesi('Sorunlu satırlar',hata.slice(0,30))+
       sorunListesi('Sütun uyarıları',sutunUyari),
-      `<button class="solid" data-ice="kapat">Kapat</button>`);
+      `<button class="solid" data-ice="kapat">Anladım, düzelteceğim</button>`);
+    return;
+  }
+
+  /* --- zorunlu alanlarda sorun varsa hiçbir şey aktarılmaz ---
+     Kısmi aktarım, eksik kalan satırların gözden kaçmasına yol açar.
+     Kullanıcı dosyayı düzeltip yeniden yüklemeli. */
+  if(hata.length){
+    icePanelAc('Düzeltilmesi gereken satırlar var',
+      `<div class="hataKutu"><span class="im2">!</span><span>
+        <b>${hata.length} satırda eksik ya da hatalı bilgi var</b>
+        <i>Yarım aktarım yapılmaz — hangi kayıtların eksik kaldığı gözden kaçabilir.
+        Aşağıdaki satırları Excel'de düzeltip dosyayı yeniden yükleyin.</i></span></div>
+      <div class="ozet">
+        ${ozetKart(yeni.length,'satır sorunsuz')}
+        ${ozetKart(hata.length,'satır düzeltilmeli','kotu')}
+        ${sutunUyari.length?ozetKart(sutunUyari.length,'sütun uyarısı','uyari'):''}
+      </div>
+      ${sorunListesi('Düzeltilmesi gereken satırlar',hata.slice(0,40))}
+      ${hata.length>40?'<p class="tanimnot">İlk 40 satır gösteriliyor.</p>':''}
+      ${sorunListesi('Sütun uyarıları',sutunUyari)}
+      <p class="uyari">Satır numaraları Excel dosyasındaki gerçek satır numaralarıdır —
+      dosyayı açıp doğrudan o satıra gidebilirsiniz. Düzelttikten sonra
+      "Excel'den veri al" ile tekrar deneyin.</p>`,
+      `<button class="solid" data-ice="kapat">Anladım, düzelteceğim</button>`);
     return;
   }
 
@@ -2293,12 +2343,10 @@ async function excelAl(dosya){
   const govde=
     `<div class="ozet">
       ${ozetKart(yeni.length,'kayıt hazır','iyi')}
-      ${hata.length?ozetKart(hata.length,'satır alınamadı','kotu'):''}
       ${sutunUyari.length?ozetKart(sutunUyari.length,'sütun uyarısı','uyari'):''}
       ${ozetKart(kayitlar.length,'mevcut kaydın')}
     </div>
     ${onizlemeTablosu(yeni)}
-    ${sorunListesi('Alınamayan satırlar',hata.slice(0,30))}
     ${sorunListesi('Sütun uyarıları',sutunUyari)}
     <div class="alan"><label>Mevcut kayıtların ne olsun?</label>
       <div class="secim">
