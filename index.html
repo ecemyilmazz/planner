@@ -167,6 +167,45 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
   background:var(--rule);color:var(--ink-soft);white-space:nowrap}
 .uyesatir .rol.yon{background:#1E5A46;color:#fff}
 .uyesatir .rol.pas{background:var(--c-istakibi);color:#fff}
+.zil{position:relative;width:34px;height:34px;border-radius:8px;display:grid;place-items:center;
+  border:1px solid var(--rule);background:var(--paper);color:var(--ink-soft);flex:none}
+.zil:hover{border-color:var(--ink-faint);color:var(--ink)}
+.zil svg{width:17px;height:17px}
+.zil .zsayi{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;
+  border-radius:9px;background:var(--c-istakibi);color:#fff;font-family:'IBM Plex Mono';
+  font-size:10px;font-weight:600;display:grid;place-items:center;border:2px solid var(--ground)}
+.ksay{display:inline-grid;place-items:center;min-width:16px;height:16px;padding:0 4px;margin-left:6px;
+  border-radius:8px;background:var(--c-istakibi);color:#fff;font-family:'IBM Plex Mono';font-size:9.5px}
+.ksay:empty{display:none}
+.dvt{background:var(--paper);border:1px solid var(--rule);border-radius:9px;padding:12px 13px;margin-bottom:8px;
+  border-left:3px solid var(--c-toplanti)}
+.dvt.bekliyor{border-left-color:var(--c-calisma);background:#FDFBF6}
+.dvt.kabul{border-left-color:#1E5A46}
+.dvt.red{border-left-color:var(--c-istakibi);opacity:.75}
+.dvt-ust{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+.dvt-kim{font-size:11.5px;color:var(--ink-soft)}
+.dvt-kim b{color:var(--ink);font-weight:600}
+.dvt-durum{font-family:'IBM Plex Mono';font-size:9.5px;padding:1px 7px;border-radius:4px;
+  background:var(--rule);color:var(--ink-soft);white-space:nowrap}
+.dvt-durum.bekliyor{background:#F6E9D9;color:var(--c-calisma)}
+.dvt-durum.kabul{background:#DCEDE4;color:#1E5A46}
+.dvt-durum.red{background:#F6E3DE;color:var(--c-istakibi)}
+.dvt-konu{font-size:14px;font-weight:600;line-height:1.35;font-family:'Archivo';letter-spacing:-.01em}
+.dvt-zaman{font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-soft);margin-top:4px}
+.dvt-not{font-size:12px;color:var(--ink-soft);font-style:italic;margin-top:5px;
+  border-left:2px solid var(--rule);padding-left:8px}
+.dvt-aks{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.dvt-aks button{padding:6px 14px;font-size:12.5px;border-radius:7px;font-weight:600}
+.dvt-aks .kbl{background:#1E5A46;color:#fff}
+.dvt-aks .kbl:hover{background:#174A39}
+.dvt-aks .rdt{background:var(--paper-2);border:1px solid var(--rule);color:var(--c-istakibi)}
+.dvt-aks .rdt:hover{background:var(--c-istakibi);color:#fff;border-color:var(--c-istakibi)}
+.mesgul-liste{display:flex;flex-wrap:wrap;gap:6px}
+.mesgul{font-family:'IBM Plex Mono';font-size:12px;background:var(--paper-2);
+  border:1px solid var(--rule);border-radius:6px;padding:5px 10px;color:var(--ink-soft)}
+.mesgul.cakis{background:#F6E3DE;border-color:#E3BDB2;color:var(--c-istakibi);font-weight:600}
+.cakisma{background:#F6E3DE;border:1px solid #E3BDB2;border-radius:6px;padding:7px 10px;
+  font-size:11.5px;color:var(--c-istakibi);margin-top:7px}
 .modrozet{font-family:'IBM Plex Mono';font-size:9.5px;font-weight:600;letter-spacing:.09em;
   background:var(--c-calisma);color:#fff;padding:2px 7px;border-radius:4px}
 .serit.demo{background:#F0EDE4;border-color:#DCD3BE;border-left-color:var(--c-calisma)}
@@ -586,6 +625,12 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
       <button role="tab" data-gorunum="kayit" aria-selected="false">Kayıtlar</button>
     </div>
     <div class="spacer"></div>
+    <button class="zil" id="zilBtn" hidden title="Davetler ve atamalar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      <span class="zsayi" id="zilSayi" hidden>0</span>
+    </button>
     <button class="ghost mobil-gizle" id="ayarBtn">Ayarlar</button>
     <button class="solid" id="yeniBtn">Yeni kayıt</button>
     <button class="giris" id="girisBtn" title="Google hesabınla giriş yap">Giriş yap</button>
@@ -635,7 +680,10 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
         <textarea id="fSon" placeholder="Nerede kaldı?"></textarea></div>
     </div>
     <div class="mfoot">
-      <button class="ghost" id="sil" hidden>Kaydı sil</button><span class="spacer"></span>
+      <button class="ghost" id="sil" hidden>Kaydı sil</button>
+      <button class="ghost" id="davetBtn" hidden title="Bu kaydı birine toplantı daveti olarak gönder">Davet gönder</button>
+      <button class="ghost" id="atamaBtn" hidden title="Bu işi birine ata">İş ata</button>
+      <span class="spacer"></span>
       <button class="ghost" id="vazgec">Vazgeç</button><button class="solid" id="kaydet">Kaydet</button>
     </div>
   </div>
@@ -711,14 +759,14 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
         <div id="uyeListe"><div class="bos">Yükleniyor…</div></div>
       </div>
       <div class="alan">
-        <label for="yeniUyeAd">Yeni hesap ekle</label>
+        <label for="yeniUyeAd">Yeni hesap ekle<span class="zyildiz">ikisi de zorunlu</span></label>
         <div class="ikili" style="margin-bottom:7px">
-          <input id="yeniUyeAd" placeholder="Ad soyad" maxlength="40">
+          <input id="yeniUyeAd" placeholder="Ad Soyad" maxlength="40">
           <input id="yeniUye" type="email" placeholder="ornek@gmail.com">
         </div>
         <button class="solid" id="uyeEkle" style="width:100%">Ekle</button>
-        <div class="tanimnot">Gmail adresi olmalı. Eklenen kişi hem giriş yapabilir hem de
-        kayıtlara sorumlu olarak atanabilir; kişi listesine otomatik eklenir.</div>
+        <div class="tanimnot">Eklenen kişi Google ile giriş yapabilir ve
+        <b>tüm ekibin sorumlu listesinde</b> görünür.</div>
       </div>
     </div>
 
@@ -766,6 +814,19 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
       </div>
       </fieldset>
     </div>
+  </div>
+</div>
+
+<div class="perde" id="kutuPerde" hidden>
+  <div class="modal enis" role="dialog" aria-modal="true">
+    <div class="mhead"><h2>Gelen kutusu</h2>
+      <button class="ghost" id="kutuKapat">Kapat</button></div>
+    <div class="atabs" role="tablist">
+      <button role="tab" data-kt="gelen" aria-selected="true">Gelen<span class="ksay" id="ksGelen"></span></button>
+      <button role="tab" data-kt="giden" aria-selected="false">Gönderdiğim</button>
+      <button role="tab" data-kt="isler" aria-selected="false">İşler<span class="ksay" id="ksIsler"></span></button>
+    </div>
+    <div class="mbody" id="kutuGovde"></div>
   </div>
 </div>
 
@@ -971,7 +1032,7 @@ let kayitlar=ornekVeri(), sonrakiId=11;
 /* ---------- kalıcılık ---------- */
 /* Tek kayit yeri Firestore. Demo modunda hicbir sey saklanmaz;
    sayfa yenilenince ornek veriye doner. */
-function yaz(){ bulutaYaz(); }
+function yaz(){ bulutaYaz(); musaitlikYaz(); }
 /* Eski surumlerden gelen veriyi guncel yapiya tasir. Degisiklik olduysa true doner.
    Adim 1: duz listeler -> alan tanimlari    Adim 2: adlar -> kalici kimlikler
    Hicbir veri kaybolmaz; tanimda olmayan bir deger gorulurse tanima eklenir. */
@@ -1120,7 +1181,7 @@ function ciz(){
   e.innerHTML = gorunum==='gun'?gunEkrani():gorunum==='hafta'?haftaEkrani():gorunum==='ay'?ayEkrani():kayitEkrani();
   if(gorunum==='gun')gunBagla(); else if(gorunum==='hafta')haftaBagla();
   else if(gorunum==='ay')ayBagla(); else kayitBagla();
-  lejant();kilitUygula();altbarCiz();genisGorunumGuncelle();
+  lejant();kilitUygula();altbarCiz();genisGorunumGuncelle();zilGuncelle();
 }
 function lejant(){
   const bl='font-weight:700;font-family:Archivo;font-size:10px;letter-spacing:.1em;text-transform:uppercase';
@@ -1612,6 +1673,11 @@ function modalAc(id){
   kisilerCiz(k?.sorumlular);
   document.querySelectorAll('#fSorumlular input').forEach(i=>i.checked=k?k.sorumlular.includes(i.value):false);
   turDegisti(k);
+  /* Davet ve atama yalnızca giriş yapılmış, kaydedilmiş kayıtlarda anlamlı */
+  const paylasilabilir=(mod==='uye'&&!!k);
+  const td=turBul(k?.turId)||{};
+  document.getElementById('davetBtn').hidden=!(paylasilabilir&&td.sinif==='zaman'&&k.tarih&&k.bas);
+  document.getElementById('atamaBtn').hidden=!(paylasilabilir&&yoneticiMi);
   document.getElementById('zSorumlu').hidden=!zorunluMu('sorumlular');
   document.getElementById('zSonDurum').hidden=!zorunluMu('sonDurum');
   document.getElementById('zSaat').hidden=!zorunluMu('saat');
@@ -1672,7 +1738,7 @@ function ayarAc(){
   document.getElementById('ayarPerde').hidden=false;
 }
 function ayarSekme(ad){
-  document.querySelectorAll('.atabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.at===ad));
+  document.querySelectorAll('#ayarPerde .atabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.at===ad));
   document.getElementById('sekGenel').hidden=ad!=='genel';
   document.getElementById('sekTanim').hidden=ad!=='tanim';
   document.getElementById('sekZorunlu').hidden=ad!=='zorunlu';
@@ -1781,7 +1847,7 @@ function tanimCiz(){
           </span>
           <span class="kul">${n} kayıt</span>
           ${k.pasif?'<span class="satirdurum">PASİF</span>':''}
-          <button class="tsil" data-keposta="${i}" title="${k.eposta?'E-postayı değiştir':'E-posta ekle — davet alabilsin'}">@</button>
+          <button class="tsil" data-keposta="${i}" title="${k.eposta?'Bağlı hesabı değiştir':'Hesap bağla — davet alabilsin'}">@</button>
           <button class="tsil" data-kpas="${i}" title="${k.pasif?'Tekrar aktif et':'Pasife al'}">${k.pasif?'↺':'◐'}</button>
           <button class="cop" data-ksil="${i}" title="${n?n+' kayıtta sorumlu':'Sil'}">${copSvg(12)}</button>
         </div>`;
@@ -1942,15 +2008,14 @@ function tanimBagla(){
   /* e-posta ekleme / değiştirme */
   g('[data-keposta]','onclick',e=>async()=>{
     const i=+e.dataset.keposta, k=ayar.kisiler[i];
-    const yeni=await epostaSor(k);
-    if(yeni===null)return;
-    const temiz=yeni.trim().toLowerCase();
-    if(temiz&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(temiz)){bildir('Geçerli bir e-posta değil');return}
-    if(temiz&&ayar.kisiler.some((x,j)=>j!==i&&(x.eposta||'').toLowerCase()===temiz)){
-      bildir('Bu e-posta başka bir kişide tanımlı');return}
+    await uyeOnbellegiTazele();          // liste güncel olsun
+    const secilen=await epostaSor(k);
+    if(secilen===null)return;
+    const temiz=(secilen||'').trim().toLowerCase();
+    if(temiz===(k.eposta||'').toLowerCase())return;
     if(temiz)k.eposta=temiz; else delete k.eposta;
     tanimKaydet();
-    bildir(temiz?`${k.ad} → ${temiz}`:'E-posta kaldırıldı');
+    bildir(temiz?`${k.ad} → ${temiz}`:`${k.ad} artık yalnızca etiket`);
   });
 
   g('[data-kpas]','onclick',e=>()=>{
@@ -2539,6 +2604,51 @@ const SABIT_BASLIK={konu:'Konu',tur:'Tür',sorumlular:'Sorumlular',tarih:'Tarih'
   bas:'Başlangıç',bit:'Bitiş',bitis:'Son Tarih',durum:'Durum',sonDurum:'Son Durum',kayit:'Kayıt Tarihi'};
 
 
+
+/* ================= MEŞGULİYET AYNASI ================= */
+/* Ekip içinde toplantı ayarlayabilmek için, kişinin DOLU olduğu zaman
+   aralıkları ayrı bir yere yazılır. Yazılan tek şey {t,b,e} üçlüsüdür:
+   tarih, başlangıç, bitiş. Konu, tür, sorumlu, kiminle olduğu ASLA gitmez.
+   Yani biri senin 14:00'te dolu olduğunu görür, neyle dolu olduğunu göremez. */
+
+const MUSAIT_GUN=90;          // bugünden itibaren kaç gün paylaşılır
+let musaitZaman=null;
+
+function musaitlikDilimleri(){
+  const bit=ekleGun(BUGUN,MUSAIT_GUN);
+  return kayitlar
+    .filter(k=>zamanliMi(k)&&k.tarih&&k.bas&&k.bit&&!k.tamam
+               &&k.tarih>=BUGUN&&k.tarih<=bit)
+    .map(k=>({t:k.tarih,b:k.bas,e:k.bit}))
+    .sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:dk(a.b)-dk(b.b));
+}
+
+/* Kayıt değiştikçe aynayı tazeler. Art arda değişikliklerde tek yazma yapılır. */
+function musaitlikYaz(){
+  if(mod!=='uye'||!FB||!oturum||!oturum.email)return;
+  clearTimeout(musaitZaman);
+  musaitZaman=setTimeout(async()=>{
+    try{ await FB.musaitlikYaz(oturum.email,musaitlikDilimleri()); }
+    catch(e){ console.warn('müsaitlik yazılamadı:',e); }
+  },2000);
+}
+
+/* Bir kişinin belirli gündeki dolu aralıkları */
+async function kisiMesguliyeti(eposta,tarih){
+  try{
+    const hepsi=await FB.musaitlikOku(eposta);
+    return hepsi.filter(x=>x.t===tarih).sort((a,b)=>dk(a.b)-dk(b.b));
+  }catch(e){ return null; }         // null = okunamadı (izin yok / bağlantı yok)
+}
+
+/* Kendi o günkü doluluğum — çakışma kontrolü için */
+function kendiMesguliyetim(tarih){
+  return gunun(tarih).filter(k=>!k.tamam).map(k=>({b:k.bas,e:k.bit,konu:k.konu}));
+}
+
+/* İki aralık çakışıyor mu */
+const cakisiyorMu=(b1,e1,b2,e2)=>dk(b1)<dk(e2)&&dk(b2)<dk(e1);
+
 /* ================= MOBİL DÜZEN ================= */
 const ALT_SIMGE={
   gun:'<path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>',
@@ -2574,6 +2684,375 @@ function genisGorunumGuncelle(){
   b.hidden=!dar;                       // yalnızca dar ekranlarda anlamlı
   b.textContent=genisZorla?'Mobil görünüm':'Geniş görünüm';
   b.title=genisZorla?'Telefona uygun düzene dön':'Masaüstü düzenini kullan';
+}
+
+
+
+/* ================= DAVET GÖNDERME ================= */
+/* Kayıt penceresinden çağrılır. Seçilen kişinin o gündeki dolu saatleri
+   gösterilir — sadece meşgul aralıklar, konu bilgisi olmadan. */
+
+async function davetGonderPanel(k){
+  const adaylar=kullaniciKisiler().filter(x=>x.eposta!==(oturum.email||'').toLowerCase());
+  if(!adaylar.length){
+    return bilgiVer({baslik:'Davet gönderilemez',tehlike:true,
+      mesaj:'Davet gönderilebilecek kişi yok',
+      detay:'Davet için kişinin bir hesabı olmalı. '+
+        '<b>Ayarlar → Erişim</b> bölümünden hesap ekleyebilir, '+
+        '<b>Tanımlar → Kişiler</b> bölümünden mevcut kişilere hesap bağlayabilirsin.'});
+  }
+
+  let seciliKisi=adaylar[0].id, tarih=k.tarih||BUGUN, bas=k.bas||'09:00', bit=k.bit||'10:00';
+  let mesgul=null, yukleniyor=false;
+
+  const ciz2=()=>{
+    const kisi=ayar.kisiler.find(x=>x.id===seciliKisi);
+    const cakisan=(mesgul||[]).filter(x=>cakisiyorMu(bas,bit,x.b,x.e));
+    document.getElementById('onayGovde').innerHTML=
+      `<div class="alan"><label for="dvKisi">Kime</label>
+        <select id="dvKisi">${adaylar.map(x=>
+          `<option value="${x.id}" ${x.id===seciliKisi?'selected':''}>${guv(x.ad)}</option>`).join('')}</select></div>
+       <div class="ikili">
+         <div class="alan"><label for="dvTarih">Tarih</label>
+           <input type="date" id="dvTarih" value="${tarih}"></div>
+         <div class="alan"><label for="dvBas">Başlangıç</label>
+           <input type="time" id="dvBas" step="900" value="${bas}"></div>
+       </div>
+       <div class="ikili">
+         <div class="alan"><label for="dvBit">Bitiş</label>
+           <input type="time" id="dvBit" step="900" value="${bit}"></div>
+       </div>
+
+       <div class="alan">
+         <label>${guv(kisi.ad)} — ${kisaTarih(tarih)} doluluğu</label>
+         <div class="tanimnot">Yalnızca dolu saatler görünür; ne yaptığı görünmez.</div>
+         ${yukleniyor?'<div class="bos">Yükleniyor…</div>'
+          :mesgul===null?'<div class="bos">Müsaitlik bilgisi okunamadı.<br>Kişi henüz uygulamayı kullanmamış olabilir.</div>'
+          :mesgul.length?`<div class="mesgul-liste">${mesgul.map(x=>
+              `<div class="mesgul ${cakisiyorMu(bas,bit,x.b,x.e)?'cakis':''}">${x.b} – ${x.e}</div>`).join('')}</div>`
+          :'<div class="bos">Bu gün tamamen boş görünüyor.</div>'}
+       </div>
+
+       ${cakisan.length?`<div class="cakisma"><b>Seçtiğin saat dolu:</b> ${
+         cakisan.map(x=>`${x.b}–${x.e}`).join(' · ')} — yine de gönderebilirsin.</div>`:''}
+
+       <div class="alan"><label for="dvNot">Not (isteğe bağlı)</label>
+         <textarea id="dvNot" rows="2" placeholder="Toplantı hakkında kısa bilgi"></textarea></div>`;
+
+    document.getElementById('dvKisi').onchange=async e=>{
+      seciliKisi=e.target.value; mesgul=null; yukleniyor=true; ciz2();
+      const kk=ayar.kisiler.find(x=>x.id===seciliKisi);
+      mesgul=await kisiMesguliyeti(kk.eposta,tarih); yukleniyor=false; ciz2();
+    };
+    document.getElementById('dvTarih').onchange=async e=>{
+      tarih=e.target.value||BUGUN; mesgul=null; yukleniyor=true; ciz2();
+      const kk=ayar.kisiler.find(x=>x.id===seciliKisi);
+      mesgul=await kisiMesguliyeti(kk.eposta,tarih); yukleniyor=false; ciz2();
+    };
+    document.getElementById('dvBas').onchange=e=>{bas=e.target.value||bas;ciz2()};
+    document.getElementById('dvBit').onchange=e=>{bit=e.target.value||bit;ciz2()};
+  };
+
+  document.getElementById('onayBaslik').textContent='Toplantı daveti';
+  document.getElementById('onayAyak').innerHTML=
+    `<button class="ghost" data-onay="hayir">Vazgeç</button>
+     <button class="solid" data-onay="evet">Davet gönder</button>`;
+  document.getElementById('onayPerde').hidden=false;
+  yukleniyor=true; ciz2();
+  mesgul=await kisiMesguliyeti(adaylar[0].eposta,tarih); yukleniyor=false; ciz2();
+
+  const sonuc=await new Promise(coz=>{
+    onaySoz=()=>coz(null);
+    document.getElementById('onayAyak').querySelectorAll('[data-onay]').forEach(b=>b.onclick=()=>{
+      const e=b.dataset.onay==='evet';
+      const veri=e?{kisiId:seciliKisi,tarih,bas,bit,
+        not:(document.getElementById('dvNot').value||'').trim()}:null;
+      document.getElementById('onayPerde').hidden=true; onaySoz=null; coz(veri);
+    });
+  });
+  if(!sonuc)return;
+  if(dk(sonuc.bit)<=dk(sonuc.bas)){bildir('Bitiş saati başlangıçtan sonra olmalı');return}
+
+  const alici=ayar.kisiler.find(x=>x.id===sonuc.kisiId);
+  try{
+    await FB.davetOlustur({
+      gonderen:(oturum.email||'').toLowerCase(),
+      alici:alici.eposta.toLowerCase(),
+      konu:k.konu, tarih:sonuc.tarih, bas:sonuc.bas, bit:sonuc.bit,
+      not:sonuc.not, durum:'bekliyor', olusturma:Date.now()
+    });
+    bildir(`${alici.ad} kişisine davet gönderildi`);
+    await kutuTazele();
+  }catch(e){ bildir('Davet gönderilemedi — bağlantını kontrol et'); }
+}
+
+/* ================= İŞ ATAMA (yalnızca yönetici) ================= */
+async function isAtaPanel(k){
+  const adaylar=kullaniciKisiler().filter(x=>x.eposta!==(oturum.email||'').toLowerCase());
+  if(!adaylar.length){
+    return bilgiVer({baslik:'İş atanamaz',tehlike:true,
+      mesaj:'İş atanabilecek kişi yok',
+      detay:'Atama için kişinin bir hesabı olmalı. <b>Ayarlar → Erişim</b> bölümünden ekleyebilirsin.'});
+  }
+  document.getElementById('onayBaslik').textContent='İş ata';
+  document.getElementById('onayGovde').innerHTML=
+    `<div class="onayMesaj"><b>${guv(kes(k.konu,60))}</b>
+      <i>Atanan kişi işi reddedemez; gördüğünde kendi kayıtlarına ekler ve
+      sen "görüldü" bilgisini alırsın.</i></div>
+     <div class="alan"><label for="atKisi">Kime</label>
+       <select id="atKisi">${adaylar.map(x=>`<option value="${x.id}">${guv(x.ad)}</option>`).join('')}</select></div>
+     <div class="alan"><label for="atBitis">Son tarih</label>
+       <input type="date" id="atBitis" value="${k.bitis||ekleGun(BUGUN,7)}"></div>
+     <div class="alan"><label for="atNot">Not (isteğe bağlı)</label>
+       <textarea id="atNot" rows="2" placeholder="İşle ilgili açıklama"></textarea></div>`;
+  document.getElementById('onayAyak').innerHTML=
+    `<button class="ghost" data-onay="hayir">Vazgeç</button>
+     <button class="solid" data-onay="evet">İşi ata</button>`;
+  document.getElementById('onayPerde').hidden=false;
+
+  const sonuc=await new Promise(coz=>{
+    onaySoz=()=>coz(null);
+    document.getElementById('onayAyak').querySelectorAll('[data-onay]').forEach(b=>b.onclick=()=>{
+      const e=b.dataset.onay==='evet';
+      const veri=e?{kisiId:document.getElementById('atKisi').value,
+        bitis:document.getElementById('atBitis').value,
+        not:(document.getElementById('atNot').value||'').trim()}:null;
+      document.getElementById('onayPerde').hidden=true; onaySoz=null; coz(veri);
+    });
+  });
+  if(!sonuc)return;
+  if(!sonuc.bitis){bildir('Son tarih gerekli');return}
+
+  const alici=ayar.kisiler.find(x=>x.id===sonuc.kisiId);
+  try{
+    await FB.atamaOlustur({
+      atayan:(oturum.email||'').toLowerCase(),
+      alici:alici.eposta.toLowerCase(),
+      konu:k.konu, bitis:sonuc.bitis, not:sonuc.not,
+      gorulme:null, olusturma:Date.now()
+    });
+    bildir(`${alici.ad} kişisine iş atandı`);
+    await kutuTazele();
+  }catch(e){ bildir('Atanamadı — bağlantını kontrol et'); }
+}
+
+/* ================= GELEN KUTUSU ================= */
+let davetler=[], atamalar=[], kutuSekme='gelen', dinlemeIptal=[];
+
+const bekleyenDavet=()=>davetler.filter(d=>d.yon==='gelen'&&d.durum==='bekliyor').length;
+const gorulmemisIs=()=>atamalar.filter(a=>a.yon==='bana'&&!a.gorulme).length;
+
+function zilGuncelle(){
+  const z=document.getElementById('zilBtn'), s=document.getElementById('zilSayi');
+  if(!z)return;
+  z.hidden=(mod!=='uye');
+  const n=bekleyenDavet()+gorulmemisIs();
+  s.hidden=!n; s.textContent=n>9?'9+':n;
+  const g=document.getElementById('ksGelen'), i=document.getElementById('ksIsler');
+  if(g)g.textContent=bekleyenDavet()||'';
+  if(i)i.textContent=gorulmemisIs()||'';
+}
+
+async function kutuTazele(){
+  if(mod!=='uye'||!FB||!oturum)return;
+  try{
+    [davetler,atamalar]=await Promise.all([
+      FB.davetleriOku(oturum.email),
+      FB.atamalariOku(oturum.email)
+    ]);
+  }catch(e){ console.warn('kutu okunamadı:',e); }
+  zilGuncelle();
+  if(!document.getElementById('kutuPerde').hidden)kutuCiz();
+}
+
+/* canlı dinleme: yeni davet/atama geldiğinde zil anında güncellenir */
+function kutuDinle(){
+  dinlemeIptal.forEach(f=>{try{f()}catch(e){}}); dinlemeIptal=[];
+  if(mod!=='uye'||!FB||!oturum)return;
+  try{
+    dinlemeIptal.push(FB.davetleriDinle(oturum.email,kutuTazele));
+    dinlemeIptal.push(FB.atamalariDinle(oturum.email,kutuTazele));
+  }catch(e){}
+}
+
+const kisiAdEposta=e=>{const k=kisiEpostaIle(e);return k?k.ad:(e||'').split('@')[0]};
+
+function davetKarti(d){
+  const gelen=d.yon==='gelen';
+  const durumAd={bekliyor:'yanıt bekliyor',kabul:'kabul edildi',red:'reddedildi'}[d.durum]||d.durum;
+  const cak=gelen&&d.durum==='bekliyor'
+    ? kendiMesguliyetim(d.tarih).filter(x=>cakisiyorMu(d.bas,d.bit,x.b,x.e))
+    : [];
+  return `<div class="dvt ${d.durum}">
+    <div class="dvt-ust">
+      <span class="dvt-kim">${gelen?'Gönderen':'Alıcı'}: <b>${guv(kisiAdEposta(gelen?d.gonderen:d.alici))}</b></span>
+      <span class="spacer"></span>
+      <span class="dvt-durum ${d.durum}">${durumAd}</span>
+    </div>
+    <div class="dvt-konu">${guv(d.konu)}</div>
+    <div class="dvt-zaman">${uzunTarih(d.tarih)} · ${d.bas}–${d.bit}</div>
+    ${d.not?`<div class="dvt-not">${guv(d.not)}</div>`:''}
+    ${d.yanitNot?`<div class="dvt-not">Yanıt: ${guv(d.yanitNot)}</div>`:''}
+    ${cak.length?`<div class="cakisma"><b>Takviminde çakışma var:</b> ${
+      cak.map(x=>guv(`${x.b}–${x.e} ${kes(x.konu,30)}`)).join(' · ')}</div>`:''}
+    <div class="dvt-aks">
+      ${gelen&&d.durum==='bekliyor'?`
+        <button class="kbl" data-dkabul="${d.id}">Kabul et</button>
+        <button class="rdt" data-dred="${d.id}">Reddet</button>`:''}
+      ${!gelen&&d.durum==='bekliyor'?`
+        <button class="ghost" data-dgeri="${d.id}">Daveti geri çek</button>`:''}
+      ${!gelen&&d.durum!=='bekliyor'?`
+        <button class="ghost" data-dsil="${d.id}">Listeden kaldır</button>`:''}
+    </div>
+  </div>`;
+}
+
+function atamaKarti(a){
+  const bana=a.yon==='bana';
+  return `<div class="dvt ${a.gorulme?'kabul':'bekliyor'}">
+    <div class="dvt-ust">
+      <span class="dvt-kim">${bana?'Atayan':'Atanan'}: <b>${guv(kisiAdEposta(bana?a.atayan:a.alici))}</b></span>
+      <span class="spacer"></span>
+      <span class="dvt-durum ${a.gorulme?'kabul':'bekliyor'}">${a.gorulme?'görüldü':'görülmedi'}</span>
+    </div>
+    <div class="dvt-konu">${guv(a.konu)}</div>
+    <div class="dvt-zaman">son tarih: ${uzunTarih(a.bitis)}${
+      a.gorulme?` · ${kisaTarih(new Date(a.gorulme).toISOString().slice(0,10))} tarihinde görüldü`:''}</div>
+    ${a.not?`<div class="dvt-not">${guv(a.not)}</div>`:''}
+    <div class="dvt-aks">
+      ${bana&&!a.gorulme?`<button class="kbl" data-agor="${a.id}">Gördüm, kayıtlarıma ekle</button>`:''}
+      ${!bana?`<button class="ghost" data-asil="${a.id}">Geri çek</button>`:''}
+    </div>
+  </div>`;
+}
+
+function kutuCiz(){
+  document.querySelectorAll('#kutuPerde .atabs button').forEach(b=>
+    b.setAttribute('aria-selected',b.dataset.kt===kutuSekme));
+  const g=document.getElementById('kutuGovde');
+  let liste=[],bosMetin='';
+  if(kutuSekme==='gelen'){
+    liste=davetler.filter(d=>d.yon==='gelen');
+    bosMetin='Sana gönderilmiş davet yok.';
+  }else if(kutuSekme==='giden'){
+    liste=davetler.filter(d=>d.yon==='giden');
+    bosMetin='Henüz davet göndermedin.<br>Bir kaydı açıp "Davet gönder" ile başlayabilirsin.';
+  }else{
+    liste=atamalar;
+    bosMetin=yoneticiMi
+      ? 'Atanmış iş yok.<br>Bir kaydı açıp "İş olarak ata" ile birine iş verebilirsin.'
+      : 'Sana atanmış iş yok.';
+  }
+  g.innerHTML=liste.length
+    ? liste.map(x=>kutuSekme==='isler'?atamaKarti(x):davetKarti(x)).join('')
+    : `<div class="bos">${bosMetin}</div>`;
+  kutuBagla();
+  zilGuncelle();
+}
+
+function kutuBagla(){
+  const g=document.getElementById('kutuGovde');
+  g.querySelectorAll('[data-dkabul]').forEach(b=>b.onclick=()=>davetYanit(b.dataset.dkabul,'kabul'));
+  g.querySelectorAll('[data-dred]').forEach(b=>b.onclick=()=>davetYanit(b.dataset.dred,'red'));
+  g.querySelectorAll('[data-dgeri]').forEach(b=>b.onclick=async()=>{
+    const d=davetler.find(x=>x.id===b.dataset.dgeri);
+    if(!await onayla({baslik:'Daveti geri çek',tehlike:true,
+      mesaj:`"${guv(kes(d.konu,50))}" daveti geri çekilecek`,
+      detay:`${guv(kisiAdEposta(d.alici))} artık bu daveti göremeyecek.`,
+      onayMetni:'Geri çek'}))return;
+    try{ await FB.davetSil(d.id); bildir('Davet geri çekildi'); await kutuTazele(); }
+    catch(e){ bildir('Geri çekilemedi'); }
+  });
+  g.querySelectorAll('[data-dsil]').forEach(b=>b.onclick=async()=>{
+    try{ await FB.davetSil(b.dataset.dsil); await kutuTazele(); }catch(e){}
+  });
+  g.querySelectorAll('[data-agor]').forEach(b=>b.onclick=()=>atamaGor(b.dataset.agor));
+  g.querySelectorAll('[data-asil]').forEach(b=>b.onclick=async()=>{
+    const a=atamalar.find(x=>x.id===b.dataset.asil);
+    if(!await onayla({baslik:'İşi geri çek',tehlike:true,
+      mesaj:`"${guv(kes(a.konu,50))}" geri çekilecek`,
+      detay:`${guv(kisiAdEposta(a.alici))} artık bu işi göremeyecek. `+
+        (a.gorulme?'Kayıtlarına aldıysa oradaki kaydı silinmez.':''),
+      onayMetni:'Geri çek'}))return;
+    try{ await FB.atamaSil(a.id); bildir('İş geri çekildi'); await kutuTazele(); }
+    catch(e){ bildir('Geri çekilemedi'); }
+  });
+}
+
+/* --- daveti yanıtla --- */
+async function davetYanit(id,durum){
+  const d=davetler.find(x=>x.id===id);
+  if(!d)return;
+  const cak=kendiMesguliyetim(d.tarih).filter(x=>cakisiyorMu(d.bas,d.bit,x.b,x.e));
+
+  if(durum==='kabul'){
+    if(!await onayla({baslik:'Daveti kabul et',
+      mesaj:`"${guv(kes(d.konu,50))}" takvimine eklenecek`,
+      detay:`${uzunTarih(d.tarih)} · ${d.bas}–${d.bit}<br>`+
+        `${guv(kisiAdEposta(d.gonderen))} kişisine kabul bildirimi gider.`+
+        (cak.length?`<br><br><b>Dikkat:</b> bu saatte ${cak.length} kaydın var.`:''),
+      tehlike:cak.length>0,
+      sayaclar:cak.length?[{sayi:cak.length,etiket:'çakışan kaydın',sinif:'kotu'}]:[],
+      liste:cak.map(x=>({baslik:`${x.b}–${x.e}`,aciklama:kes(x.konu,60)})),
+      listeBaslik:'Aynı saatteki kayıtların',
+      onayMetni:'Kabul et ve ekle'}))return;
+
+    const tur=(zamanTurleri()[0]||{}).id;
+    kayitlar.push({id:sonrakiId++,turId:tur,konu:d.konu,alanlar:{},
+      sorumlular:[kisiEpostaIle(d.gonderen)?.id].filter(Boolean),
+      sonDurum:d.not||'',kayitTarihi:BUGUN,
+      tarih:d.tarih,bas:d.bas,bit:d.bit,bitis:null,tamam:false,davetId:d.id});
+    yaz(); ciz();
+  }else{
+    const not=await notSor('Reddetme sebebi',
+      'İstersen kısa bir açıklama yazabilirsin — gönderene iletilir.',
+      'Örn: o saatte başka toplantım var');
+    if(not===null)return;
+    try{ await FB.davetYanitla(id,'red',not); bildir('Davet reddedildi'); await kutuTazele(); }
+    catch(e){ bildir('Yanıtlanamadı'); }
+    return;
+  }
+  try{ await FB.davetYanitla(id,'kabul',''); bildir('Kabul edildi, takvimine eklendi'); await kutuTazele(); }
+  catch(e){ bildir('Yanıt kaydedilemedi'); }
+}
+
+/* --- atamayı gördüm işaretle --- */
+async function atamaGor(id){
+  const a=atamalar.find(x=>x.id===id);
+  if(!a)return;
+  if(!await onayla({baslik:'İşi kayıtlarına al',
+    mesaj:`"${guv(kes(a.konu,50))}" kayıtlarına eklenecek`,
+    detay:`Son tarih: ${uzunTarih(a.bitis)}<br>`+
+      `${guv(kisiAdEposta(a.atayan))} kişisi işi gördüğünü öğrenecek.`,
+    onayMetni:'Gördüm, ekle'}))return;
+  const tur=(hatirlatmaTurleri()[0]||{}).id;
+  kayitlar.push({id:sonrakiId++,turId:tur,konu:a.konu,alanlar:{},
+    sorumlular:[benKimim()?.id].filter(Boolean),
+    sonDurum:a.not||'',kayitTarihi:BUGUN,
+    tarih:null,bas:null,bit:null,bitis:a.bitis,tamam:false,atamaId:a.id});
+  yaz(); ciz();
+  try{ await FB.atamaGoruldu(id); bildir('Kayıtlarına eklendi'); await kutuTazele(); }
+  catch(e){ bildir('İşaretlenemedi'); }
+}
+
+/* --- kısa not girişi --- */
+function notSor(baslik,aciklama,ipucu){
+  document.getElementById('onayBaslik').textContent=baslik;
+  document.getElementById('onayGovde').innerHTML=
+    `<div class="onayMesaj"><b>${guv(aciklama)}</b></div>
+     <div class="alan"><textarea id="notGiris" placeholder="${guv(ipucu||'')}" rows="3"></textarea></div>`;
+  document.getElementById('onayAyak').innerHTML=
+    `<button class="ghost" data-onay="hayir">Vazgeç</button>
+     <button class="solid" data-onay="evet">Gönder</button>`;
+  document.getElementById('onayPerde').hidden=false;
+  setTimeout(()=>document.getElementById('notGiris').focus(),50);
+  return new Promise(coz=>{
+    onaySoz=()=>coz(null);
+    document.getElementById('onayAyak').querySelectorAll('[data-onay]').forEach(b=>b.onclick=()=>{
+      const v=b.dataset.onay==='evet'?(document.getElementById('notGiris').value||'').trim():null;
+      document.getElementById('onayPerde').hidden=true; onaySoz=null; coz(v);
+    });
+  });
 }
 
 /* ================= ORTAK ONAY PANELİ ================= */
@@ -2627,28 +3106,89 @@ function onayla(sec){
   });
 }
 
-/* Kişiye e-posta atamak için küçük giriş paneli.
-   İptal edilirse null, boş bırakılırsa '' döner (e-postayı kaldırmak için). */
-function epostaSor(k){
-  const mevcut=k.eposta||'';
-  document.getElementById('onayBaslik').textContent=`${k.ad} — e-posta`;
+/* Ad soyad girişi paneli. İptal edilirse null döner.
+   Boş ya da çok kısa girilirse kaydetmeye izin verilmez. */
+function adSor(mevcut,eposta){
+  document.getElementById('onayBaslik').textContent='Ad soyad';
   document.getElementById('onayGovde').innerHTML=
-    `<div class="onayMesaj"><b>Bu kişi uygulamayı kullanacak mı?</b>
-      <i>E-posta tanımlarsan bu kişiye toplantı daveti gönderebilir, müsait saatlerini görebilirsin.
-      Boş bırakırsan yalnızca kayıtlarda etiket olarak kalır.</i></div>
-     <div class="alan"><label for="kEposta">Google hesabı</label>
-       <input type="email" id="kEposta" placeholder="ornek@gmail.com" value="${guv(mevcut)}"></div>
-     <p class="uyari">E-posta tanımlamak tek başına giriş yetkisi vermez.
-     Erişim için Ayarlar → Erişim bölümünden de eklenmeli.</p>`;
+    `<div class="onayMesaj"><b>Bu kişi listelerde nasıl görünsün?</b>
+      <i>Girdiğin isim kayıtlarda sorumlu seçiminde, davetlerde ve erişim listesinde kullanılır.</i></div>
+     <div class="alan"><label for="adGiris">Ad soyad</label>
+       <input id="adGiris" maxlength="40" value="${guv(mevcut||'')}" placeholder="Ad Soyad"></div>
+     ${eposta?`<p class="uyari">Hesap: <code>${guv(eposta)}</code></p>`:''}`;
   document.getElementById('onayAyak').innerHTML=
     `<button class="ghost" data-onay="hayir">Vazgeç</button>
      <button class="solid" data-onay="evet">Kaydet</button>`;
   document.getElementById('onayPerde').hidden=false;
-  setTimeout(()=>document.getElementById('kEposta').focus(),50);
+  setTimeout(()=>{const g=document.getElementById('adGiris');g.focus();g.select()},50);
+
+  return new Promise(coz=>{
+    onaySoz=()=>coz(null);
+    const bitir=deger=>{document.getElementById('onayPerde').hidden=true;onaySoz=null;coz(deger)};
+    const kaydet=()=>{
+      const v=(document.getElementById('adGiris').value||'').trim();
+      if(v.length<2){bildir('Ad soyad en az 2 karakter olmalı');return}
+      bitir(v);
+    };
+    document.getElementById('adGiris').onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();kaydet()}};
+    document.getElementById('onayAyak').querySelectorAll('[data-onay]').forEach(b=>b.onclick=()=>{
+      if(b.dataset.onay==='evet')kaydet(); else bitir(null);
+    });
+  });
+}
+
+/* Kişiye hesap bağlama paneli.
+   E-posta elle yazılmaz — Erişim listesindeki hesaplardan seçilir.
+   Böylece yazım hatası olmaz ve olmayan bir hesaba bağlanamaz.
+   Döner: seçilen e-posta, '' (bağı kaldır) ya da null (vazgeç). */
+function epostaSor(k){
+  const mevcut=(k.eposta||'').toLowerCase();
+  /* Erişim listesindeki hesaplar; başka kişiye bağlı olanlar dışarıda kalır */
+  const bagliBaskasinda=e=>ayar.kisiler.some(x=>x.id!==k.id&&(x.eposta||'').toLowerCase()===e);
+  const secenekler=(uyeOnbellek||[])
+    .filter(u=>!bagliBaskasinda(u.eposta))
+    .map(u=>({...u,kendi:u.eposta===mevcut}));
+
+  document.getElementById('onayBaslik').textContent=`${k.ad} — hesap bağla`;
+
+  const govde = secenekler.length
+    ? `<div class="onayMesaj"><b>Bu kişi hangi hesapla giriş yapıyor?</b>
+        <i>Hesap bağlanan kişiye toplantı daveti gönderebilir, müsait saatlerini görebilirsin.
+        Bağlamazsan yalnızca kayıtlarda etiket olarak kalır.</i></div>
+       <div class="secim" id="hesapSecim">
+         ${secenekler.map(u=>{
+           const kisi=kisiEpostaIle(u.eposta);
+           return `<label><input type="radio" name="hsc" value="${guv(u.eposta)}" ${u.kendi?'checked':''}>
+             <span class="ic"><b>${guv(u.eposta)}</b><i>${
+               u.aktif===false?'erişimi kapalı · ':''}${u.rol==='yonetici'?'yönetici':'üye'}${
+               kisi&&kisi.id===k.id?' · şu an bu kişiye bağlı':''}</i></span></label>`;
+         }).join('')}
+         <label><input type="radio" name="hsc" value="" ${!mevcut?'checked':''}>
+           <span class="ic"><b>Hesap bağlama</b><i>Yalnızca kayıtlarda etiket olarak kullanılsın.</i></span></label>
+       </div>
+       <p class="uyari">Listede olmayan bir hesap için önce
+       <b>Ayarlar → Erişim</b> bölümünden ekleme yapmalısın.</p>`
+    : `<div class="hataKutu"><span class="im2">!</span><span>
+        <b>Bağlanabilecek hesap yok</b>
+        <i>Erişim listesinde hesap bulunmuyor ya da hepsi başka kişilere bağlı.<br>
+        Önce <b>Ayarlar → Erişim</b> bölümünden bir hesap ekle — eklediğin kişi
+        listeye otomatik düşer.</i></span></div>`;
+
+  document.getElementById('onayGovde').innerHTML=govde;
+  document.getElementById('onayAyak').innerHTML= secenekler.length
+    ? `<button class="ghost" data-onay="hayir">Vazgeç</button>
+       <button class="solid" data-onay="evet">Kaydet</button>`
+    : `<button class="solid" data-onay="hayir">Tamam</button>`;
+  document.getElementById('onayPerde').hidden=false;
+
   return new Promise(coz=>{
     onaySoz=()=>coz(null);
     document.getElementById('onayAyak').querySelectorAll('[data-onay]').forEach(b=>b.onclick=()=>{
-      const deger=b.dataset.onay==='evet'?document.getElementById('kEposta').value:null;
+      let deger=null;
+      if(b.dataset.onay==='evet'){
+        const r=document.querySelector('input[name="hsc"]:checked');
+        deger=r?r.value:'';
+      }
       document.getElementById('onayPerde').hidden=true; onaySoz=null; coz(deger);
     });
   });
@@ -3054,7 +3594,9 @@ async function bulutuYukle(){
       kayitlar=[]; sonrakiId=1;
     }
     gocEt({});
+    musaitlikYaz();
     arayuzuTazele();
+    kutuTazele(); kutuDinle();
     durumYaz('tamam'); setTimeout(()=>durumYaz(null),1800);
     bildir(`Giriş yapıldı · ${kayitlar.length} kayıt yüklendi`);
   }catch(e){
@@ -3163,6 +3705,7 @@ async function uyeleriCiz(){
         </span>
         <span class="rol ${u.aktif===false?'pas':(yon?'yon':'')}">${
           u.aktif===false?'pasif':(yon?'yönetici':'üye')}</span>
+        <button class="tsil" data-uyead="${guv(u.eposta)}" title="Adı düzenle">✎</button>
         ${kendisi?'':`
         <button class="ghost" data-uyerol="${guv(u.eposta)}" style="padding:3px 9px;font-size:11.5px">
           ${yon?'Üye yap':'Yönetici yap'}</button>
@@ -3172,6 +3715,23 @@ async function uyeleriCiz(){
       </div>`;
     }).join('')||'<div class="bos">Liste boş.</div>'}
   </div>`;
+
+  kutu.querySelectorAll('[data-uyead]').forEach(b=>b.onclick=async()=>{
+    const e=b.dataset.uyead;
+    let kisi=kisiEpostaIle(e);
+    const yeni=await adSor(kisi?kisi.ad:e.split('@')[0],e);
+    if(yeni===null)return;
+    if(!kisi){
+      kisi={id:yeniKisiId(),ad:yeni,eposta:e};
+      ayar.kisiler.push(kisi);
+      bildir(`${yeni} kişi listesine eklendi`);
+    }else{
+      kisi.ad=yeni;
+      bildir(`Ad güncellendi: ${yeni}`);
+    }
+    await tanimlariBulutaYaz(); yaz(); secenekleriCiz(); ciz();
+    uyeleriCiz();
+  });
 
   kutu.querySelectorAll('[data-uyerol]').forEach(b=>b.onclick=async()=>{
     const e=b.dataset.uyerol, mevcut=liste.find(x=>x.eposta===e);
@@ -3210,25 +3770,34 @@ async function uyeleriCiz(){
 }
 
 async function uyeEkleEt(){
+  const gAd=document.getElementById('yeniUyeAd');
   const g=document.getElementById('yeniUye');
-  const ad=(document.getElementById('yeniUyeAd').value||'').trim();
+  const ad=(gAd.value||'').trim();
   const e=(g.value||'').trim().toLowerCase();
+
+  /* Ad soyad zorunlu: kişi listesinde ve sorumlu seçiminde görünecek olan
+     bu isim. E-posta adresinden türetilen isimler karışıklık yaratıyordu. */
+  if(!ad){bildir('Ad soyad gir');gAd.focus();return}
+  if(ad.length<2){bildir('Ad soyad çok kısa');gAd.focus();return}
   if(!e){bildir('E-posta gir');g.focus();return}
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){bildir('Geçerli bir e-posta değil');return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){bildir('Geçerli bir e-posta değil');g.focus();return}
+  if(ayar.kisiler.some(k=>(k.eposta||'').toLowerCase()===e)){
+    bildir('Bu hesap zaten tanımlı');return}
+
   try{
     await FB.uyeYaz(e,{aktif:true,rol:'uye',eklenme:Date.now()});
-    /* Kişi listesinde karşılığı yoksa oluştur — böylece kayıtlara sorumlu
-       olarak atanabilir ve davet gönderilebilir. */
+    /* Kişi listesine ekle — ortak tanımlara yazıldığı için tüm ekip görür
+       ve kayıtlarda sorumlu olarak seçebilir. */
     let kisi=kisiEpostaIle(e);
     if(!kisi){
-      kisi={id:yeniKisiId(),ad:ad||e.split('@')[0],eposta:e};
+      kisi={id:yeniKisiId(),ad,eposta:e};
       ayar.kisiler.push(kisi);
-      await tanimlariBulutaYaz(); yaz(); secenekleriCiz();
-    }else if(ad&&kisi.ad!==ad){
-      kisi.ad=ad; await tanimlariBulutaYaz(); yaz(); secenekleriCiz();
+    }else if(kisi.ad!==ad){
+      kisi.ad=ad;
     }
-    g.value=''; document.getElementById('yeniUyeAd').value='';
-    bildir(`${kisi.ad} eklendi — Google ile giriş yapabilir`);
+    await tanimlariBulutaYaz(); yaz(); secenekleriCiz();
+    gAd.value=''; g.value='';
+    bildir(`${kisi.ad} eklendi — sorumlu listesine de düştü`);
     await uyeOnbellegiTazele();
     uyeleriCiz();
   }catch(err){ bildir('Eklenemedi — bağlantını kontrol et'); }
@@ -3303,6 +3872,8 @@ document.getElementById('cikisBtn').onclick=async()=>{
       : 'Demo moduna dönülecek. Verilerin hesabında saklı kalır, tekrar giriş yaptığında yerinde olur.',
     onayMetni:'Çıkış yap'}))return;
   try{ if(FB)await FB.cikisYap(); }catch(e){}
+  dinlemeIptal.forEach(f=>{try{f()}catch(e){}}); dinlemeIptal=[];
+  davetler=[];atamalar=[];
   oturum=null;yoneticiMi=false;moduSec('demo');
 };
 document.getElementById('demoSeritKapat').onclick=()=>document.getElementById('demoSerit').hidden=true;
@@ -3321,6 +3892,24 @@ document.getElementById('sil').onclick=async()=>{
     detay:k?`"${guv(kes(k.konu,80))}" — geri alınamaz.`:'Geri alınamaz.',
     onayMetni:'Sil'}))return;
   kayitlar=kayitlar.filter(x=>x.id!==duzenlenen);yaz();modalKapat();ciz();bildir('Kayıt silindi')};
+document.getElementById('davetBtn').onclick=async()=>{
+  const k=kayitlar.find(x=>x.id===duzenlenen); if(!k)return;
+  modalKapat(); await davetGonderPanel(k);
+};
+document.getElementById('atamaBtn').onclick=async()=>{
+  const k=kayitlar.find(x=>x.id===duzenlenen); if(!k)return;
+  modalKapat(); await isAtaPanel(k);
+};
+document.getElementById('zilBtn').onclick=()=>{
+  kutuSekme='gelen'; kutuCiz();
+  document.getElementById('kutuPerde').hidden=false;
+  kutuTazele();
+};
+document.getElementById('kutuKapat').onclick=()=>document.getElementById('kutuPerde').hidden=true;
+document.getElementById('kutuPerde').onclick=e=>{
+  if(e.target.id==='kutuPerde')document.getElementById('kutuPerde').hidden=true};
+document.querySelectorAll('#kutuPerde .atabs button').forEach(b=>b.onclick=()=>{
+  kutuSekme=b.dataset.kt; kutuCiz()});
 document.getElementById('genisBtn').onclick=()=>{
   genisZorla=!genisZorla; sonMobil=mobilMi(); ciz();
   bildir(genisZorla?'Masaüstü düzenine geçildi':'Mobil düzene dönüldü');
@@ -3330,7 +3919,7 @@ document.getElementById('uyeEkle').onclick=uyeEkleEt;
 document.getElementById('yeniUye').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();uyeEkleEt()}};
 document.getElementById('yeniUyeAd').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();
   document.getElementById('yeniUye').focus()}};
-document.querySelectorAll('.atabs button').forEach(b=>b.onclick=()=>ayarSekme(b.dataset.at));
+document.querySelectorAll('#ayarPerde .atabs button').forEach(b=>b.onclick=()=>ayarSekme(b.dataset.at));
 document.getElementById('ayarKapat').onclick=()=>document.getElementById('ayarPerde').hidden=true;
 document.getElementById('ayarKaydet').onclick=ayarKaydetEt;
 document.getElementById('ayarPerde').onclick=e=>{if(e.target.id==='ayarPerde')e.currentTarget.hidden=true};
@@ -3378,7 +3967,7 @@ document.getElementById('excelAlBtn').onclick=()=>demoMu()
 document.getElementById('excelSec').onchange=e=>{if(e.target.files[0])excelAl(e.target.files[0]);e.target.value=''};
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){modalKapat();document.getElementById('ayarPerde').hidden=true;
-    icePanelKapat();panelKapat()}
+    icePanelKapat();panelKapat();document.getElementById('kutuPerde').hidden=true}
   if(e.key==='n'&&(e.ctrlKey||e.metaKey)){e.preventDefault();modalAc()}
 });
 window.addEventListener('beforeunload',e=>{
@@ -3437,6 +4026,7 @@ const { initializeApp } = A;
 const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
         getRedirectResult, signOut, onAuthStateChanged } = B;
 const { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs,
+        query, where, addDoc, updateDoc, onSnapshot,
         enableIndexedDbPersistence } = C;
 
 const app  = initializeApp(FIREBASE_AYAR);
@@ -3508,6 +4098,61 @@ const API = {
   },
   tercihYaz(uid,veri){
     return setDoc(doc(db,'kullanicilar',uid,'veri','tercihler'),veri,{merge:true});
+  },
+
+  /* --- meşguliyet aynası ---
+     Yalnızca dolu zaman aralıkları paylaşılır: {t,b,e}. Konu, tür ve
+     kiminle olduğu asla yazılmaz. */
+  musaitlikYaz(eposta,dilimler){
+    return setDoc(doc(db,'musaitlik',eposta.toLowerCase()),
+      {dilimler,guncelleme:Date.now()});
+  },
+  async musaitlikOku(eposta){
+    const g = await getDoc(doc(db,'musaitlik',eposta.toLowerCase()));
+    return g.exists() ? (g.data().dilimler||[]) : [];
+  },
+
+  /* --- davetler --- */
+  davetOlustur(veri){ return addDoc(collection(db,'davetler'),veri); },
+  davetYanitla(id,durum,not){
+    return updateDoc(doc(db,'davetler',id),{durum,yanitNot:not||'',yanitZamani:Date.now()});
+  },
+  davetSil(id){ return deleteDoc(doc(db,'davetler',id)); },
+  async davetleriOku(eposta){
+    const e=eposta.toLowerCase();
+    const [gelen,giden]=await Promise.all([
+      getDocs(query(collection(db,'davetler'),where('alici','==',e))),
+      getDocs(query(collection(db,'davetler'),where('gonderen','==',e)))
+    ]);
+    const l=[];
+    gelen.forEach(d=>l.push({id:d.id,yon:'gelen',...d.data()}));
+    giden.forEach(d=>l.push({id:d.id,yon:'giden',...d.data()}));
+    return l.sort((a,b)=>(b.olusturma||0)-(a.olusturma||0));
+  },
+  /* canlı dinleme — yeni davet geldiğinde zil anında güncellenir */
+  davetleriDinle(eposta,gerial){
+    return onSnapshot(query(collection(db,'davetler'),where('alici','==',eposta.toLowerCase())),
+      ()=>gerial(), ()=>{});
+  },
+
+  /* --- iş atamaları --- */
+  atamaOlustur(veri){ return addDoc(collection(db,'atamalar'),veri); },
+  atamaGoruldu(id){ return updateDoc(doc(db,'atamalar',id),{gorulme:Date.now()}); },
+  atamaSil(id){ return deleteDoc(doc(db,'atamalar',id)); },
+  async atamalariOku(eposta){
+    const e=eposta.toLowerCase();
+    const [bana,benden]=await Promise.all([
+      getDocs(query(collection(db,'atamalar'),where('alici','==',e))),
+      getDocs(query(collection(db,'atamalar'),where('atayan','==',e)))
+    ]);
+    const l=[];
+    bana.forEach(d=>l.push({id:d.id,yon:'bana',...d.data()}));
+    benden.forEach(d=>l.push({id:d.id,yon:'benden',...d.data()}));
+    return l.sort((a,b)=>(b.olusturma||0)-(a.olusturma||0));
+  },
+  atamalariDinle(eposta,gerial){
+    return onSnapshot(query(collection(db,'atamalar'),where('alici','==',eposta.toLowerCase())),
+      ()=>gerial(), ()=>{});
   }
 };
 
