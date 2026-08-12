@@ -118,6 +118,25 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
 .hataKutu i{font-style:normal;font-size:12.5px;color:var(--ink-soft);line-height:1.55;display:block}
 .hataKutu code{font-family:'IBM Plex Mono';font-size:11.5px;background:var(--paper);
   padding:1px 5px;border-radius:4px;border:1px solid var(--rule-soft)}
+.zyildiz{font-family:'IBM Plex Mono';font-size:8.5px;letter-spacing:.05em;background:#F6E3DE;
+  color:var(--c-istakibi);border:1px solid #E3BDB2;border-radius:3px;padding:1px 4px;margin-left:6px;
+  text-transform:none;font-weight:600;vertical-align:middle}
+.zsatir{display:flex;align-items:flex-start;gap:10px;background:var(--paper-2);border:1px solid var(--rule);
+  border-radius:8px;padding:10px 12px;margin-bottom:6px}
+.zsatir.sabit{background:var(--paper);border-style:dashed}
+.zsatir .zic{flex:1;min-width:0}
+.zsatir .zic b{display:block;font-size:13px;font-weight:700}
+.zsatir .zic i{display:block;font-style:normal;font-size:11.5px;color:var(--ink-soft);margin-top:2px;line-height:1.45}
+.zsatir .zkilit{font-family:'IBM Plex Mono';font-size:9.5px;background:var(--rule);color:var(--ink-soft);
+  border-radius:4px;padding:2px 7px;white-space:nowrap;flex:none;margin-top:1px}
+.zanahtar{position:relative;width:38px;height:21px;flex:none;margin-top:1px}
+.zanahtar input{position:absolute;inset:0;opacity:0;margin:0;width:100%;height:100%;cursor:pointer}
+.zanahtar .yol{position:absolute;inset:0;background:var(--rule);border-radius:20px;transition:background .15s}
+.zanahtar .top{position:absolute;top:2.5px;left:2.5px;width:16px;height:16px;background:var(--paper);
+  border-radius:50%;transition:transform .15s;box-shadow:0 1px 2px rgba(28,35,41,.25)}
+.zanahtar input:checked ~ .yol{background:#1E5A46}
+.zanahtar input:checked ~ .top{transform:translateX(17px)}
+.zanahtar input:disabled ~ .yol{opacity:.5}
 .uyeler{display:grid;gap:7px}
 .uyesatir{display:flex;align-items:center;gap:8px;background:var(--paper-2);border:1px solid var(--rule);
   border-radius:7px;padding:8px 10px;flex-wrap:wrap}
@@ -461,11 +480,13 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
         <div class="alan"><label for="fTur">Tür</label><select id="fTur"></select></div>
       </div>
       <div class="ikili" id="ozelAlanlar"></div>
-      <div class="alan"><label>Sorumlular</label><div class="kisiler" id="fSorumlular"></div></div>
+      <div class="alan"><label>Sorumlular<span class="zyildiz" id="zSorumlu" hidden>zorunlu</span></label>
+        <div class="kisiler" id="fSorumlular"></div></div>
       <div id="zamanAlan">
         <div class="ikili" style="margin-bottom:11px">
           <div class="alan"><label for="fTarih">Tarih</label><input type="date" id="fTarih"></div>
-          <div class="alan"><label for="fBas">Başlangıç</label><input type="time" id="fBas" step="900"></div>
+          <div class="alan"><label for="fBas">Başlangıç<span class="zyildiz" id="zSaat" hidden>zorunlu</span></label>
+            <input type="time" id="fBas" step="900"></div>
         </div>
         <div class="ikili"><div class="alan"><label for="fBit">Bitiş</label><input type="time" id="fBit" step="900"></div></div>
         <p class="uyari" style="margin-top:11px">Tarih ve saati boş bırakırsan kayıt "Atanmamış" havuzuna düşer, sonra takvime sürükleyerek yerleştirirsin.</p>
@@ -474,7 +495,8 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
         <div class="alan"><label for="fBitis">Son tarih</label><input type="date" id="fBitis"></div>
         <p class="uyari" style="margin-top:11px">Bu tür takvimde yer kaplamaz — hatırlatma/bildirim olarak çalışır. Son tarihi yaklaşınca sol rayda görünür.</p>
       </div>
-      <div class="alan"><label for="fSon">Son durum</label><textarea id="fSon" placeholder="Nerede kaldı?"></textarea></div>
+      <div class="alan"><label for="fSon">Son durum<span class="zyildiz" id="zSonDurum" hidden>zorunlu</span></label>
+        <textarea id="fSon" placeholder="Nerede kaldı?"></textarea></div>
     </div>
     <div class="mfoot">
       <button class="ghost" id="sil" hidden>Kaydı sil</button><span class="spacer"></span>
@@ -489,6 +511,7 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
     <div class="atabs" role="tablist">
       <button role="tab" data-at="genel" aria-selected="true">Genel</button>
       <button role="tab" data-at="tanim" aria-selected="false">Tanımlar</button>
+      <button role="tab" data-at="zorunlu" aria-selected="false">Zorunlu alanlar</button>
       <button role="tab" data-at="erisim" aria-selected="false" id="erisimSekme" hidden>Erişim</button>
     </div>
 
@@ -513,6 +536,34 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
         </div>
       </div>
       <div class="mfoot" style="padding:0;border:none;margin-top:4px"><button class="solid" id="ayarKaydet">Genel ayarları kaydet</button></div>
+    </div>
+
+    <div class="mbody" id="sekZorunlu" hidden>
+      <p class="uyari">Bir alan zorunlu yapıldığında hem kayıt formunda hem de
+      Excel'den veri alırken kontrol edilir. Eksik bırakılan kayıtlar oluşturulamaz.</p>
+
+      <div class="kilit-uyari" id="zorunluKilit" hidden>
+        <b>Bu ayarları yönetici belirler.</b> Zorunlu alanlar tüm ekipte ortaktır.
+      </div>
+
+      <div class="alan">
+        <label>Sistem zorunlulukları</label>
+        <div class="tanimnot">Bunlar kapatılamaz — olmadan kayıt oluşamaz ya da takvimde yerini bulamaz.</div>
+        <div id="sistemZorunlu"></div>
+      </div>
+
+      <fieldset class="kilitli-alan" id="zorunluAlan">
+      <div class="alan">
+        <label>İsteğe bağlı zorunluluklar</label>
+        <div class="tanimnot">Sistem bunlar olmadan da çalışır; veri kalitesi için zorunlu tutabilirsin.</div>
+        <div id="ekZorunlu"></div>
+      </div>
+      <div class="alan">
+        <label>Alanlar</label>
+        <div class="tanimnot">Kendi tanımladığın alanlar. Zorunlu yapılan alan, yalnızca o alanın bağlı olduğu türlerde aranır.</div>
+        <div id="alanZorunlu"></div>
+      </div>
+      </fieldset>
     </div>
 
     <div class="mbody" id="sekErisim" hidden>
@@ -638,6 +689,26 @@ function kisiSecenekleri(seciliIdler){
   (seciliIdler||[]).forEach(id=>{if(!l.some(x=>x.id===id)){const k=kisiBul(id);if(k)l.unshift(k)}});
   return l;
 }
+/* --- zorunluluk --- */
+const zorunluMu=id=>!!(ayar.zorunlu||{})[id];
+const alanZorunluMu=alanId=>zorunluMu('f:'+alanId);
+/* Bir kaydın eksiklerini döndürür. Hem kayıt formu hem Excel aktarımı
+   aynı kuralı kullanır, böylece iki yerde farklı davranış olmaz. */
+function eksikAlanlar(k){
+  const t=turBul(k.turId)||{}, z=t.sinif==='zaman';
+  const eksik=[];
+  if(!k.konu||!k.konu.trim())eksik.push('Konu');
+  if(!k.turId)eksik.push('Tür');
+  if(!z&&!k.bitis)eksik.push('Son Tarih');
+  if(zorunluMu('sorumlular')&&!(k.sorumlular||[]).length)eksik.push('Sorumlular');
+  if(zorunluMu('saat')&&z&&k.tarih&&(!k.bas||!k.bit))eksik.push('Başlangıç ve bitiş saati');
+  if(zorunluMu('sonDurum')&&!(k.sonDurum||'').trim())eksik.push('Son durum notu');
+  turAlanlari(k.turId).forEach(a=>{
+    if(alanZorunluMu(a.id)&&!alanDeger(k,a.id))eksik.push(a.ad);
+  });
+  return eksik;
+}
+
 /* benzersiz kimlik ureticileri */
 const yeniId=(onek,liste)=>{let i=1;while(liste.some(x=>x.id===onek+i))i++;return onek+i};
 const yeniTurId  =()=>yeniId('t',ayar.turler);
@@ -678,7 +749,22 @@ const VARSAYILAN_TURLER=[
   {id:'t5', ad:'Bireysel Konu',  sinif:'hatirlatma', renk:'#4A5568', alanlar:['f3']}
 ];
 const kopya=x=>JSON.parse(JSON.stringify(x));
-const VARSAYILAN_AYAR={bas:8,bit:17,dilim:15,
+/* Sistemin çalışması için şart olan alanlar. Bunlar kullanıcı tarafından
+   değiştirilemez; kapatılırsa kayıt takvime yerleşemez ya da hiç oluşamaz. */
+const SISTEM_ZORUNLU=[
+  {id:'konu',  ad:'Konu',      aciklama:'Kaydın ne olduğu. Boşsa satır oluşturulamaz.'},
+  {id:'tur',   ad:'Tür',       aciklama:'Kaydın davranışını belirler: takvimde yer mi kaplar, hatırlatma mı olur.'},
+  {id:'bitis', ad:'Son Tarih', aciklama:'Yalnızca hatırlatma türlerinde. Olmadan kayıt hiçbir güne düşemez.'}
+];
+/* Yöneticinin açıp kapatabildiği alanlar. Sistem çalışır ama yönetici
+   veri kalitesi için zorunlu tutmak isteyebilir. */
+const AYARLANABILIR_ZORUNLU=[
+  {id:'sorumlular', ad:'Sorumlular', aciklama:'Kayıtta en az bir sorumlu seçilmelidir.'},
+  {id:'saat',       ad:'Başlangıç ve bitiş saati',
+   aciklama:'Takvimde yer kaplayan türlerde tarih verilmişse saat de zorunlu olur.'},
+  {id:'sonDurum',   ad:'Son durum notu', aciklama:'Her kayıtta durum notu bulunmalıdır.'}
+];
+const VARSAYILAN_AYAR={bas:8,bit:17,dilim:15,zorunlu:{},
   kisiler:[{id:'k1',ad:'Ayşe'},{id:'k2',ad:'Mehmet'},{id:'k3',ad:'Zeynep'}],
   turler:kopya(VARSAYILAN_TURLER),
   alanlar:kopya(VARSAYILAN_ALANLAR)};
@@ -1336,6 +1422,9 @@ function modalAc(id){
   kisilerCiz(k?.sorumlular);
   document.querySelectorAll('#fSorumlular input').forEach(i=>i.checked=k?k.sorumlular.includes(i.value):false);
   turDegisti(k);
+  document.getElementById('zSorumlu').hidden=!zorunluMu('sorumlular');
+  document.getElementById('zSonDurum').hidden=!zorunluMu('sonDurum');
+  document.getElementById('zSaat').hidden=!zorunluMu('saat');
   document.getElementById('perde').hidden=false;
   document.getElementById('fKonu').focus();
 }
@@ -1363,6 +1452,12 @@ function kaydetEt(){
     tarih:z&&bas&&bit?(document.getElementById('fTarih').value||aktifTarih):null,
     bas:z&&bas&&bit?bas:null,bit:z&&bas&&bit?bit:null,
     bitis:z?null:(document.getElementById('fBitis').value||null)};
+  /* Excel aktarımıyla aynı kural — iki yerde farklı davranış olmasın */
+  const eksik=eksikAlanlar({...v,id:duzenlenen||0});
+  if(eksik.length){
+    bildir(`Eksik: ${eksik.join(', ')}`);
+    return;
+  }
   if(duzenlenen){Object.assign(kayitlar.find(x=>x.id===duzenlenen),v);bildir('Kayıt güncellendi')}
   else{kayitlar.push({id:sonrakiId++,kayitTarihi:BUGUN,tamam:false,...v});
     bildir(v.tarih?'Takvime eklendi':'Atanmamış havuzuna eklendi')}
@@ -1380,6 +1475,8 @@ function ayarAc(){
   const duzenleyebilir = (mod==='demo') || yoneticiMi;
   document.getElementById('tanimAlan').disabled=!duzenleyebilir;
   document.getElementById('tanimKilit').hidden=duzenleyebilir;
+  document.getElementById('zorunluAlan').disabled=!duzenleyebilir;
+  document.getElementById('zorunluKilit').hidden=duzenleyebilir;
   document.getElementById('erisimSekme').hidden=!(mod==='uye'&&yoneticiMi);
   document.getElementById('ayarPerde').hidden=false;
 }
@@ -1387,8 +1484,10 @@ function ayarSekme(ad){
   document.querySelectorAll('.atabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.at===ad));
   document.getElementById('sekGenel').hidden=ad!=='genel';
   document.getElementById('sekTanim').hidden=ad!=='tanim';
+  document.getElementById('sekZorunlu').hidden=ad!=='zorunlu';
   document.getElementById('sekErisim').hidden=ad!=='erisim';
   if(ad==='erisim')uyeleriCiz();
+  if(ad==='zorunlu')zorunluCiz();
 }
 function ayarKaydetEt(){
   const b=+document.getElementById('aBas').value, s=+document.getElementById('aBit').value;
@@ -1416,7 +1515,7 @@ function ozelAlanlariCiz(kayit){
   if(!alanlar.length){kutu.innerHTML='';return}
   kutu.innerHTML=alanlar.map(a=>{
     const mevcut=kayit?alanDeger(kayit,a.id):'';
-    return `<div class="alan"><label for="fa_${a.id}">${guv(a.ad)}</label>
+    return `<div class="alan"><label for="fa_${a.id}">${guv(a.ad)}${alanZorunluMu(a.id)?'<span class="zyildiz">zorunlu</span>':''}</label>
       <select id="fa_${a.id}" data-alan="${a.id}"><option value="">—</option>${
       alanSecenekleri(a,mevcut).map(x=>
         `<option value="${x.id}" ${x.id===mevcut?'selected':''}>${guv(x.ad)}</option>`).join('')}</select></div>`;
@@ -1625,7 +1724,9 @@ function tanimBagla(){
 }
 
 function tanimKaydet(){
-  yaz();tanimlariBulutaYaz();secenekleriCiz();tanimCiz();ciz();
+  yaz();tanimlariBulutaYaz();secenekleriCiz();tanimCiz();
+  if(!document.getElementById('sekZorunlu').hidden)zorunluCiz();
+  ciz();
 }
 
 /* ---------- yedek / takvim ---------- */
@@ -2072,29 +2173,53 @@ const seriTarih=n=>{
   const d=new Date(Date.UTC(1899,11,30)+Math.round(n)*864e5);
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
 };
+/* Tarih ve saat çözücüler üç sonuçtan birini döner:
+     {bos:true}              hücre boş — sorun değil
+     {deger:'2026-08-14'}    okundu
+     {gecersiz:'...'}        hücre dolu ama anlaşılamadı — sessizce yutulmaz
+   Eskiden geçersiz değer null dönüyordu ve boş hücreden ayırt edilemiyordu;
+   yanlış yazılmış bir tarih fark edilmeden kaydı "atanmamış" yapıyordu. */
 function tarihCoz(h){
-  if(!h)return null;
-  const m=String(h.ham).trim(); if(!m)return null;
+  if(!h)return {bos:true};
+  const m=String(h.ham).trim(); if(!m)return {bos:true};
   if(h.sayisal&&/^-?\d+(\.\d+)?$/.test(m)){
     const n=parseFloat(m);
-    if(n>=1&&n<80000)return seriTarih(n);
+    if(n>=1&&n<80000)return {deger:seriTarih(n)};
+    return {gecersiz:m};
   }
-  let x=m.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})/);       // GG.AA.YYYY
-  if(x)return `${x[3]}-${pad(+x[2])}-${pad(+x[1])}`;
-  x=m.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);                      // YYYY-AA-GG
-  if(x)return `${x[1]}-${pad(+x[2])}-${pad(+x[3])}`;
-  return null;
+  let x=m.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/);       // GG.AA.YYYY
+  if(x){
+    const g=+x[1],a=+x[2],y=+x[3];
+    if(a<1||a>12)return {gecersiz:m,neden:`ay ${a} olamaz`};
+    const sonGun=new Date(y,a,0).getDate();
+    if(g<1||g>sonGun)return {gecersiz:m,neden:`${a}. ayda ${g}. gün yok`};
+    return {deger:`${y}-${pad(a)}-${pad(g)}`};
+  }
+  x=m.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);                      // YYYY-AA-GG
+  if(x){
+    const y=+x[1],a=+x[2],g=+x[3];
+    if(a<1||a>12)return {gecersiz:m,neden:`ay ${a} olamaz`};
+    const sonGun=new Date(y,a,0).getDate();
+    if(g<1||g>sonGun)return {gecersiz:m,neden:`${a}. ayda ${g}. gün yok`};
+    return {deger:`${y}-${pad(a)}-${pad(g)}`};
+  }
+  return {gecersiz:m};
 }
 function saatCoz(h){
-  if(!h)return null;
-  const m=String(h.ham).trim(); if(!m)return null;
+  if(!h)return {bos:true};
+  const m=String(h.ham).trim(); if(!m)return {bos:true};
   if(h.sayisal&&/^0?\.\d+$/.test(m)){                              // gunun kesri
     const dkk=Math.round(parseFloat(m)*1440);
-    return `${pad(Math.floor(dkk/60))}:${pad(dkk%60)}`;
+    return {deger:`${pad(Math.floor(dkk/60))}:${pad(dkk%60)}`};
   }
-  const x=m.match(/(\d{1,2})[:.](\d{2})/);
-  if(x&&+x[1]<24&&+x[2]<60)return `${pad(+x[1])}:${pad(+x[2])}`;
-  return null;
+  const x=m.match(/^(\d{1,2})[:.](\d{1,2})/);
+  if(x){
+    const sa=+x[1], dkk=+x[2];
+    if(sa>23)return {gecersiz:m,neden:`saat ${sa} olamaz`};
+    if(dkk>59)return {gecersiz:m,neden:`dakika ${dkk} olamaz`};
+    return {deger:`${pad(sa)}:${pad(dkk)}`};
+  }
+  return {gecersiz:m};
 }
 const metinCoz=h=>h?String(h.ham).trim():'';
 
@@ -2272,8 +2397,25 @@ async function excelAl(dosya){
     if(!turAdi_){hata.push({satir:no,baslik:'Tür boş',
       aciklama:`"${kes(konu,40)}" için tür belirtilmemiş.`});continue}
 
-    const tarih=tarihCoz(sat[S.tarih]), bas=saatCoz(sat[S.bas]), bit=saatCoz(sat[S.bit]);
-    const bitis=tarihCoz(sat[S.bitis]);
+    /* --- tarih ve saat biçimleri --- */
+    const cT=tarihCoz(sat[S.tarih]), cB=saatCoz(sat[S.bas]), cE=saatCoz(sat[S.bit]);
+    const cS=tarihCoz(sat[S.bitis]), cK=tarihCoz(sat[S.kayit]);
+    const bicimHata=[
+      cT.gecersiz&&{ad:'Tarih',v:cT.gecersiz,n:cT.neden},
+      cB.gecersiz&&{ad:'Başlangıç',v:cB.gecersiz,n:cB.neden},
+      cE.gecersiz&&{ad:'Bitiş',v:cE.gecersiz,n:cE.neden},
+      cS.gecersiz&&{ad:'Son Tarih',v:cS.gecersiz,n:cS.neden},
+      cK.gecersiz&&{ad:'Kayıt Tarihi',v:cK.gecersiz,n:cK.neden}
+    ].filter(Boolean);
+    if(bicimHata.length){
+      hata.push({satir:no,
+        baslik:bicimHata.map(x=>`${x.ad} okunamadı`).join(', '),
+        aciklama:bicimHata.map(x=>`"${x.v}"${x.n?' — '+x.n:''}`).join(' · ')+
+          ' · Tarih GG.AA.YYYY, saat SS:DD biçiminde olmalı.'});
+      continue;
+    }
+    const tarih=cT.deger||null, bas=cB.deger||null, bit=cE.deger||null, bitis=cS.deger||null;
+
     const zamanli=!!(tarih||bas||bit)||!bitis;
     const t=turEslestir(turAdi_,zamanli);
     const zt=t.sinif==='zaman';
@@ -2284,6 +2426,12 @@ async function excelAl(dosya){
     if(!zt&&!bitis){
       hata.push({satir:no,baslik:'Son tarih eksik',
                  aciklama:`"${turAdi_}" bir hatırlatma türü; Son Tarih sütunu doldurulmalı.`});continue}
+    if(zt&&(bas||bit)&&!(bas&&bit)){
+      hata.push({satir:no,baslik:'Saatlerden biri eksik',
+                 aciklama:'Başlangıç ve bitiş birlikte doldurulmalı.'});continue}
+    if(zt&&bas&&bit&&!tarih){
+      hata.push({satir:no,baslik:'Saat var ama tarih yok',
+                 aciklama:'Saat verilen kayıtta Tarih sütunu da doldurulmalı.'});continue}
 
     const alanlar={};
     alanSut.forEach(({alan,i})=>{
@@ -2293,14 +2441,23 @@ async function excelAl(dosya){
     const sorumlular=metinCoz(sat[S.sorumlular]).split(/[,;]/)
       .map(x=>x.trim()).filter(Boolean).map(kisiEslestir);
 
-    yeni.push({id:0,turId:t.id,konu,alanlar,sorumlular,
+    const kayit={id:0,turId:t.id,konu,alanlar,sorumlular,
       sonDurum:metinCoz(sat[S.sonDurum]),
-      kayitTarihi:tarihCoz(sat[S.kayit])||BUGUN,
+      kayitTarihi:cK.deger||BUGUN,
       tarih: zt?(tarih||null):null,
       bas: zt&&tarih&&bas&&bit?bas:null,
       bit: zt&&tarih&&bas&&bit?bit:null,
       bitis: zt?null:bitis,
-      tamam: /tamam/i.test(metinCoz(sat[S.durum]))});
+      tamam: /tamam/i.test(metinCoz(sat[S.durum]))};
+
+    /* yöneticinin belirlediği zorunlu alanlar — kayıt formuyla aynı kural */
+    const eksik=eksikAlanlar(kayit);
+    if(eksik.length){
+      hata.push({satir:no,baslik:`Zorunlu alan boş: ${eksik.join(', ')}`,
+                 aciklama:`"${kes(konu,40)}" · Bu alanlar Ayarlar > Zorunlu alanlar bölümünde zorunlu yapılmış.`});
+      continue;
+    }
+    yeni.push(kayit);
   }
 
   /* --- hiç kayıt alınamadı --- */
@@ -2421,7 +2578,8 @@ function bulutaYaz(){
 async function tanimlariBulutaYaz(){
   if(mod!=='uye'||!FB||!yoneticiMi)return;
   try{
-    await FB.tanimlariYaz({turler:ayar.turler,alanlar:ayar.alanlar,kisiler:ayar.kisiler});
+    await FB.tanimlariYaz({turler:ayar.turler,alanlar:ayar.alanlar,kisiler:ayar.kisiler,
+                           zorunlu:ayar.zorunlu||{}});
   }catch(e){
     console.warn('tanımlar yazılamadı:',e);
     bildir('Tanımlar kaydedilemedi — bağlantını kontrol et');
@@ -2463,7 +2621,7 @@ async function bulutuYukle(){
     let t=await FB.tanimlariOku();
     if(!t&&yoneticiMi){                       // ilk kurulum: varsayılanları yaz
       t={turler:kopya(VARSAYILAN_TURLER),alanlar:kopya(VARSAYILAN_ALANLAR),
-         kisiler:kopya(VARSAYILAN_AYAR.kisiler)};
+         kisiler:kopya(VARSAYILAN_AYAR.kisiler),zorunlu:{}};
       await FB.tanimlariYaz(t);
     }
     /* 2) kişisel kayıtlar */
@@ -2474,7 +2632,7 @@ async function bulutuYukle(){
 
     ayar=kopya(VARSAYILAN_AYAR);
     if(t){ ayar.turler=t.turler||ayar.turler; ayar.alanlar=t.alanlar||ayar.alanlar;
-           ayar.kisiler=t.kisiler||ayar.kisiler; }
+           ayar.kisiler=t.kisiler||ayar.kisiler; ayar.zorunlu=t.zorunlu||{}; }
     if(tr){ ayar.bas=tr.bas??ayar.bas; ayar.bit=tr.bit??ayar.bit; ayar.dilim=tr.dilim??ayar.dilim; }
 
     if(k&&Array.isArray(k.liste)){
@@ -2513,6 +2671,47 @@ function oturumArayuzu(){
   kilitUygula();
 }
 
+
+/* ================= ZORUNLU ALANLAR ================= */
+function zorunluCiz(){
+  const kutu=id=>document.getElementById(id);
+  if(!kutu('sistemZorunlu'))return;
+
+  kutu('sistemZorunlu').innerHTML=SISTEM_ZORUNLU.map(x=>
+    `<div class="zsatir sabit">
+      <span class="zic"><b>${guv(x.ad)}</b><i>${guv(x.aciklama)}</i></span>
+      <span class="zkilit">her zaman</span>
+    </div>`).join('');
+
+  const anahtar=(id,ad,aciklama,acik)=>
+    `<div class="zsatir">
+      <span class="zic"><b>${guv(ad)}</b><i>${guv(aciklama)}</i></span>
+      <label class="zanahtar" title="${acik?'Zorunlu':'İsteğe bağlı'}">
+        <input type="checkbox" data-zorunlu="${id}" ${acik?'checked':''}>
+        <span class="yol"></span><span class="top"></span></label>
+    </div>`;
+
+  kutu('ekZorunlu').innerHTML=AYARLANABILIR_ZORUNLU.map(x=>
+    anahtar(x.id,x.ad,x.aciklama,zorunluMu(x.id))).join('');
+
+  kutu('alanZorunlu').innerHTML=ayar.alanlar.length
+    ? ayar.alanlar.map(a=>{
+        const turler=ayar.turler.filter(t=>(t.alanlar||[]).includes(a.id)).map(t=>t.ad);
+        return anahtar('f:'+a.id,a.ad,
+          turler.length?`Şu türlerde aranır: ${turler.join(', ')}`
+                       :'Hiçbir türe bağlı değil — zorunlu yapılsa da aranmaz.',
+          alanZorunluMu(a.id));
+      }).join('')
+    : '<div class="bos">Tanımlı alan yok.</div>';
+
+  document.querySelectorAll('[data-zorunlu]').forEach(el=>el.onchange=()=>{
+    ayar.zorunlu=ayar.zorunlu||{};
+    ayar.zorunlu[el.dataset.zorunlu]=el.checked;
+    yaz(); tanimlariBulutaYaz();
+    bildir(el.checked?'Zorunlu yapıldı':'İsteğe bağlı yapıldı');
+    zorunluCiz();
+  });
+}
 
 /* ================= ERİŞİM YÖNETİMİ (yalnızca yönetici) ================= */
 async function uyeleriCiz(){
