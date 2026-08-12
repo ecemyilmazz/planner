@@ -207,7 +207,8 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
 .kart{position:relative}
 .kart-aks{position:absolute;top:5px;right:5px;display:flex;gap:3px;align-items:center}
 .flag .kart-aks{gap:0}
-.sil-x{width:19px;height:19px;border-radius:5px;display:grid;place-items:center;font-size:14px;line-height:1;color:var(--ink-faint);background:var(--paper);opacity:0;transition:opacity .12s}
+.sil-x{width:19px;height:19px;border-radius:5px;display:grid;place-items:center;
+  color:var(--ink-faint);background:var(--paper);opacity:0;transition:opacity .12s}
 .kart:hover .sil-x,.sil-x:focus-visible{opacity:1}
 .block .kart-aks{top:3px;right:3px}
 .sil-x:hover{background:var(--c-istakibi);color:#fff}
@@ -389,7 +390,7 @@ tr.tamam .kt{text-decoration:line-through}
 .atabs button:hover{color:var(--ink)}
 .atabs button[aria-selected="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--ink)}
 .tanimnot{font-size:11.5px;color:var(--ink-faint);line-height:1.4;margin:-1px 0 5px;font-style:italic}
-.tursatir{display:flex;align-items:center;gap:7px;background:var(--paper-2);border:1px solid var(--rule);border-radius:7px;padding:7px 8px;margin-bottom:6px;flex-wrap:wrap}
+.tursatir{position:relative;display:flex;align-items:center;gap:7px;background:var(--paper-2);border:1px solid var(--rule);border-radius:7px;padding:7px 42px 7px 8px;margin-bottom:6px;flex-wrap:wrap}
 .tursatir input[type=color]{width:26px;height:26px;padding:0;border:1px solid var(--rule);border-radius:6px;background:none;cursor:pointer;flex:none}
 .tursatir .ad{flex:1 1 120px;min-width:110px;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:5px 8px;font-size:12.5px;font-weight:500}
 .tursatir select{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:5px 7px;font-size:11.5px;flex:none}
@@ -400,10 +401,20 @@ tr.tamam .kt{text-decoration:line-through}
 .tsil:hover{background:var(--c-istakibi);color:#fff}
 .tsil[disabled]{opacity:.28;cursor:not-allowed}
 .tsil[disabled]:hover{background:none;color:var(--ink-faint)}
+/* silme düğmesi kartın sağ üst köşesinde durur, içerik akışını bozmaz */
+.cop{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;
+  color:var(--ink-faint);background:var(--paper);border:1px solid var(--rule);flex:none;
+  transition:background .12s,color .12s,border-color .12s}
+.cop:hover{background:var(--c-istakibi);color:#fff;border-color:var(--c-istakibi)}
+.cop[disabled]{opacity:.3;cursor:not-allowed}
+.cop[disabled]:hover{background:var(--paper);color:var(--ink-faint);border-color:var(--rule)}
+.cop.kose{position:absolute;top:8px;right:8px}
 .cips{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
 .cip{display:inline-flex;align-items:center;gap:5px;background:var(--paper-2);border:1px solid var(--rule);border-radius:20px;padding:3px 5px 3px 11px;font-size:12px}
-.cip button{width:17px;height:17px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:var(--ink-faint)}
+.cip button{width:19px;height:19px;border-radius:50%;display:grid;place-items:center;
+  color:var(--ink-faint);flex:none;transition:background .12s,color .12s}
 .cip button:hover{background:var(--c-istakibi);color:#fff}
+.cip button.pas{font-size:10px}
 .cipekle{background:var(--paper);border:1px dashed var(--rule);border-radius:20px;padding:4px 11px;font-size:12px;width:120px}
 .ipucu{border:1px solid var(--rule);border-radius:8px;background:var(--paper-2);overflow:hidden}
 .ipucu summary{padding:9px 13px;font-family:'Archivo';font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-soft);list-style:none}
@@ -417,7 +428,8 @@ tr.tamam .kt{text-decoration:line-through}
 .ipucu-ic b{color:var(--ink)}
 .turalt{display:flex;align-items:center;gap:6px;flex-wrap:wrap;width:100%;padding-top:6px;margin-top:2px;border-top:1px dashed var(--rule)}
 .turalt .et{font-size:10px;font-family:'Archivo';font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint)}
-.alankart{border:1px solid var(--rule);border-radius:8px;padding:9px 10px;margin-bottom:7px;background:var(--paper-2)}
+.alankart{position:relative;border:1px solid var(--rule);border-radius:8px;
+  padding:9px 44px 9px 10px;margin-bottom:7px;background:var(--paper-2)}
 .alanbas{display:flex;align-items:center;gap:7px;margin-bottom:7px}
 .alanbas input{flex:1;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:5px 8px;font-size:12.5px;font-weight:600}
 .alanbas .kul{font-family:'IBM Plex Mono';font-size:10px;color:var(--ink-faint);white-space:nowrap}
@@ -749,6 +761,13 @@ const VARSAYILAN_TURLER=[
   {id:'t5', ad:'Bireysel Konu',  sinif:'hatirlatma', renk:'#4A5568', alanlar:['f3']}
 ];
 const kopya=x=>JSON.parse(JSON.stringify(x));
+
+/* Çöp kutusu simgesi — bütün silme düğmelerinde ortak kullanılır.
+   Boyut, kullanıldığı yere göre iki değerde: kart köşelerinde 13, çiplerde 11. */
+const copSvg=(b=13)=>`<svg viewBox="0 0 24 24" width="${b}" height="${b}" fill="none" `+
+  `stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" `+
+  `style="display:block"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>`;
+const COP=copSvg(13);
 /* Sistemin çalışması için şart olan alanlar. Bunlar kullanıcı tarafından
    değiştirilemez; kapatılırsa kayıt takvime yerleşemez ya da hiç oluşamaz. */
 const SISTEM_ZORUNLU=[
@@ -982,7 +1001,7 @@ function gunEkrani(){
       style="top:${ust}px;height:${Math.max(yuk-2,14)}px;background:${renkAl(k)}">
       <div class="bk2">${guv(kes(k.konu,kisa?42:74))}</div>
       <div class="bmeta">${k.bas}–${k.bit} · ${guv(turAdi(k))}</div>
-      <div class="kart-aks"><button class="sil-x" data-sil="${k.id}" title="Kaydı sil">×</button></div></div>`;
+      <div class="kart-aks"><button class="sil-x" data-sil="${k.id}" title="Kaydı sil">${copSvg(12)}</button></div></div>`;
   }).join('');
   return `
   <div class="dayhead">
@@ -1042,7 +1061,7 @@ function chipHtml(k){
   return `<div class="chip kart" draggable="true" data-id="${k.id}" data-ac="${k.id}" tabindex="0">
     <div class="etiket"><i class="dot" style="background:${renkAl(k)}"></i><span class="minitur">${guv(turAdi(k))}</span></div>
     <div class="konu">${guv(kes(k.konu,90))}</div>
-    <div class="kart-aks"><button class="sil-x" data-sil="${k.id}" title="Kaydı sil">×</button></div></div>`;
+    <div class="kart-aks"><button class="sil-x" data-sil="${k.id}" title="Kaydı sil">${copSvg(12)}</button></div></div>`;
 }
 function gunBagla(){
   document.getElementById('geri').onclick=()=>{aktifTarih=ekleGun(aktifTarih,-1);ciz()};
@@ -1545,7 +1564,7 @@ function tanimCiz(){
       <span class="kul">${n} kayıt</span>
       ${t.pasif?'<span class="satirdurum">PASİF</span>':''}
       <button class="tsil" data-tpas="${i}" title="${t.pasif?'Tekrar aktif et':'Pasife al — yeni kayıtlarda görünmez, eskiler korunur'}">${t.pasif?'↺':'◐'}</button>
-      <button class="tsil" data-tsil="${i}" ${n?`disabled title="${n} kayıtta kullanılıyor — silmek yerine pasife al"`:'title="Türü sil"'}>×</button>
+      <button class="cop kose" data-tsil="${i}" ${n?`disabled title="${n} kayıtta kullanılıyor — silmek yerine pasife al"`:'title="Türü sil"'}>${COP}</button>
       <div class="turalt"><span class="et">Alanlar</span>${
         ayar.alanlar.length? ayar.alanlar.map(a=>
           `<label class="bay"><input type="checkbox" data-tal="${i}:${a.id}" ${(t.alanlar||[]).includes(a.id)?'checked':''}>${guv(a.ad)}</label>`).join('')
@@ -1561,14 +1580,14 @@ function tanimCiz(){
       <div class="alanbas">
         <input value="${guv(a.ad)}" data-aad="${i}" maxlength="28" title="Alan adı">
         <span class="kul">${n} kayıtta dolu</span>
-        <button class="tsil" data-asil="${i}" ${n?`disabled title="${n} kayıtta kullanılıyor — önce seçenekleri temizle"`:'title="Alanı sil"'}>×</button>
+        <button class="cop kose" data-asil="${i}" ${n?`disabled title="${n} kayıtta kullanılıyor — önce seçenekleri temizle"`:'title="Alanı sil"'}>${COP}</button>
       </div>
       <div class="tanimnot" style="margin:0 0 6px">${turler.length?'Şu türlerde görünüyor: '+guv(turler.join(', ')):'Hiçbir türe bağlı değil — kayıt formunda çıkmaz.'}</div>
       <div class="cips">${a.secenekler.map((x,j)=>{
         const m=KUL.alan(a.id,x.id);
         return `<span class="cip ${x.pasif?'pasif':''}">${guv(x.ad)}
           <button class="pas" data-spas="${i}:${j}" title="${x.pasif?'Tekrar aktif et':'Pasife al'}">${x.pasif?'↺':'◐'}</button>
-          <button data-ssil="${i}:${j}" title="${m?m+' kayıtta kullanılıyor':'Sil'}">×</button></span>`;
+          <button data-ssil="${i}:${j}" title="${m?m+' kayıtta kullanılıyor — silinirse o kayıtların bilgisi boşalır':'Sil'}">${copSvg(11)}</button></span>`;
       }).join('')}<input class="cipekle" data-sekle="${i}" placeholder="+ seçenek" maxlength="28"></div>
     </div>`;
   }).join('')||'<div class="bos">Hiç alan yok.</div>';
@@ -1579,7 +1598,7 @@ function tanimCiz(){
       const n=KUL.kisi(k.id);
       return `<span class="cip ${k.pasif?'pasif':''}">${guv(k.ad)}
         <button class="pas" data-kpas="${i}" title="${k.pasif?'Tekrar aktif et':'Pasife al — yeni kayıtlarda görünmez'}">${k.pasif?'↺':'◐'}</button>
-        <button data-ksil="${i}" title="${n?n+' kayıtta kullanılıyor':'Sil'}">×</button></span>`;
+        <button data-ksil="${i}" title="${n?n+' kayıtta sorumlu — silinirse adı kayıtlardan çıkar':'Sil'}">${copSvg(11)}</button></span>`;
     }).join('')+`<input class="cipekle" data-kekle="1" placeholder="+ kişi" maxlength="28"></div>`;
 
   tanimBagla();
@@ -2738,7 +2757,7 @@ async function uyeleriCiz(){
           ${yon?'Üye yap':'Yönetici yap'}</button>
         <button class="ghost" data-uyepas="${guv(u.eposta)}" style="padding:3px 9px;font-size:11.5px">
           ${u.aktif===false?'Aktif et':'Pasife al'}</button>
-        <button class="tsil" data-uyesil="${guv(u.eposta)}" ${sonYonetici?'disabled title="Son yönetici silinemez"':'title="Listeden çıkar"'}>×</button>`}
+        <button class="cop" data-uyesil="${guv(u.eposta)}" ${sonYonetici?'disabled title="Son yönetici silinemez"':'title="Listeden çıkar"'}>${COP}</button>`}
       </div>`;
     }).join('')||'<div class="bos">Liste boş.</div>'}
   </div>`;
