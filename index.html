@@ -448,7 +448,7 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
     <div class="mbody" id="sekErisim" hidden>
       <p class="uyari">Bu uygulamaya yalnızca aşağıdaki adresler girebilir. Listede olmayan
       bir hesap Google ile giriş yapsa bile içeri alınmaz ve hiçbir veriye erişemez.
-      Yönetici adresi güvenlik kurallarına gömülüdür, listeye eklenmesi gerekmez.</p>
+      Yönetici yetkisi de bu listeden gelir — kodda hiçbir adres tutulmaz.</p>
       <div class="alan">
         <label>Erişebilecek hesaplar</label>
         <div id="uyeListe"><div class="bos">Yükleniyor…</div></div>
@@ -2090,20 +2090,20 @@ window.oturumDegisti=async u=>{
     if(mod==='uye'){ oturum=null; yoneticiMi=false; moduSec('demo'); }
     return;
   }
-  const eposta=(u.email||'').toLowerCase();
-  yoneticiMi = eposta===FB.yoneticiEpostasi.toLowerCase();
+  /* Yetki veri tabanından gelir; kodda gömülü bir adres yoktur. */
+  const kayit=FB.uyeKaydi;
+  yoneticiMi=FB.yonetici;
 
-  /* üyelik kontrolü — davetli olmayan hesap içeri alınmaz */
-  if(!yoneticiMi){
-    let kayit=null;
-    try{ kayit=await FB.uyeOku(eposta); }catch(e){ kayit=null; }
-    if(!kayit||kayit.aktif===false){
-      await FB.cikisYap();
-      alert(`${u.email} bu uygulamaya davetli değil.\n\n`+
-            `Erişim yalnızca yöneticinin eklediği hesaplara açıktır.\n`+
-            `Erişim istiyorsan yöneticiye bu adresi ilet.`);
-      return;
-    }
+  if(!kayit||kayit.aktif===false){
+    oturum=null; yoneticiMi=false;
+    try{ await FB.cikisYap(); }catch(e){}
+    moduSec('demo');                       // reddedilen hesap demo moduna düşer
+    alert(`${u.email} bu uygulamaya davetli değil.\n\n`+
+          (kayit&&kayit.aktif===false
+            ? 'Erişimin geçici olarak kapatılmış.'
+            : 'Erişim yalnızca yöneticinin eklediği hesaplara açıktır.')+
+          `\nErişim istiyorsan yöneticine bu adresi ilet.`);
+    return;
   }
   oturum=u;
   await bulutuYukle();
@@ -2177,26 +2177,42 @@ async function uyeleriCiz(){
   try{ liste=await FB.uyeleriOku(); }
   catch(e){ kutu.innerHTML='<div class="bos">Liste okunamadı.</div>'; return; }
 
-  const yon=FB.yoneticiEpostasi.toLowerCase();
+  const ben=(oturum.email||'').toLowerCase();
+  const yoneticiSayisi=liste.filter(u=>u.rol==='yonetici'&&u.aktif!==false).length;
   kutu.innerHTML=`<div class="uyeler">
-    <div class="uyesatir">
-      <span class="ep">${guv(yon)}</span>
-      <span class="rol yon">yönetici</span>
-      <span class="kul" style="font-family:'IBM Plex Mono';font-size:10px;color:var(--ink-faint)">kurallarda tanımlı</span>
-    </div>
-    ${liste.filter(u=>u.eposta!==yon).map(u=>`
-      <div class="uyesatir">
-        <span class="ep">${guv(u.eposta)}</span>
-        <span class="rol ${u.aktif===false?'pas':''}">${u.aktif===false?'pasif':'üye'}</span>
+    ${liste.map(u=>{
+      const kendisi=u.eposta===ben, yon=u.rol==='yonetici';
+      const sonYonetici=yon&&yoneticiSayisi<2;
+      return `<div class="uyesatir">
+        <span class="ep">${guv(u.eposta)}${kendisi?' <span class="kul" style="font-family:\'IBM Plex Mono\';font-size:10px;color:var(--ink-faint)">(sen)</span>':''}</span>
+        <span class="rol ${u.aktif===false?'pas':(yon?'yon':'')}">${
+          u.aktif===false?'pasif':(yon?'yönetici':'üye')}</span>
+        ${kendisi?'':`
+        <button class="ghost" data-uyerol="${guv(u.eposta)}" style="padding:3px 9px;font-size:11.5px">
+          ${yon?'Üye yap':'Yönetici yap'}</button>
         <button class="ghost" data-uyepas="${guv(u.eposta)}" style="padding:3px 9px;font-size:11.5px">
           ${u.aktif===false?'Aktif et':'Pasife al'}</button>
-        <button class="tsil" data-uyesil="${guv(u.eposta)}" title="Listeden çıkar">×</button>
-      </div>`).join('')
-      ||'<div class="bos">Henüz başka hesap eklenmemiş.</div>'}
+        <button class="tsil" data-uyesil="${guv(u.eposta)}" ${sonYonetici?'disabled title="Son yönetici silinemez"':'title="Listeden çıkar"'}>×</button>`}
+      </div>`;
+    }).join('')||'<div class="bos">Liste boş.</div>'}
   </div>`;
+
+  kutu.querySelectorAll('[data-uyerol]').forEach(b=>b.onclick=async()=>{
+    const e=b.dataset.uyerol, mevcut=liste.find(x=>x.eposta===e);
+    const yeniRol=mevcut.rol==='yonetici'?'uye':'yonetici';
+    if(yeniRol==='uye'&&yoneticiSayisi<2){bildir('En az bir yönetici kalmalı');return}
+    if(!confirm(`${e} ${yeniRol==='yonetici'?'YÖNETİCİ yapılacak':'normal üyeye çevrilecek'}.\n\n`+
+      (yeniRol==='yonetici'
+        ? 'Tanımları düzenleyebilecek ve üye listesini yönetebilecek.'
+        : 'Tanımları düzenleyemeyecek.')+'\n\nEmin misin?'))return;
+    try{ await FB.uyeYaz(e,{rol:yeniRol}); bildir('Yetki güncellendi'); uyeleriCiz(); }
+    catch(err){ bildir('Değiştirilemedi'); }
+  });
 
   kutu.querySelectorAll('[data-uyepas]').forEach(b=>b.onclick=async()=>{
     const e=b.dataset.uyepas, mevcut=liste.find(x=>x.eposta===e);
+    if(mevcut.rol==='yonetici'&&mevcut.aktif!==false&&yoneticiSayisi<2){
+      bildir('Son yönetici pasife alınamaz');return}
     try{
       await FB.uyeYaz(e,{aktif:mevcut.aktif===false});
       bildir(mevcut.aktif===false?`${e} tekrar aktif`:`${e} pasife alındı — girişi kapandı`);
@@ -2217,9 +2233,8 @@ async function uyeEkleEt(){
   const e=(g.value||'').trim().toLowerCase();
   if(!e){bildir('E-posta gir');g.focus();return}
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){bildir('Geçerli bir e-posta değil');return}
-  if(e===FB.yoneticiEpostasi.toLowerCase()){bildir('Yönetici zaten erişebiliyor');return}
   try{
-    await FB.uyeYaz(e,{aktif:true,eklenme:Date.now()});
+    await FB.uyeYaz(e,{aktif:true,rol:'uye',eklenme:Date.now()});
     g.value=''; bildir(`${e} eklendi — Google ile giriş yapabilir`);
     uyeleriCiz();
   }catch(err){ bildir('Eklenemedi — bağlantını kontrol et'); }
@@ -2356,7 +2371,8 @@ const FIREBASE_AYAR = {
   messagingSenderId: "394015087950",
   appId:             "1:394015087950:web:30d60109a26a744547521f"
 };
-const YONETICI_EPOSTA = "ecemylmz7@gmail.com";
+/* Yönetici kim olduğu KODDA TUTULMAZ. Yetki, /uyeler koleksiyonundaki
+   kaydın rol alanından okunur ve güvenlik kuralları da aynı kaynağa bakar. */
 const SURUM = 'https://www.gstatic.com/firebasejs/10.12.0/';
 
 let A,B,C;
@@ -2386,12 +2402,11 @@ try{ await enableIndexedDbPersistence(db); }catch(e){ /* birden fazla sekme aç�
 try{ await getRedirectResult(auth); }catch(e){ console.warn('yönlendirme dönüşü:',e); }
 
 const epostaAl = u => (u && u.email ? u.email.toLowerCase() : '');
-const yoneticiMi = u => epostaAl(u) === YONETICI_EPOSTA.toLowerCase();
 
 const API = {
-  yoneticiEpostasi: YONETICI_EPOSTA,
   kullanici: null,
-  yonetici: false,
+  uyeKaydi: null,      // /uyeler/{eposta} belgesi
+  yonetici: false,     // uyeKaydi.rol === 'yonetici'
 
   async girisYap(){
     const s = new GoogleAuthProvider();
@@ -2449,9 +2464,16 @@ const API = {
   }
 };
 
-onAuthStateChanged(auth, u=>{
+onAuthStateChanged(auth, async u=>{
   API.kullanici = u;
-  API.yonetici  = yoneticiMi(u);
+  API.uyeKaydi  = null;
+  API.yonetici  = false;
+  if(u){
+    try{ API.uyeKaydi = await API.uyeOku(epostaAl(u)); }
+    catch(e){ API.uyeKaydi = null; }      // kural reddi = üye değil
+    API.yonetici = !!(API.uyeKaydi && API.uyeKaydi.aktif !== false
+                      && API.uyeKaydi.rol === 'yonetici');
+  }
   if(window.oturumDegisti) window.oturumDegisti(u);
 });
 
