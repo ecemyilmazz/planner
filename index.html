@@ -439,7 +439,7 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
             data-baslik="Excel dosyasından kayıt yükle">Excel'den veri al (.xlsx)</button>
           <button class="ghost" id="yedekBtn" style="text-align:left">Tam yedek al (.json)</button>
           <button class="ghost" id="geriYukleBtn" style="text-align:left">Yedekten geri yükle</button>
-          <button class="ghost" id="sifirla" style="text-align:left;color:var(--c-istakibi)">Tüm kayıtları sil ve örnek veriye dön</button>
+          <button class="ghost" id="sifirla" style="text-align:left;color:var(--c-istakibi)">Tüm kayıtları sil</button>
         </div>
       </div>
       <div class="mfoot" style="padding:0;border:none;margin-top:4px"><button class="solid" id="ayarKaydet">Genel ayarları kaydet</button></div>
@@ -1173,7 +1173,7 @@ function kayitEkrani(){
       <button class="ghost" id="icsBtn" data-kilit
         data-baslik="Görünen kayıtları takvim dosyası olarak indir">Takvime aktar</button>
       <button class="ghost" id="excelBtn" data-kilit
-        data-baslik="Görünen kayıtları Excel dosyası olarak indir">Excel'e aktar</button>
+        data-baslik="Kayıtları Excel olarak indir — aynı dosyayı doldurup geri yükleyebilirsin">Excel'e aktar</button>
     </div>
 
     <div class="arac-alt" ${filtreAcik?'':'hidden'}>
@@ -1666,6 +1666,19 @@ function zipYap(dosyalar){
 }
 const xKac=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const sutunAdi=n=>{let a='';n++;while(n>0){const m=(n-1)%26;a=String.fromCharCode(65+m)+a;n=(n-m-1)/26}return a};
+/* Excel acilir menusu. Secenek listesi tek bir metin olarak gomulur;
+   toplam uzunluk 255 karakteri asarsa Excel kabul etmez, o durumda
+   dogrulama atlanir ve sutun serbest metin kalir. */
+function dogrulamaXml(sutun,secenekler,baslik,sonSatir){
+  const l=secenekler.filter(Boolean).map(x=>String(x).replace(/"/g,''));
+  if(!l.length)return '';
+  const form=l.join(',');
+  if(form.length>250)return '';
+  return `<dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="1"`+
+    ` promptTitle="${xKac(baslik)}" prompt="${xKac('Listeden seç: '+l.slice(0,6).join(', ')+(l.length>6?'…':''))}"`+
+    ` errorTitle="${xKac(baslik)}" error="${xKac('Yalnızca tanımlı değerler kullanılabilir.')}"`+
+    ` sqref="${sutun}2:${sutun}${sonSatir}"><formula1>"${xKac(form)}"</formula1></dataValidation>`;
+}
 const excelSeri=t=>{const [y,a,g]=t.split('-').map(Number);
   return Math.round((Date.UTC(y,a-1,g)-Date.UTC(1899,11,30))/864e5)};
 
@@ -1734,6 +1747,16 @@ function excelAktar(){
     return `<c r="${ref}" s="${st}" t="inlineStr"><is><t xml:space="preserve">${xKac(v)}</t></is></c>`;
   };
 
+  const SON_SATIR=Math.max(satirlar.length+1,400);   // bos satirlarda da menu calissin
+
+  /* hangi sutunda hangi liste var */
+  const dogrulamalar=[
+    dogrulamaXml(sutunAdi(1),ayar.turler.filter(t=>!t.pasif).map(t=>t.ad),'Tür',SON_SATIR),
+    ...AL.map((a,i)=>dogrulamaXml(sutunAdi(2+i),
+        a.secenekler.filter(x=>!x.pasif).map(x=>x.ad),a.ad,SON_SATIR)),
+    dogrulamaXml(sutunAdi(DURUM_S),['Açık','Tamamlandı'],'Durum',SON_SATIR)
+  ].filter(Boolean).join('');
+
   let sheet=`<row r="1" ht="26" customHeight="1">`+
     BAS.map((b,c)=>`<c r="${sutunAdi(c)}1" s="1" t="inlineStr"><is><t>${xKac(b)}</t></is></c>`).join('')+`</row>`;
   satirlar.forEach((sat,i)=>{
@@ -1753,8 +1776,70 @@ function excelAktar(){
 <cols>${GEN.map((g,i)=>`<col min="${i+1}" max="${i+1}" width="${g}" customWidth="1"/>`).join('')}</cols>
 <sheetData>${sheet}</sheetData>
 <autoFilter ref="A1:${sonSt}1"/>
+${dogrulamalar?`<dataValidations count="${(dogrulamalar.match(/<dataValidation /g)||[]).length}">${dogrulamalar}</dataValidations>`:''}
 <pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/>
 <pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0" paperSize="9"/>
+</worksheet>`;
+
+  /* --- ikinci sayfa: nasıl doldurulur --- */
+  const zamanT=ayar.turler.filter(t=>!t.pasif&&t.sinif==='zaman').map(t=>t.ad);
+  const hatirT=ayar.turler.filter(t=>!t.pasif&&t.sinif==='hatirlatma').map(t=>t.ad);
+  const YARDIM=[
+    ['BASLIK','Bu dosya nasıl kullanılır',''],
+    ['1','','Kayıtlarınızı "Kayıtlar" sayfasına girin. Başlık satırını silmeyin, adlarını değiştirmeyin.'],
+    ['2','','Tür ve seçenek sütunlarında hücreye tıklayınca açılır menü çıkar.'],
+    ['3','','Dosyayı kaydedip programda Ayarlar > Veri > "Excel\'den veri al" ile yükleyin.'],
+    ['4','','Program yüklemeden önce kaç kayıt bulduğunu ve hatalı satırları gösterir.'],
+    ['BOS','',''],
+    ['BASLIK','Tür, satırın nasıl doldurulacağını belirler',''],
+    ['Takvimde yer kaplar','',zamanT.join(' · ')||'(tanımlı tür yok)'],
+    ['','','TARİH + BAŞLANGIÇ + BİTİŞ ister. Son Tarih sütunu boş kalmalı.'],
+    ['','','Tarih/saat verilmezse kayıt "Atanmamış" havuzuna düşer, sonra takvime sürüklenir.'],
+    ['Hatırlatma / Bildirim','',hatirT.join(' · ')||'(tanımlı tür yok)'],
+    ['','','SON TARİH ister. Tarih / Başlangıç / Bitiş sütunları boş kalmalı.'],
+    ['','','Takvimde yer kaplamaz; son tarihi yaklaşınca sol rayda hatırlatma olarak görünür.'],
+    ['BOS','',''],
+    ['BASLIK','Biçim kuralları',''],
+    ['Tarihler','GG.AA.YYYY','Örn 14.08.2026. Excel\'in kendi tarih biçimi de kabul edilir.'],
+    ['Saatler','SS:DD','Örn 09:00, 14:30. Bitiş, başlangıçtan sonra olmalı.'],
+    ['Sorumlular','virgülle ayır',(ayar.kisiler.filter(k=>!k.pasif).map(k=>k.ad).slice(0,4).join(', ')||'—')],
+    ['Durum','Açık / Tamamlandı','Boş bırakılırsa Açık kabul edilir.'],
+    ['Boş satırlar','atlanır','Konu sütunu boş olan satır yok sayılır, hata sayılmaz.'],
+    ['Sütun sırası','önemsiz','Başlık adları okunur. Ama isim değişirse o sütun atlanır.'],
+    ['BOS','',''],
+    ['BASLIK','Tanımlı olmayan bir değer yazarsam?',''],
+    ['','','Kaybolmaz — programa yeni tanım olarak eklenir. Yine de açılır menüleri kullanmak,'],
+    ['','','yazım farklılıklarından doğan çift kayıtları (Yönetim / yönetim) önler.'],
+    ['BOS','',''],
+    ['BASLIK','Bu dosya ne zaman üretildi',''],
+    ['Tarih','',uzunTarih(BUGUN)],
+    ['Kayıt sayısı','',String(satirlar.length)],
+    ['','','Tanımlar bu tarihten sonra değiştiyse yeni bir dosya indirip ona geçin.']
+  ];
+  let yh='';
+  YARDIM.forEach((r,i)=>{
+    const no=i+1;
+    if(r[0]==='BOS'){ yh+=`<row r="${no}"/>`; return; }
+    if(r[0]==='BASLIK'){
+      yh+=`<row r="${no}" ht="20" customHeight="1">`+
+        [1,2,3].map(c=>`<c r="${sutunAdi(c-1)}${no}" s="1"${c===1?' t="inlineStr"':''}>`+
+          (c===1?`<is><t>${xKac(r[1])}</t></is>`:'')+`</c>`).join('')+`</row>`;
+      return;
+    }
+    yh+=`<row r="${no}">`+r.map((v,c)=>
+      v===''?`<c r="${sutunAdi(c)}${no}" s="2"/>`
+            :`<c r="${sutunAdi(c)}${no}" s="2" t="inlineStr"><is><t xml:space="preserve">${xKac(v)}</t></is></c>`
+    ).join('')+`</row>`;
+  });
+  const yardimXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<dimension ref="A1:C${YARDIM.length}"/>
+<sheetViews><sheetView showGridLines="0" workbookViewId="0"/></sheetViews>
+<sheetFormatPr defaultRowHeight="15"/>
+<cols><col min="1" max="1" width="24" customWidth="1"/><col min="2" max="2" width="17" customWidth="1"/>
+<col min="3" max="3" width="86" customWidth="1"/></cols>
+<sheetData>${yh}</sheetData>
+<pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/>
 </worksheet>`;
 
   const dosyalar=[
@@ -1764,6 +1849,7 @@ function excelAktar(){
 <Default Extension="xml" ContentType="application/xml"/>
 <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
 <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
 <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
 </Types>`},
    {ad:'_rels/.rels',icerik:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -1772,16 +1858,18 @@ function excelAktar(){
 </Relationships>`},
    {ad:'xl/workbook.xml',icerik:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<sheets><sheet name="Kayıtlar" sheetId="1" r:id="rId1"/></sheets>
+<sheets><sheet name="Kayıtlar" sheetId="1" r:id="rId1"/><sheet name="Nasıl doldurulur" sheetId="2" r:id="rId3"/></sheets>
 <definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">Kayıtlar!$A$1:$${sonSt}$1</definedName></definedNames>
 </workbook>`},
    {ad:'xl/_rels/workbook.xml.rels',icerik:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
 <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>
 </Relationships>`},
    {ad:'xl/styles.xml',icerik:styles},
-   {ad:'xl/worksheets/sheet1.xml',icerik:sheetXml}
+   {ad:'xl/worksheets/sheet1.xml',icerik:sheetXml},
+   {ad:'xl/worksheets/sheet2.xml',icerik:yardimXml}
   ];
 
   const blob=new Blob([zipYap(dosyalar)],
@@ -1793,7 +1881,9 @@ function excelAktar(){
         ? `Filtrelenmiş ${satirlar.length} kayıt aktarılacak (toplam ${kayitlar.length} kayıttan).\n\n`+
           `Etkin filtreler:\n• ${ozet.join('\n• ')}\n\n`
         : `Tüm kayıtlar aktarılacak: ${satirlar.length} kayıt.\n\n`)+
-      `Dosya: ${dosyaAdi} (${boyutYaz(blob.size)})\n\nDevam edilsin mi?`))return;
+      `Dosya: ${dosyaAdi} (${boyutYaz(blob.size)})\n\n`+
+      `Bu dosya aynı zamanda şablondur: açılır menüleri ve doldurma talimatını içerir.\n`+
+      `Doldurup "Excel'den veri al" ile geri yükleyebilirsin.\n\nDevam edilsin mi?`))return;
   blobIndir(dosyaAdi,blob);
   bildir(`${satirlar.length} kayıt indirildi`);
 }
@@ -2319,10 +2409,22 @@ document.querySelectorAll('#aDilim button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#aDilim button').forEach(x=>x.setAttribute('aria-pressed','false'));
   b.setAttribute('aria-pressed','true')});
 document.getElementById('sifirla').onclick=()=>{
-  if(!confirm('Tüm kayıtların silinecek ve örnek veri geri gelecek. Emin misin?'))return;
-  ayar=kopya(VARSAYILAN_AYAR);
-  kayitlar=ornekVeri();sonrakiId=11;yaz();secenekleriCiz();
-  document.getElementById('ayarPerde').hidden=true;ciz();bildir('Tanımlar ve kayıtlar sıfırlandı')};
+  const uyeMi=mod==='uye';
+  if(!confirm(uyeMi
+      ? `${kayitlar.length} kaydın tamamı silinecek ve hesabın boşalacak.\n\n`+
+        `Tanımların (türler, alanlar, sorumlular) korunur.\n`+
+        `Bu işlem geri alınamaz — önce Excel'e aktar ile yedek almak istersen İptal'e bas.\n\nEmin misin?`
+      : 'Tüm kayıtlar silinecek ve örnek veri geri gelecek. Emin misin?'))return;
+  if(uyeMi){
+    if(!confirm('Son onay: kayıtlar kalıcı olarak silinsin mi?'))return;
+    kayitlar=[];sonrakiId=1;yaz();
+    bildir('Tüm kayıtlar silindi');
+  }else{
+    ayar=kopya(VARSAYILAN_AYAR);
+    kayitlar=ornekVeri();sonrakiId=11;secenekleriCiz();
+    bildir('Örnek veriye dönüldü');
+  }
+  document.getElementById('ayarPerde').hidden=true;ciz();};
 document.getElementById('yedekBtn').onclick=yedekAl;
 document.getElementById('geriYukleBtn').onclick=()=>document.getElementById('dosyaSec').click();
 document.getElementById('dosyaSec').onchange=e=>{if(e.target.files[0])yedekYukle(e.target.files[0]);e.target.value=''};
