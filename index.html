@@ -182,6 +182,8 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
 .dvt.bekliyor{border-left-color:var(--c-calisma);background:#FDFBF6}
 .dvt.kabul{border-left-color:#1E5A46}
 .dvt.red{border-left-color:var(--c-istakibi);opacity:.75}
+.dvt.iptal{border-left-color:var(--ink-faint);opacity:.75}
+.dvt-durum.iptal{background:var(--rule);color:var(--ink-soft)}
 .dvt-ust{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
 .dvt-kim{font-size:11.5px;color:var(--ink-soft)}
 .dvt-kim b{color:var(--ink);font-weight:600}
@@ -200,6 +202,25 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
 .dvt-aks .kbl:hover{background:#174A39}
 .dvt-aks .rdt{background:var(--paper-2);border:1px solid var(--rule);color:var(--c-istakibi)}
 .dvt-aks .rdt:hover{background:var(--c-istakibi);color:#fff;border-color:var(--c-istakibi)}
+.mesgul-kisi{background:var(--paper-2);border:1px solid var(--rule);border-radius:8px;
+  padding:9px 11px;margin-bottom:6px}
+.mk-ad{font-size:12.5px;font-weight:600;margin-bottom:5px}
+.mk-cak{font-family:'IBM Plex Mono';font-size:9.5px;background:#F6E3DE;color:var(--c-istakibi);
+  border-radius:3px;padding:1px 5px;font-weight:600;margin-left:4px}
+.mk-yok,.mk-bos{font-size:11.5px;color:var(--ink-faint);font-style:italic}
+.not-akis{margin-top:9px;display:grid;gap:6px}
+.not-satir{background:var(--paper-2);border-left:2px solid var(--c-toplanti);
+  border-radius:0 6px 6px 0;padding:7px 10px;font-size:12.5px;line-height:1.45}
+.not-bas{display:flex;gap:8px;align-items:baseline;margin-bottom:2px}
+.not-bas b{font-size:11.5px;font-weight:700}
+.not-bas span{font-family:'IBM Plex Mono';font-size:10px;color:var(--ink-faint)}
+.dvt-detay{background:var(--paper-2);border:1px solid var(--rule-soft);border-radius:7px;
+  padding:9px 11px;margin-top:8px;font-size:12px;display:grid;gap:4px}
+.dvt-detay>div{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:start}
+.dvt-detay>div.tam{grid-template-columns:1fr}
+.dvt-detay span{font-family:'Archivo';font-size:9.5px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-faint);padding-top:1px}
+.dvt-detay>div.tam span{margin-bottom:2px}
 .mesgul-liste{display:flex;flex-wrap:wrap;gap:6px}
 .mesgul{font-family:'IBM Plex Mono';font-size:12px;background:var(--paper-2);
   border:1px solid var(--rule);border-radius:6px;padding:5px 10px;color:var(--ink-soft)}
@@ -1673,11 +1694,7 @@ function modalAc(id){
   kisilerCiz(k?.sorumlular);
   document.querySelectorAll('#fSorumlular input').forEach(i=>i.checked=k?k.sorumlular.includes(i.value):false);
   turDegisti(k);
-  /* Davet ve atama yalnızca giriş yapılmış, kaydedilmiş kayıtlarda anlamlı */
-  const paylasilabilir=(mod==='uye'&&!!k);
-  const td=turBul(k?.turId)||{};
-  document.getElementById('davetBtn').hidden=!(paylasilabilir&&td.sinif==='zaman'&&k.tarih&&k.bas);
-  document.getElementById('atamaBtn').hidden=!(paylasilabilir&&yoneticiMi);
+  paylasimDugmeleri();
   document.getElementById('zSorumlu').hidden=!zorunluMu('sorumlular');
   document.getElementById('zSonDurum').hidden=!zorunluMu('sonDurum');
   document.getElementById('zSaat').hidden=!zorunluMu('saat');
@@ -1691,6 +1708,21 @@ function turDegisti(kayit){
   document.getElementById('zamanAlan').hidden=!z;
   document.getElementById('deadlineAlan').hidden=z;
   ozelAlanlariCiz(kayit);
+  paylasimDugmeleri();
+}
+
+/* Paylaşım düğmeleri türün davranışına göre değişir:
+     takvimde yer kaplayan → "Davet gönder" (saat teklif edilir)
+     hatırlatma            → "İş ata" (son tarihle verilir, yönetici)
+   Yeni kayıtta da görünür; basıldığında kayıt önce oluşturulur. */
+function paylasimDugmeleri(){
+  const d=document.getElementById('davetBtn'), a=document.getElementById('atamaBtn');
+  if(!d||!a)return;
+  const t=turBul(document.getElementById('fTur').value)||{};
+  const zaman=t.sinif==='zaman';
+  const uygun=(mod==='uye');
+  d.hidden=!(uygun&&zaman);
+  a.hidden=!(uygun&&!zaman&&yoneticiMi);
 }
 function kaydetEt(){
   const konu=document.getElementById('fKonu').value.trim();
@@ -2711,6 +2743,33 @@ function genisGorunumGuncelle(){
 
 
 
+/* Bir kaydın karşı tarafa gidecek özeti.
+   Karşı tarafta bu tanımlar olmayabilir, o yüzden kimlik değil AD taşınır. */
+function kayitDetayi(k){
+  return {
+    turAd: turAd(k),
+    sorumlular: sorumluAdlari(k),
+    alanlar: turAlanlari(k.turId)
+      .map(a=>({ad:a.ad,deger:alanDegerAd(k,a.id)}))
+      .filter(x=>x.deger),
+    sonDurum: k.sonDurum||''
+  };
+}
+
+/* Detay bloğunu gösteren ortak parça — davet ve atama kartlarında kullanılır */
+function detayBlogu(d){
+  if(!d)return '';
+  const satir=[];
+  if(d.turAd)satir.push(['Tür',d.turAd]);
+  (d.alanlar||[]).forEach(a=>satir.push([a.ad,a.deger]));
+  if((d.sorumlular||[]).length)satir.push(['Sorumlular',d.sorumlular.join(', ')]);
+  if(!satir.length&&!d.sonDurum)return '';
+  return `<div class="dvt-detay">
+    ${satir.map(([e,v])=>`<div><span>${guv(e)}</span>${guv(v)}</div>`).join('')}
+    ${d.sonDurum?`<div class="tam"><span>Son durum</span>${guv(d.sonDurum)}</div>`:''}
+  </div>`;
+}
+
 /* ================= DAVET GÖNDERME ================= */
 /* Kayıt penceresinden çağrılır. Seçilen kişinin o gündeki dolu saatleri
    gösterilir — sadece meşgul aralıklar, konu bilgisi olmadan. */
@@ -2725,16 +2784,27 @@ async function davetGonderPanel(k){
         '<b>Tanımlar → Kişiler</b> bölümünden mevcut kişilere hesap bağlayabilirsin.'});
   }
 
-  let seciliKisi=adaylar[0].id, tarih=k.tarih||BUGUN, bas=k.bas||'09:00', bit=k.bit||'10:00';
-  let mesgul=null, yukleniyor=false;
+  let secililer=new Set([adaylar[0].id]);
+  let tarih=k.tarih||BUGUN, bas=k.bas||'09:00', bit=k.bit||'10:00';
+  let mesgul={}, yukleniyor=false;      // kişi kimliği → dolu dilimler
+
+  const mesguliyetleriYukle=async()=>{
+    yukleniyor=true; ciz2();
+    const yeni={};
+    await Promise.all([...secililer].map(async id=>{
+      const kk=ayar.kisiler.find(x=>x.id===id);
+      yeni[id]=await kisiMesguliyeti(kk.eposta,tarih);
+    }));
+    mesgul=yeni; yukleniyor=false; ciz2();
+  };
 
   const ciz2=()=>{
-    const kisi=ayar.kisiler.find(x=>x.id===seciliKisi);
-    const cakisan=(mesgul||[]).filter(x=>cakisiyorMu(bas,bit,x.b,x.e));
+    const secList=[...secililer].map(id=>ayar.kisiler.find(x=>x.id===id)).filter(Boolean);
     document.getElementById('onayGovde').innerHTML=
-      `<div class="alan"><label for="dvKisi">Kime</label>
-        <select id="dvKisi">${adaylar.map(x=>
-          `<option value="${x.id}" ${x.id===seciliKisi?'selected':''}>${guv(x.ad)}</option>`).join('')}</select></div>
+      `<div class="alan"><label>Kime<span class="zyildiz">${secililer.size} kişi</span></label>
+        <div class="kisiler" id="dvKisiler">${adaylar.map(x=>
+          `<label><input type="checkbox" value="${x.id}" ${secililer.has(x.id)?'checked':''}>${guv(x.ad)}</label>`
+        ).join('')}</div></div>
        <div class="ikili">
          <div class="alan"><label for="dvTarih">Tarih</label>
            <input type="date" id="dvTarih" value="${tarih}"></div>
@@ -2747,30 +2817,35 @@ async function davetGonderPanel(k){
        </div>
 
        <div class="alan">
-         <label>${guv(kisi.ad)} — ${kisaTarih(tarih)} doluluğu</label>
-         <div class="tanimnot">Yalnızca dolu saatler görünür; ne yaptığı görünmez.</div>
-         ${yukleniyor?'<div class="bos">Yükleniyor…</div>'
-          :mesgul===null?'<div class="bos">Müsaitlik bilgisi okunamadı.<br>Kişi henüz uygulamayı kullanmamış olabilir.</div>'
-          :mesgul.length?`<div class="mesgul-liste">${mesgul.map(x=>
-              `<div class="mesgul ${cakisiyorMu(bas,bit,x.b,x.e)?'cakis':''}">${x.b} – ${x.e}</div>`).join('')}</div>`
-          :'<div class="bos">Bu gün tamamen boş görünüyor.</div>'}
+         <label>${kisaTarih(tarih)} doluluğu</label>
+         <div class="tanimnot">Yalnızca dolu saatler görünür; ne yaptıkları görünmez.</div>
+         ${yukleniyor?'<div class="bos">Yükleniyor…</div>':
+           secList.length?secList.map(kk=>{
+             const dl=mesgul[kk.id];
+             const cak=(dl||[]).filter(x=>cakisiyorMu(bas,bit,x.b,x.e));
+             return `<div class="mesgul-kisi">
+               <div class="mk-ad">${guv(kk.ad)}${cak.length?' <span class="mk-cak">çakışıyor</span>':''}</div>
+               ${dl===null?'<div class="mk-yok">müsaitlik okunamadı — henüz uygulamayı kullanmamış olabilir</div>'
+                :dl.length?`<div class="mesgul-liste">${dl.map(x=>
+                    `<div class="mesgul ${cakisiyorMu(bas,bit,x.b,x.e)?'cakis':''}">${x.b} – ${x.e}</div>`).join('')}</div>`
+                :'<div class="mk-bos">bu gün tamamen boş</div>'}
+             </div>`;
+           }).join(''):'<div class="bos">Kişi seçilmedi.</div>'}
        </div>
 
-       ${cakisan.length?`<div class="cakisma"><b>Seçtiğin saat dolu:</b> ${
-         cakisan.map(x=>`${x.b}–${x.e}`).join(' · ')} — yine de gönderebilirsin.</div>`:''}
+       ${detayBlogu(kayitDetayi(k))}
 
        <div class="alan"><label for="dvNot">Not (isteğe bağlı)</label>
-         <textarea id="dvNot" rows="2" placeholder="Toplantı hakkında kısa bilgi"></textarea></div>`;
+         <textarea id="dvNot" rows="2" placeholder="Toplantı hakkında kısa bilgi"></textarea></div>
+       <p class="uyari">Kaydın tüm bilgileri (tür, alanlar, sorumlular, son durum)
+       davetle birlikte iletilir.</p>`;
 
-    document.getElementById('dvKisi').onchange=async e=>{
-      seciliKisi=e.target.value; mesgul=null; yukleniyor=true; ciz2();
-      const kk=ayar.kisiler.find(x=>x.id===seciliKisi);
-      mesgul=await kisiMesguliyeti(kk.eposta,tarih); yukleniyor=false; ciz2();
-    };
-    document.getElementById('dvTarih').onchange=async e=>{
-      tarih=e.target.value||BUGUN; mesgul=null; yukleniyor=true; ciz2();
-      const kk=ayar.kisiler.find(x=>x.id===seciliKisi);
-      mesgul=await kisiMesguliyeti(kk.eposta,tarih); yukleniyor=false; ciz2();
+    document.querySelectorAll('#dvKisiler input').forEach(el=>el.onchange=()=>{
+      if(el.checked)secililer.add(el.value); else secililer.delete(el.value);
+      mesguliyetleriYukle();
+    });
+    document.getElementById('dvTarih').onchange=e=>{
+      tarih=e.target.value||BUGUN; mesguliyetleriYukle();
     };
     document.getElementById('dvBas').onchange=e=>{bas=e.target.value||bas;ciz2()};
     document.getElementById('dvBit').onchange=e=>{bit=e.target.value||bit;ciz2()};
@@ -2781,32 +2856,40 @@ async function davetGonderPanel(k){
     `<button class="ghost" data-onay="hayir">Vazgeç</button>
      <button class="solid" data-onay="evet">Davet gönder</button>`;
   document.getElementById('onayPerde').hidden=false;
-  yukleniyor=true; ciz2();
-  mesgul=await kisiMesguliyeti(adaylar[0].eposta,tarih); yukleniyor=false; ciz2();
+  mesguliyetleriYukle();
 
   const sonuc=await new Promise(coz=>{
     onaySoz=()=>coz(null);
     document.getElementById('onayAyak').querySelectorAll('[data-onay]').forEach(b=>b.onclick=()=>{
       const e=b.dataset.onay==='evet';
-      const veri=e?{kisiId:seciliKisi,tarih,bas,bit,
+      const veri=e?{kisiler:[...secililer],tarih,bas,bit,
         not:(document.getElementById('dvNot').value||'').trim()}:null;
       document.getElementById('onayPerde').hidden=true; onaySoz=null; coz(veri);
     });
   });
   if(!sonuc)return;
+  if(!sonuc.kisiler.length){bildir('En az bir kişi seç');return}
   if(dk(sonuc.bit)<=dk(sonuc.bas)){bildir('Bitiş saati başlangıçtan sonra olmalı');return}
 
-  const alici=ayar.kisiler.find(x=>x.id===sonuc.kisiId);
-  try{
-    await FB.davetOlustur({
-      gonderen:(oturum.email||'').toLowerCase(),
-      alici:alici.eposta.toLowerCase(),
-      konu:k.konu, tarih:sonuc.tarih, bas:sonuc.bas, bit:sonuc.bit,
-      not:sonuc.not, durum:'bekliyor', olusturma:Date.now()
-    });
-    bildir(`${alici.ad} kişisine davet gönderildi`);
-    await kutuTazele();
-  }catch(e){ bildir('Davet gönderilemedi — bağlantını kontrol et'); }
+  /* Her alıcı için ayrı davet: biri kabul edip biri reddedebilmeli */
+  const detay=kayitDetayi(k);
+  const adlar=[], hatalar=[];
+  for(const id of sonuc.kisiler){
+    const alici=ayar.kisiler.find(x=>x.id===id);
+    if(!alici||!alici.eposta)continue;
+    try{
+      await FB.davetOlustur({
+        gonderen:(oturum.email||'').toLowerCase(),
+        alici:alici.eposta.toLowerCase(),
+        konu:k.konu, tarih:sonuc.tarih, bas:sonuc.bas, bit:sonuc.bit,
+        not:sonuc.not, detay, durum:'bekliyor', olusturma:Date.now()
+      });
+      adlar.push(alici.ad);
+    }catch(e){ hatalar.push(alici.ad); }
+  }
+  if(adlar.length)bildir(`${adlar.length} kişiye davet gönderildi: ${adlar.join(', ')}`);
+  if(hatalar.length)bildir(`Gönderilemedi: ${hatalar.join(', ')}`);
+  await kutuTazele();
 }
 
 /* ================= İŞ ATAMA (yalnızca yönetici) ================= */
@@ -2821,42 +2904,59 @@ async function isAtaPanel(k){
   document.getElementById('onayGovde').innerHTML=
     `<div class="onayMesaj"><b>${guv(kes(k.konu,60))}</b>
       <i>Atanan kişi işi reddedemez; gördüğünde kendi kayıtlarına ekler ve
-      sen "görüldü" bilgisini alırsın.</i></div>
-     <div class="alan"><label for="atKisi">Kime</label>
-       <select id="atKisi">${adaylar.map(x=>`<option value="${x.id}">${guv(x.ad)}</option>`).join('')}</select></div>
+      sen "görüldü" bilgisini alırsın. Sonradan not ekleyebilir, notu ikiniz de görürsünüz.</i></div>
+     <div class="alan"><label>Kime<span class="zyildiz" id="atSay">1 kişi</span></label>
+       <div class="kisiler" id="atKisiler">${adaylar.map((x,i)=>
+         `<label><input type="checkbox" value="${x.id}" ${i===0?'checked':''}>${guv(x.ad)}</label>`).join('')}</div></div>
      <div class="alan"><label for="atBitis">Son tarih</label>
        <input type="date" id="atBitis" value="${k.bitis||ekleGun(BUGUN,7)}"></div>
+     ${detayBlogu(kayitDetayi(k))}
      <div class="alan"><label for="atNot">Not (isteğe bağlı)</label>
-       <textarea id="atNot" rows="2" placeholder="İşle ilgili açıklama"></textarea></div>`;
+       <textarea id="atNot" rows="2" placeholder="İşle ilgili açıklama"></textarea></div>
+     <p class="uyari">Kaydın tüm bilgileri (tür, alanlar, sorumlular, son durum) işle birlikte iletilir.</p>`;
   document.getElementById('onayAyak').innerHTML=
     `<button class="ghost" data-onay="hayir">Vazgeç</button>
      <button class="solid" data-onay="evet">İşi ata</button>`;
   document.getElementById('onayPerde').hidden=false;
+  const sayGuncelle=()=>{
+    const n=document.querySelectorAll('#atKisiler input:checked').length;
+    document.getElementById('atSay').textContent=`${n} kişi`;
+  };
+  document.querySelectorAll('#atKisiler input').forEach(el=>el.onchange=sayGuncelle);
 
   const sonuc=await new Promise(coz=>{
     onaySoz=()=>coz(null);
     document.getElementById('onayAyak').querySelectorAll('[data-onay]').forEach(b=>b.onclick=()=>{
       const e=b.dataset.onay==='evet';
-      const veri=e?{kisiId:document.getElementById('atKisi').value,
+      const veri=e?{
+        kisiler:[...document.querySelectorAll('#atKisiler input:checked')].map(x=>x.value),
         bitis:document.getElementById('atBitis').value,
         not:(document.getElementById('atNot').value||'').trim()}:null;
       document.getElementById('onayPerde').hidden=true; onaySoz=null; coz(veri);
     });
   });
   if(!sonuc)return;
+  if(!sonuc.kisiler.length){bildir('En az bir kişi seç');return}
   if(!sonuc.bitis){bildir('Son tarih gerekli');return}
 
-  const alici=ayar.kisiler.find(x=>x.id===sonuc.kisiId);
-  try{
-    await FB.atamaOlustur({
-      atayan:(oturum.email||'').toLowerCase(),
-      alici:alici.eposta.toLowerCase(),
-      konu:k.konu, bitis:sonuc.bitis, not:sonuc.not,
-      gorulme:null, olusturma:Date.now()
-    });
-    bildir(`${alici.ad} kişisine iş atandı`);
-    await kutuTazele();
-  }catch(e){ bildir('Atanamadı — bağlantını kontrol et'); }
+  const detay=kayitDetayi(k);
+  const adlar=[], hatalar=[];
+  for(const id of sonuc.kisiler){
+    const alici=ayar.kisiler.find(x=>x.id===id);
+    if(!alici||!alici.eposta)continue;
+    try{
+      await FB.atamaOlustur({
+        atayan:(oturum.email||'').toLowerCase(),
+        alici:alici.eposta.toLowerCase(),
+        konu:k.konu, bitis:sonuc.bitis, not:sonuc.not, detay,
+        gorulme:null, notlar:[], olusturma:Date.now()
+      });
+      adlar.push(alici.ad);
+    }catch(e){ hatalar.push(alici.ad); }
+  }
+  if(adlar.length)bildir(`${adlar.length} kişiye iş atandı: ${adlar.join(', ')}`);
+  if(hatalar.length)bildir(`Atanamadı: ${hatalar.join(', ')}`);
+  await kutuTazele();
 }
 
 /* ================= GELEN KUTUSU ================= */
@@ -2902,7 +3002,8 @@ const kisiAdEposta=e=>{const k=kisiEpostaIle(e);return k?k.ad:(e||'').split('@')
 
 function davetKarti(d){
   const gelen=d.yon==='gelen';
-  const durumAd={bekliyor:'yanıt bekliyor',kabul:'kabul edildi',red:'reddedildi'}[d.durum]||d.durum;
+  const durumAd={bekliyor:'yanıt bekliyor',kabul:'kabul edildi',red:'reddedildi',
+                 iptal:'takvimden çıkarıldı'}[d.durum]||d.durum;
   const cak=gelen&&d.durum==='bekliyor'
     ? kendiMesguliyetim(d.tarih).filter(x=>cakisiyorMu(d.bas,d.bit,x.b,x.e))
     : [];
@@ -2915,13 +3016,16 @@ function davetKarti(d){
     <div class="dvt-konu">${guv(d.konu)}</div>
     <div class="dvt-zaman">${uzunTarih(d.tarih)} · ${d.bas}–${d.bit}</div>
     ${d.not?`<div class="dvt-not">${guv(d.not)}</div>`:''}
-    ${d.yanitNot?`<div class="dvt-not">Yanıt: ${guv(d.yanitNot)}</div>`:''}
+    ${detayBlogu(d.detay)}
+    ${d.yanitNot?`<div class="dvt-not">${d.durum==='iptal'?'İptal sebebi':'Yanıt'}: ${guv(d.yanitNot)}</div>`:''}
     ${cak.length?`<div class="cakisma"><b>Takviminde çakışma var:</b> ${
       cak.map(x=>guv(`${x.b}–${x.e} ${kes(x.konu,30)}`)).join(' · ')}</div>`:''}
     <div class="dvt-aks">
       ${gelen&&d.durum==='bekliyor'?`
         <button class="kbl" data-dkabul="${d.id}">Kabul et</button>
         <button class="rdt" data-dred="${d.id}">Reddet</button>`:''}
+      ${gelen&&d.durum==='kabul'?`
+        <button class="rdt" data-diptal="${d.id}">Takvimden çıkar</button>`:''}
       ${!gelen&&d.durum==='bekliyor'?`
         <button class="ghost" data-dgeri="${d.id}">Daveti geri çek</button>`:''}
       ${!gelen&&d.durum!=='bekliyor'?`
@@ -2932,6 +3036,7 @@ function davetKarti(d){
 
 function atamaKarti(a){
   const bana=a.yon==='bana';
+  const notlar=a.notlar||[];
   return `<div class="dvt ${a.gorulme?'kabul':'bekliyor'}">
     <div class="dvt-ust">
       <span class="dvt-kim">${bana?'Atayan':'Atanan'}: <b>${guv(kisiAdEposta(bana?a.atayan:a.alici))}</b></span>
@@ -2942,8 +3047,16 @@ function atamaKarti(a){
     <div class="dvt-zaman">son tarih: ${uzunTarih(a.bitis)}${
       a.gorulme?` · ${kisaTarih(new Date(a.gorulme).toISOString().slice(0,10))} tarihinde görüldü`:''}</div>
     ${a.not?`<div class="dvt-not">${guv(a.not)}</div>`:''}
+    ${detayBlogu(a.detay)}
+    ${notlar.length?`<div class="not-akis">${notlar.map(n=>
+      `<div class="not-satir">
+        <div class="not-bas"><b>${guv(kisiAdEposta(n.yazan))}</b>
+          <span>${kisaTarih(new Date(n.zaman).toISOString().slice(0,10))}</span></div>
+        ${guv(n.metin)}
+      </div>`).join('')}</div>`:''}
     <div class="dvt-aks">
       ${bana&&!a.gorulme?`<button class="kbl" data-agor="${a.id}">Gördüm, kayıtlarıma ekle</button>`:''}
+      ${a.gorulme?`<button class="ghost" data-anot="${a.id}">Not ekle</button>`:''}
       ${!bana?`<button class="ghost" data-asil="${a.id}">Geri çek</button>`:''}
     </div>
   </div>`;
@@ -2977,6 +3090,22 @@ function kutuBagla(){
   const g=document.getElementById('kutuGovde');
   g.querySelectorAll('[data-dkabul]').forEach(b=>b.onclick=()=>davetYanit(b.dataset.dkabul,'kabul'));
   g.querySelectorAll('[data-dred]').forEach(b=>b.onclick=()=>davetYanit(b.dataset.dred,'red'));
+  g.querySelectorAll('[data-diptal]').forEach(b=>b.onclick=async()=>{
+    const d=davetler.find(x=>x.id===b.dataset.diptal);
+    const not=await notSor('Takvimden çıkar',
+      `"${kes(d.konu,45)}" takviminden silinecek ve ${kisiAdEposta(d.gonderen)} bilgilendirilecek.`,
+      'Örn: acil bir iş çıktı, katılamayacağım');
+    if(not===null)return;
+    /* Kabul ederken oluşan kaydı bul ve sil */
+    const kayit=kayitlar.find(x=>x.davetId===d.id);
+    if(kayit){kayitlar=kayitlar.filter(x=>x.id!==kayit.id); yaz(); ciz();}
+    try{
+      await FB.davetYanitla(d.id,'iptal',not);
+      bildir('Takvimden çıkarıldı, gönderen bilgilendirildi');
+      await kutuTazele();
+    }catch(e){ bildir('Bildirilemedi'); }
+  });
+
   g.querySelectorAll('[data-dgeri]').forEach(b=>b.onclick=async()=>{
     const d=davetler.find(x=>x.id===b.dataset.dgeri);
     if(!await onayla({baslik:'Daveti geri çek',tehlike:true,
@@ -2990,6 +3119,20 @@ function kutuBagla(){
     try{ await FB.davetSil(b.dataset.dsil); await kutuTazele(); }catch(e){}
   });
   g.querySelectorAll('[data-agor]').forEach(b=>b.onclick=()=>atamaGor(b.dataset.agor));
+  g.querySelectorAll('[data-anot]').forEach(b=>b.onclick=async()=>{
+    const a=atamalar.find(x=>x.id===b.dataset.anot);
+    const metin=await notSor('Not ekle',
+      `"${kes(a.konu,45)}" işine not ekleniyor.`,
+      'İşin durumu, karşılaşılan sorun ya da soru');
+    if(metin===null||!metin)return;
+    const yeni=[...(a.notlar||[]),
+      {yazan:(oturum.email||'').toLowerCase(),metin,zaman:Date.now()}];
+    try{
+      await FB.atamaNotYaz(a.id,yeni);
+      bildir('Not eklendi — karşı taraf da görecek');
+      await kutuTazele();
+    }catch(e){ bildir('Not eklenemedi'); }
+  });
   g.querySelectorAll('[data-asil]').forEach(b=>b.onclick=async()=>{
     const a=atamalar.find(x=>x.id===b.dataset.asil);
     if(!await onayla({baslik:'İşi geri çek',tehlike:true,
@@ -3915,12 +4058,24 @@ document.getElementById('sil').onclick=async()=>{
     detay:k?`"${guv(kes(k.konu,80))}" — geri alınamaz.`:'Geri alınamaz.',
     onayMetni:'Sil'}))return;
   kayitlar=kayitlar.filter(x=>x.id!==duzenlenen);yaz();modalKapat();ciz();bildir('Kayıt silindi')};
+/* Yeni kayıtta paylaşım: önce kaydı oluştur, sonra paneli aç.
+   Böylece kullanıcı "kaydet → tekrar aç → davet gönder" yapmak zorunda kalmaz. */
+async function paylasimIcinKaydet(){
+  if(duzenlenen){
+    const k=kayitlar.find(x=>x.id===duzenlenen);
+    if(k)return k;
+  }
+  const oncekiSayi=kayitlar.length;
+  kaydetEt();                                  // doğrulama burada da çalışır
+  if(kayitlar.length===oncekiSayi&&!duzenlenen)return null;   // kaydedilemedi
+  return kayitlar[kayitlar.length-1];
+}
 document.getElementById('davetBtn').onclick=async()=>{
-  const k=kayitlar.find(x=>x.id===duzenlenen); if(!k)return;
+  const k=await paylasimIcinKaydet(); if(!k)return;
   modalKapat(); await davetGonderPanel(k);
 };
 document.getElementById('atamaBtn').onclick=async()=>{
-  const k=kayitlar.find(x=>x.id===duzenlenen); if(!k)return;
+  const k=await paylasimIcinKaydet(); if(!k)return;
   modalKapat(); await isAtaPanel(k);
 };
 document.getElementById('zilBtn').onclick=()=>{
@@ -4161,6 +4316,7 @@ const API = {
   /* --- iş atamaları --- */
   atamaOlustur(veri){ return addDoc(collection(db,'atamalar'),veri); },
   atamaGoruldu(id){ return updateDoc(doc(db,'atamalar',id),{gorulme:Date.now()}); },
+  atamaNotYaz(id,notlar){ return updateDoc(doc(db,'atamalar',id),{notlar}); },
   atamaSil(id){ return deleteDoc(doc(db,'atamalar',id)); },
   async atamalariOku(eposta){
     const e=eposta.toLowerCase();
