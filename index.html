@@ -1592,7 +1592,12 @@ function yedekYukle(dosya){
 function icsKac(s){return String(s??'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n')}
 function icsAktar(){
   const secili=filtreliKayitlar().filter(k=>!k.tamam&&etkinTarih(k));
-  if(!secili.length){bildir('Tarihi olan, tamamlanmamış kayıt bulunamadı');return}
+  if(!secili.length){
+    bildir(kayitlar.length
+      ? 'Tarihi olan, tamamlanmamış kayıt bulunamadı'
+      : 'Henüz kayıt yok');
+    return;
+  }
   const dt=(t,s)=>t.replace(/-/g,'')+'T'+s.replace(':','')+'00';
   const damga=new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
   const sat=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Planner//TR','CALSCALE:GREGORIAN'];
@@ -1684,7 +1689,19 @@ const excelSeri=t=>{const [y,a,g]=t.split('-').map(Number);
 
 function excelAktar(){
   const secim=filtreliKayitlar();
-  if(!secim.length){bildir('Aktarılacak kayıt yok — filtreyi gevşetmeyi dene');return}
+  /* Kayıt yoksa yine de dosya üretilir: başlıklar, açılır menüler ve
+     talimat sayfası boş şablon olarak işe yarar. Ama sonuç filtre
+     yüzünden boşsa kullanıcı bunu bilmeli. */
+  if(!secim.length){
+    if(kayitlar.length){
+      bildir('Filtreye uyan kayıt yok — filtreyi temizleyip tekrar dene');
+      return;
+    }
+    if(!confirm('Henüz kaydınız yok.\n\n'+
+      'Boş şablon indirilsin mi?\n\n'+
+      'Dosyada sütun başlıkları, açılır menüler ve doldurma talimatı bulunur; '+
+      'doldurup "Excel\'den veri al" ile yükleyebilirsiniz.'))return;
+  }
   const AL=ayar.alanlar;
   const BAS=['Konu','Tür',...AL.map(a=>a.ad),'Sorumlular','Tarih','Başlangıç','Bitiş','Süre (dk)','Son Tarih','Durum','Son Durum','Kayıt Tarihi'];
   const GEN=[44,15,...AL.map(()=>14),24,11,10,10,10,11,12,44,12];
@@ -1748,6 +1765,7 @@ function excelAktar(){
   };
 
   const SON_SATIR=Math.max(satirlar.length+1,400);   // bos satirlarda da menu calissin
+  const BOS_SABLON=!satirlar.length;
 
   /* hangi sutunda hangi liste var */
   const dogrulamalar=[
@@ -1813,7 +1831,7 @@ ${dogrulamalar?`<dataValidations count="${(dogrulamalar.match(/<dataValidation /
     ['BOS','',''],
     ['BASLIK','Bu dosya ne zaman üretildi',''],
     ['Tarih','',uzunTarih(BUGUN)],
-    ['Kayıt sayısı','',String(satirlar.length)],
+    ['Kayıt sayısı','',satirlar.length?String(satirlar.length):'boş şablon'],
     ['','','Tanımlar bu tarihten sonra değiştiyse yeni bir dosya indirip ona geçin.']
   ];
   let yh='';
@@ -1875,9 +1893,13 @@ ${dogrulamalar?`<dataValidations count="${(dogrulamalar.match(/<dataValidation /
   const blob=new Blob([zipYap(dosyalar)],
     {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const ozet=filtreOzeti();
-  const dosyaAdi=`planner-kayitlar-${BUGUN}.xlsx`;
+  const dosyaAdi=satirlar.length
+    ? `planner-kayitlar-${BUGUN}.xlsx`
+    : `planner-sablon-${BUGUN}.xlsx`;
   if(!confirm(
-      (ozet.length
+      (!satirlar.length
+        ? `Boş şablon indirilecek.\n\n`
+        : ozet.length
         ? `Filtrelenmiş ${satirlar.length} kayıt aktarılacak (toplam ${kayitlar.length} kayıttan).\n\n`+
           `Etkin filtreler:\n• ${ozet.join('\n• ')}\n\n`
         : `Tüm kayıtlar aktarılacak: ${satirlar.length} kayıt.\n\n`)+
@@ -1885,7 +1907,7 @@ ${dogrulamalar?`<dataValidations count="${(dogrulamalar.match(/<dataValidation /
       `Bu dosya aynı zamanda şablondur: açılır menüleri ve doldurma talimatını içerir.\n`+
       `Doldurup "Excel'den veri al" ile geri yükleyebilirsin.\n\nDevam edilsin mi?`))return;
   blobIndir(dosyaAdi,blob);
-  bildir(`${satirlar.length} kayıt indirildi`);
+  bildir(satirlar.length?`${satirlar.length} kayıt indirildi`:'Boş şablon indirildi');
 }
 
 
