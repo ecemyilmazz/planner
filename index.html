@@ -50,6 +50,52 @@ h1,h2,h3{font-family:'Archivo',system-ui,sans-serif;letter-spacing:-.02em;font-w
 .kilit-uyari b{color:var(--ink)}
 fieldset.kilitli-alan{border:none;padding:0;margin:0}
 fieldset.kilitli-alan[disabled]{opacity:.55}
+.ozet{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px}
+.ozetkart{background:var(--paper-2);border:1px solid var(--rule);border-radius:8px;padding:11px 13px}
+.ozetkart .sayi{font-family:'Archivo';font-size:23px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.ozetkart .etiket{font-size:11px;color:var(--ink-soft);margin-top:3px;line-height:1.3}
+.ozetkart.iyi{border-left:3px solid #1E5A46}
+.ozetkart.iyi .sayi{color:#1E5A46}
+.ozetkart.uyari{border-left:3px solid var(--c-calisma);background:#F6E9D9;border-color:#E0C9A8}
+.ozetkart.uyari .sayi{color:var(--c-calisma)}
+.ozetkart.kotu{border-left:3px solid var(--c-istakibi);background:#F6E3DE;border-color:#E3BDB2}
+.ozetkart.kotu .sayi{color:var(--c-istakibi)}
+.sorunlar{border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--paper)}
+.sorunbas{background:var(--paper-2);padding:8px 12px;font-family:'Archivo';font-size:10.5px;
+  font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);
+  border-bottom:1px solid var(--rule)}
+.sorunliste{max-height:180px;overflow-y:auto}
+.sorunsatir{display:flex;gap:9px;padding:7px 12px;border-bottom:1px solid var(--rule-soft)}
+.sorunsatir:last-child{border-bottom:none}
+.sorunsatir .sno{font-family:'IBM Plex Mono';font-size:10.5px;color:var(--ink-faint);
+  background:var(--paper-2);border:1px solid var(--rule-soft);border-radius:4px;padding:1px 6px;
+  flex:none;height:fit-content;white-space:nowrap}
+.sorunsatir .sme{flex:1;min-width:0;font-size:12.5px}
+.sorunsatir .sme b{display:block;font-weight:600}
+.sorunsatir .sme i{display:block;color:var(--ink-soft);font-size:11.5px;font-style:normal;margin-top:1px}
+.onizleme{border:1px solid var(--rule);border-radius:8px;overflow:auto;max-height:200px;background:var(--paper)}
+.onizleme table{width:100%;border-collapse:collapse;min-width:520px}
+.onizleme th{position:sticky;top:0;background:var(--paper-2);font-family:'Archivo';font-size:9.5px;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);text-align:left;
+  padding:7px 10px;border-bottom:1px solid var(--rule);font-weight:700}
+.onizleme td{padding:6px 10px;border-bottom:1px solid var(--rule-soft);font-size:12px;vertical-align:top}
+.onizleme tr:last-child td{border-bottom:none}
+.bos2{color:var(--ink-faint)}
+.secim{display:grid;gap:7px}
+.secim>label{display:flex;gap:9px;align-items:flex-start;background:var(--paper-2);
+  border:1px solid var(--rule);border-radius:8px;padding:10px 12px;cursor:pointer;font-size:13px}
+.secim>label:has(input:checked){border-color:var(--ink);background:var(--paper);box-shadow:inset 0 0 0 1px var(--ink)}
+.secim input{margin-top:3px;flex:none;width:auto}
+.secim b{display:block;font-weight:700}
+.secim i{font-style:normal;font-size:11.5px;color:var(--ink-soft);display:block;margin-top:1px}
+.hataKutu{display:flex;gap:12px;align-items:flex-start;background:#F6E3DE;border:1px solid #E3BDB2;
+  border-left:3px solid var(--c-istakibi);border-radius:0 8px 8px 0;padding:14px 16px}
+.hataKutu .im2{width:22px;height:22px;border-radius:50%;background:var(--c-istakibi);color:#fff;
+  display:grid;place-items:center;font-size:13px;font-weight:700;flex:none}
+.hataKutu b{display:block;font-size:14px;margin-bottom:4px}
+.hataKutu i{font-style:normal;font-size:12.5px;color:var(--ink-soft);line-height:1.55;display:block}
+.hataKutu code{font-family:'IBM Plex Mono';font-size:11.5px;background:var(--paper);
+  padding:1px 5px;border-radius:4px;border:1px solid var(--rule-soft)}
 .uyeler{display:grid;gap:7px}
 .uyesatir{display:flex;align-items:center;gap:8px;background:var(--paper-2);border:1px solid var(--rule);
   border-radius:7px;padding:8px 10px;flex-wrap:wrap}
@@ -507,6 +553,15 @@ button.ekle:hover{border-style:solid;color:var(--ink)}
       </div>
       </fieldset>
     </div>
+  </div>
+</div>
+
+<div class="perde" id="icePerde" hidden>
+  <div class="modal genis" role="dialog" aria-modal="true">
+    <div class="mhead"><h2 id="iceBaslik">Excel'den veri al</h2>
+      <button class="ghost" id="iceKapat">Kapat</button></div>
+    <div class="mbody" id="iceGovde"></div>
+    <div class="mfoot" id="iceAyak"></div>
   </div>
 </div>
 
@@ -2043,6 +2098,54 @@ function kisiEslestir(ad){
 const SABIT_BASLIK={konu:'Konu',tur:'Tür',sorumlular:'Sorumlular',tarih:'Tarih',
   bas:'Başlangıç',bit:'Bitiş',bitis:'Son Tarih',durum:'Durum',sonDurum:'Son Durum',kayit:'Kayıt Tarihi'};
 
+/* ================= İÇE AKTARMA PANELİ ================= */
+/* Tarayıcının alert/confirm kutuları yerine uygulamanın kendi dilinde
+   bir önizleme paneli: ne bulundu, ne okunamadı, hangi sütun tanınmadı. */
+function icePanelAc(baslik,govde,ayak){
+  document.getElementById('iceBaslik').textContent=baslik;
+  document.getElementById('iceGovde').innerHTML=govde;
+  document.getElementById('iceAyak').innerHTML=ayak;
+  document.getElementById('icePerde').hidden=false;
+}
+function icePanelKapat(){document.getElementById('icePerde').hidden=true}
+
+function iceHata(baslik,aciklama,ipucu){
+  icePanelAc('Excel okunamadı',
+    `<div class="hataKutu"><span class="im2">!</span><span>
+      <b>${guv(baslik)}</b><i>${aciklama}</i></span></div>`+
+    (ipucu?`<p class="uyari" style="margin-top:2px">${ipucu}</p>`:''),
+    `<button class="solid" data-ice="kapat">Tamam</button>`);
+}
+
+const ozetKart=(sayi,etiket,sinif)=>
+  `<div class="ozetkart ${sinif||''}"><div class="sayi">${sayi}</div><div class="etiket">${etiket}</div></div>`;
+
+function sorunListesi(baslik,liste){
+  if(!liste.length)return '';
+  return `<div class="sorunlar"><div class="sorunbas">${guv(baslik)} · ${liste.length}</div>
+    <div class="sorunliste">${liste.map(x=>
+      `<div class="sorunsatir">
+        ${x.satir?`<span class="sno">satır ${x.satir}</span>`:''}
+        <span class="sme"><b>${guv(x.baslik)}</b>${x.aciklama?`<i>${guv(x.aciklama)}</i>`:''}</span>
+      </div>`).join('')}</div></div>`;
+}
+
+function onizlemeTablosu(liste){
+  const ilk=liste.slice(0,5);
+  if(!ilk.length)return '';
+  const h=v=>v?guv(String(v)):'<span class="bos2">—</span>';
+  return `<div class="onizleme"><table>
+    <thead><tr><th>Konu</th><th>Tür</th><th>Ne zaman</th><th>Son tarih</th><th>Sorumlular</th></tr></thead>
+    <tbody>${ilk.map(k=>`<tr>
+      <td>${h(kes(k.konu,44))}</td>
+      <td>${h(turAd(k))}</td>
+      <td class="mono" style="font-size:11px">${k.tarih?kisaTarih(k.tarih)+(k.bas?'<br>'+k.bas+'–'+k.bit:'<br>saatsiz'):'<span class="bos2">atanmamış</span>'}</td>
+      <td class="mono" style="font-size:11px">${k.bitis?kisaTarih(k.bitis):'<span class="bos2">—</span>'}</td>
+      <td style="font-size:11.5px">${h(sorumluAdlari(k).join(', '))}</td>
+    </tr>`).join('')}</tbody></table></div>
+    ${liste.length>5?`<p class="tanimnot" style="margin:6px 0 0">İlk 5 kayıt gösteriliyor · toplam ${liste.length}</p>`:''}`;
+}
+
 async function excelAl(dosya){
   let satirlar;
   try{
@@ -2061,20 +2164,59 @@ async function excelAl(dosya){
     }
     if(!sayfaXml)throw new Error('Excel dosyasında sayfa bulunamadı.');
     satirlar=sayfaCoz(sayfaXml,ortak);
-  }catch(e){alert('Dosya okunamadı.\n\n'+e.message);return}
+  }catch(e){
+    const eskiFormat=/\.xls$/i.test(dosya.name||'');
+    iceHata(
+      eskiFormat?'Bu dosya biçimi desteklenmiyor':'Dosya okunamadı',
+      eskiFormat
+        ? `<code>${guv(dosya.name)}</code> eski Excel biçiminde (.xls). Excel'de açıp `+
+          `<b>Farklı Kaydet → Excel Çalışma Kitabı (.xlsx)</b> ile kaydedin.`
+        : `<code>${guv(dosya.name||'dosya')}</code> geçerli bir Excel dosyası gibi görünmüyor.<br>`+
+          `<span style="opacity:.7">${guv(e.message)}</span>`,
+      'Doğru dosyayı seçtiğinizden emin olun. Güncel şablonu "Excel\'e aktar" düğmesiyle indirebilirsiniz.');
+    return;
+  }
 
-  if(satirlar.length<2){alert('Dosyada veri satırı bulunamadı.');return}
+  if(satirlar.length<2){
+    iceHata('Dosyada veri yok',
+      `<code>${guv(dosya.name||'dosya')}</code> okundu ama başlık satırından başka bir şey içermiyor.`,
+      'Kayıtları "Kayıtlar" sayfasına, başlık satırının hemen altına girin.');
+    return;
+  }
 
   /* baslik satirini eslestir */
-  const baslik=satirlar[0].map(h=>metinCoz(h).toLocaleLowerCase('tr'));
+  const basliklarHam=satirlar[0].map(h=>metinCoz(h));
+  const baslik=basliklarHam.map(h=>h.toLocaleLowerCase('tr'));
   const bul=ad=>baslik.indexOf(ad.toLocaleLowerCase('tr'));
   const S={}; Object.entries(SABIT_BASLIK).forEach(([k,v])=>S[k]=bul(v));
   if(S.konu<0||S.tur<0){
-    alert('Başlık satırı tanınmadı.\n\n"Konu" ve "Tür" sütunları zorunludur.\n'+
-          'Şablondaki başlık satırını silmediğinden ve isimleri değiştirmediğinden emin ol.');
+    const eksik=[S.konu<0?'Konu':null,S.tur<0?'Tür':null].filter(Boolean);
+    iceHata('Başlık satırı tanınmadı',
+      `Zorunlu ${eksik.length>1?'sütunlar':'sütun'} bulunamadı: `+
+      `<code>${eksik.join('</code> <code>')}</code><br>`+
+      `<span style="opacity:.7">Dosyanın ilk satırında şunlar var: `+
+      (basliklarHam.filter(Boolean).slice(0,8).map(x=>`<code>${guv(x)}</code>`).join(' ')||'(boş)')+
+      `</span>`,
+      'Doğru dosyayı mı seçtiniz? Şablonun ilk satırı silinmemeli ve başlık adları değiştirilmemeli. '+
+      'Güncel şablonu "Excel\'e aktar" düğmesiyle indirebilirsiniz.');
     return;
   }
   const alanSut=ayar.alanlar.map(a=>({alan:a,i:bul(a.ad)})).filter(x=>x.i>=0);
+
+  /* tanınmayan ve eksik sütunlar — sessizce atlanmasınlar */
+  const taninan=new Set([...Object.values(S).filter(x=>x>=0),...alanSut.map(x=>x.i)]);
+  const sutunUyari=[
+    ...basliklarHam.map((ad,i)=>({ad,i})).filter(x=>x.ad&&!taninan.has(x.i))
+      .map(x=>({baslik:`"${x.ad}" sütunu okunmadı`,
+                aciklama:'Bu başlık tanımlı bir alana karşılık gelmiyor; içindeki veriler alınmayacak.'})),
+    ...ayar.alanlar.filter(a=>bul(a.ad)<0)
+      .map(a=>({baslik:`"${a.ad}" sütunu dosyada yok`,
+                aciklama:'Bu alan boş kalacak. Sorun değilse devam edebilirsiniz.'})),
+    ...[['tarih','Tarih'],['bas','Başlangıç'],['bit','Bitiş'],['bitis','Son Tarih'],
+        ['sorumlular','Sorumlular'],['durum','Durum']]
+      .filter(([k])=>S[k]<0)
+      .map(([,ad])=>({baslik:`"${ad}" sütunu dosyada yok`,aciklama:'Bu bilgi boş kalacak.'}))
+  ];
 
   /* satirlari coz */
   const yeni=[], hata=[]; let atlanan=0;
@@ -2084,11 +2226,16 @@ async function excelAl(dosya){
     if(!konu){
       /* tamamen bos satir (sadece bicimlendirme) sessizce gecilir;
          icinde veri olup konusu bos olan satir kullaniciya bildirilir */
-      if(sat.some(h=>h&&metinCoz(h)))atlanan++;
+      if(sat.some(h=>h&&metinCoz(h))){
+        atlanan++;
+        hata.push({satir:no,baslik:'Konu boş',
+                   aciklama:'Satırda veri var ama Konu sütunu doldurulmamış — atlandı.'});
+      }
       continue;
     }
     const turAdi_=metinCoz(sat[S.tur]);
-    if(!turAdi_){hata.push(`Satır ${no}: Tür boş`);continue}
+    if(!turAdi_){hata.push({satir:no,baslik:'Tür boş',
+      aciklama:`"${kes(konu,40)}" için tür belirtilmemiş.`});continue}
 
     const tarih=tarihCoz(sat[S.tarih]), bas=saatCoz(sat[S.bas]), bit=saatCoz(sat[S.bit]);
     const bitis=tarihCoz(sat[S.bitis]);
@@ -2096,8 +2243,12 @@ async function excelAl(dosya){
     const t=turEslestir(turAdi_,zamanli);
     const zt=t.sinif==='zaman';
 
-    if(zt&&bas&&bit&&dk(bit)<=dk(bas)){hata.push(`Satır ${no}: Bitiş saati başlangıçtan önce`);continue}
-    if(!zt&&!bitis){hata.push(`Satır ${no}: "${turAdi_}" hatırlatma türü, Son Tarih gerekli`);continue}
+    if(zt&&bas&&bit&&dk(bit)<=dk(bas)){
+      hata.push({satir:no,baslik:'Bitiş saati başlangıçtan önce',
+                 aciklama:`${bas} – ${bit} · "${kes(konu,34)}"`});continue}
+    if(!zt&&!bitis){
+      hata.push({satir:no,baslik:'Son tarih eksik',
+                 aciklama:`"${turAdi_}" bir hatırlatma türü; Son Tarih sütunu doldurulmalı.`});continue}
 
     const alanlar={};
     alanSut.forEach(({alan,i})=>{
@@ -2117,30 +2268,50 @@ async function excelAl(dosya){
       tamam: /tamam/i.test(metinCoz(sat[S.durum]))});
   }
 
+  /* --- hiç kayıt alınamadı --- */
   if(!yeni.length){
-    alert('Aktarılabilir kayıt bulunamadı.'+(hata.length?'\n\nSorunlar:\n'+hata.slice(0,12).join('\n'):''));
+    icePanelAc('Aktarılabilir kayıt bulunamadı',
+      `<div class="hataKutu"><span class="im2">!</span><span>
+        <b>${satirlar.length-1} satır okundu, hiçbiri alınamadı</b>
+        <i>Aşağıdaki sorunlar giderildikten sonra tekrar deneyin.</i></span></div>`+
+      sorunListesi('Sorunlu satırlar',hata.slice(0,30))+
+      sorunListesi('Sütun uyarıları',sutunUyari),
+      `<button class="solid" data-ice="kapat">Kapat</button>`);
     return;
   }
 
-  /* ozet + onay */
-  let ozet=`${yeni.length} kayıt okundu.\n`;
-  if(atlanan)ozet+=`${atlanan} satır Konu sütunu boş olduğu için atlandı.\n`;
-  if(hata.length)ozet+=`\n${hata.length} satır alınamadı:\n`+hata.slice(0,10).join('\n')+
-    (hata.length>10?`\n… ve ${hata.length-10} tane daha`:'')+'\n';
-  ozet+=`\nMevcut kayıt sayınız: ${kayitlar.length}\n\n`+
-        `TAMAM: yeni kayıtlar mevcutların üzerine EKLENİR\n`+
-        `İPTAL: hiçbir şey yapılmaz`;
-  if(!confirm(ozet))return;
+  /* --- önizleme --- */
+  const govde=
+    `<div class="ozet">
+      ${ozetKart(yeni.length,'kayıt hazır','iyi')}
+      ${hata.length?ozetKart(hata.length,'satır alınamadı','kotu'):''}
+      ${sutunUyari.length?ozetKart(sutunUyari.length,'sütun uyarısı','uyari'):''}
+      ${ozetKart(kayitlar.length,'mevcut kaydın')}
+    </div>
+    ${onizlemeTablosu(yeni)}
+    ${sorunListesi('Alınamayan satırlar',hata.slice(0,30))}
+    ${sorunListesi('Sütun uyarıları',sutunUyari)}
+    <div class="alan"><label>Mevcut kayıtların ne olsun?</label>
+      <div class="secim">
+        <label><input type="radio" name="iceMod" value="ekle" checked>
+          <span><b>Üzerine ekle</b><i>Mevcut ${kayitlar.length} kaydın kalır, ${yeni.length} yeni kayıt eklenir — toplam ${kayitlar.length+yeni.length}.</i></span></label>
+        <label><input type="radio" name="iceMod" value="degistir">
+          <span><b>Hepsini değiştir</b><i>Mevcut ${kayitlar.length} kayıt silinir, yerine bu ${yeni.length} kayıt gelir. Geri alınamaz.</i></span></label>
+      </div>
+    </div>`;
 
-  if(kayitlar.length&&confirm(
-      `Mevcut ${kayitlar.length} kaydınız da duruyor.\n\n`+
-      `TAMAM: mevcut kayıtlar SİLİNSİN, sadece Excel'dekiler kalsın\n`+
-      `İPTAL: mevcut kayıtlar korunsun, yeniler eklensin`)){
-    kayitlar=[];
-  }
-  yeni.forEach(k=>{k.id=sonrakiId++;kayitlar.push(k)});
-  yaz(); secenekleriCiz(); ciz();
-  bildir(`${yeni.length} kayıt aktarıldı · toplam ${kayitlar.length}`);
+  icePanelAc('Excel önizlemesi',govde,
+    `<button class="ghost" data-ice="kapat">Vazgeç</button>
+     <button class="solid" id="iceUygula">${yeni.length} kaydı aktar</button>`);
+
+  document.getElementById('iceUygula').onclick=()=>{
+    const secim=(document.querySelector('input[name="iceMod"]:checked')||{}).value||'ekle';
+    if(secim==='degistir'){kayitlar=[];sonrakiId=1}
+    yeni.forEach(k=>{k.id=sonrakiId++;kayitlar.push(k)});
+    icePanelKapat();
+    yaz(); tanimlariBulutaYaz(); secenekleriCiz(); ciz();
+    bildir(`${yeni.length} kayıt aktarıldı · toplam ${kayitlar.length}`);
+  };
 }
 
 
@@ -2457,12 +2628,17 @@ document.getElementById('sifirla').onclick=()=>{
 document.getElementById('yedekBtn').onclick=yedekAl;
 document.getElementById('geriYukleBtn').onclick=()=>document.getElementById('dosyaSec').click();
 document.getElementById('dosyaSec').onchange=e=>{if(e.target.files[0])yedekYukle(e.target.files[0]);e.target.value=''};
+document.getElementById('iceKapat').onclick=icePanelKapat;
+document.getElementById('icePerde').onclick=e=>{if(e.target.id==='icePerde')icePanelKapat()};
+document.getElementById('iceAyak').addEventListener('click',e=>{
+  if(e.target.closest('[data-ice="kapat"]'))icePanelKapat();
+});
 document.getElementById('excelAlBtn').onclick=()=>demoMu()
   ?girisGerekli("Excel'den veri alma")
   :document.getElementById('excelSec').click();
 document.getElementById('excelSec').onchange=e=>{if(e.target.files[0])excelAl(e.target.files[0]);e.target.value=''};
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){modalKapat();document.getElementById('ayarPerde').hidden=true}
+  if(e.key==='Escape'){modalKapat();document.getElementById('ayarPerde').hidden=true;icePanelKapat()}
   if(e.key==='n'&&(e.ctrlKey||e.metaKey)){e.preventDefault();modalAc()}
 });
 window.addEventListener('beforeunload',e=>{
