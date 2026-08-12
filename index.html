@@ -143,19 +143,6 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
 .zanahtar input:checked ~ .yol{background:#1E5A46}
 .zanahtar input:checked ~ .top{transform:translateX(17px)}
 .zanahtar input:disabled ~ .yol{opacity:.5}
-.kisiler-liste{display:grid;gap:6px}
-.ksatir{display:flex;align-items:center;gap:9px;background:var(--paper-2);border:1px solid var(--rule);
-  border-radius:8px;padding:8px 10px}
-.ksatir.pasif{opacity:.55}
-.ksatir .kic{flex:1;min-width:0}
-.ksatir .kic b{display:block;font-size:13px;font-weight:600}
-.ksatir .kic i{display:block;font-style:normal;font-size:11px;color:var(--ink-soft);
-  margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ksatir .kic i.etiketsiz{color:var(--ink-faint)}
-.krol{font-family:'IBM Plex Mono';font-size:9.5px;background:var(--rule);color:var(--ink-soft);
-  border-radius:3px;padding:1px 5px}
-.krol.yon{background:#1E5A46;color:#fff}
-.krol.yok{background:#F6E3DE;color:var(--c-istakibi)}
 .uyeler{display:grid;gap:7px}
 .uyesatir{display:flex;align-items:center;gap:8px;background:var(--paper-2);border:1px solid var(--rule);
   border-radius:7px;padding:8px 10px;flex-wrap:wrap}
@@ -336,6 +323,9 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
 .blocks{position:absolute;top:0;left:56px;right:8px;pointer-events:none}
 .block{position:absolute;left:0;right:0;pointer-events:auto;border-radius:5px;padding:3px 8px;overflow:hidden;cursor:grab;color:#fff;border-left:3px solid rgba(0,0,0,.28)}
 .block.dragging{opacity:.35}
+.block.kilit{cursor:default}
+.hblock.kilit{cursor:default}
+.bklt{opacity:.75;font-size:11px}
 .block .bk2{font-size:12px;font-weight:700;line-height:1.25;font-family:'Archivo';letter-spacing:-.01em}
 .block .bmeta{font-size:10.5px;opacity:.88;font-family:'IBM Plex Mono';margin-top:1px}
 .block.kisa{padding:1px 8px;display:flex;align-items:center;gap:7px}
@@ -493,13 +483,6 @@ tr.tamam .kt{text-decoration:line-through}
 .atabs button:hover{color:var(--ink)}
 .atabs button[aria-selected="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--ink)}
 .tanimnot{font-size:11.5px;color:var(--ink-faint);line-height:1.4;margin:-1px 0 5px;font-style:italic}
-.tursatir{position:relative;display:flex;align-items:center;gap:7px;background:var(--paper-2);border:1px solid var(--rule);border-radius:7px;padding:7px 42px 7px 8px;margin-bottom:6px;flex-wrap:wrap}
-.tursatir input[type=color]{width:26px;height:26px;padding:0;border:1px solid var(--rule);border-radius:6px;background:none;cursor:pointer;flex:none}
-.tursatir .ad{flex:1 1 120px;min-width:110px;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:5px 8px;font-size:12.5px;font-weight:500}
-.tursatir select{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:5px 7px;font-size:11.5px;flex:none}
-.tursatir .bay{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-soft);cursor:pointer;white-space:nowrap}
-.tursatir .bay input{width:14px;height:14px;margin:0}
-.tursatir .kul{font-family:'IBM Plex Mono';font-size:10px;color:var(--ink-faint);white-space:nowrap}
 .tsil{width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font-size:15px;color:var(--ink-faint);flex:none}
 .tsil:hover{background:var(--c-istakibi);color:#fff}
 .tsil[disabled]{opacity:.28;cursor:not-allowed}
@@ -531,6 +514,66 @@ tr.tamam .kt{text-decoration:line-through}
 .ipucu-ic b{color:var(--ink)}
 .turalt{display:flex;align-items:center;gap:6px;flex-wrap:wrap;width:100%;padding-top:6px;margin-top:2px;border-top:1px dashed var(--rule)}
 .turalt .et{font-size:10px;font-family:'Archivo';font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint)}
+/* ---------- tanım satırları (türler · alanlar · kişiler) ----------
+   Ortak düzen: solda bilgi, sağda işlem düğmeleri. Bilgi bloğu esner,
+   düğmeler sabit kalır; böylece uzun e-postalar satırı bozmaz. */
+.tbolum{border-top:1px solid var(--rule);padding-top:14px;margin-top:2px}
+.tbolum:first-of-type{border-top:none;padding-top:0}
+.tbaslik{margin-bottom:10px}
+.tbaslik h4{font-family:'Archivo';font-size:14px;font-weight:700;letter-spacing:-.015em}
+.tbaslik span{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:2px;line-height:1.45}
+.tlist{display:grid;gap:7px}
+.tsatir{display:flex;align-items:center;gap:10px;background:var(--paper);
+  border:1px solid var(--rule);border-radius:9px;padding:10px 11px;flex-wrap:wrap}
+.tsatir.pasif{opacity:.6;background:var(--paper-2)}
+.tbilgi{flex:1;min-width:150px}
+.tad{font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:6px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tadgiris{width:100%;background:var(--paper-2);border:1px solid var(--rule);border-radius:6px;
+  padding:6px 9px;font-size:13.5px;font-weight:600;font-family:'Karla',system-ui,sans-serif}
+.tadgiris:focus{background:var(--paper);border-color:var(--ink-faint);outline:none}
+.talt{display:flex;align-items:center;gap:7px;margin-top:4px;font-size:11.5px;
+  color:var(--ink-soft);flex-wrap:wrap;min-width:0}
+.talt>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tayrac{width:3px;height:3px;border-radius:50%;background:var(--rule);flex:none}
+.tsay{font-family:'IBM Plex Mono';font-size:10.5px;color:var(--ink-faint);flex:none}
+
+/* durum rozetleri */
+.tr{font-family:'IBM Plex Mono';font-size:9.5px;letter-spacing:.02em;border-radius:4px;
+  padding:2px 6px;flex:none;background:var(--rule);color:var(--ink-soft)}
+.tr.yon{background:#1E5A46;color:#fff}
+.tr.uye{background:#DCEDE4;color:#1E5A46}
+.tr.kapali,.tr.uyari{background:#F6E3DE;color:var(--c-istakibi)}
+.tr.etiket{background:var(--paper-2);color:var(--ink-faint);border:1px solid var(--rule)}
+.tr.pas{background:var(--ink-faint);color:#fff}
+.tr.zaman{background:#DCE6EC;color:#2E5A72}
+.tr.hatir{background:#F6E3DE;color:var(--c-istakibi)}
+
+/* işlem düğmeleri — hepsi aynı boyut ve stil */
+.tislem{display:flex;align-items:center;gap:5px;flex:none}
+.tislem button{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;
+  border:1px solid var(--rule);background:var(--paper-2);color:var(--ink-soft);
+  transition:background .12s,color .12s,border-color .12s}
+.tislem button:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tislem button.tehlikeli:hover{background:var(--c-istakibi);border-color:var(--c-istakibi)}
+.tislem button[disabled]{opacity:.3;cursor:not-allowed}
+.tislem button[disabled]:hover{background:var(--paper-2);color:var(--ink-soft);border-color:var(--rule)}
+.tislem select.tsinif{height:30px;background:var(--paper-2);border:1px solid var(--rule);
+  border-radius:7px;padding:0 7px;font-size:11.5px;color:var(--ink-soft)}
+.tislem select.tsinif:focus{border-color:var(--ink-faint);outline:none}
+.trenk{width:30px;height:30px;padding:0;border:1px solid var(--rule);border-radius:7px;
+  background:none;cursor:pointer;flex:none}
+
+/* türe bağlı alanlar — satırın altında ayrı şerit */
+.talan{width:100%;display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  padding-top:9px;margin-top:2px;border-top:1px dashed var(--rule)}
+.tetiket{font-family:'Archivo';font-size:9.5px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-faint);flex:none}
+.tkutu{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-soft);
+  cursor:pointer;background:var(--paper-2);border:1px solid var(--rule);
+  border-radius:20px;padding:3px 10px;white-space:nowrap}
+.tkutu:has(input:checked){background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tkutu input{width:13px;height:13px;margin:0;flex:none}
 .alankart{position:relative;border:1px solid var(--rule);border-radius:8px;
   padding:9px 44px 9px 10px;margin-bottom:7px;background:var(--paper-2)}
 .alanbas{display:flex;align-items:center;gap:7px;margin-bottom:7px}
@@ -564,8 +607,12 @@ body.mobil .topbar{gap:8px;padding-bottom:10px;position:sticky;top:0;z-index:30;
     background:var(--ground);margin:-10px -10px 0;padding:10px}
 body.mobil .brand{font-size:16px}
 body.mobil .tabs{display:none}            /* sekmeler alta taşındı */
-body.mobil .hesap{max-width:150px;font-size:11px;padding:2px 8px}
+body.mobil .hesap{max-width:112px;font-size:10.5px;padding:2px 8px}
 body.mobil .hesap .yrozet{display:none}
+body.mobil .senkron{font-size:9.5px;padding:2px 7px}
+body.mobil .zil{width:32px;height:32px}
+body.mobil .giris{padding:6px 10px;font-size:12px}
+body.mobil .giris .yaz{display:none}          /* yalnızca Google halkası kalır */
 body.mobil .topbar .solid{padding:8px 13px;font-size:13px}
 body.mobil .mobil-gizle{display:none !important}
 
@@ -598,11 +645,46 @@ body.mobil .nowline::before{left:44px}
 body.mobil .nowline .nokta{left:41px}
 
   /* --- hafta ve ay: yatay kaydırma --- */
-body.mobil .hafta, body.mobil .ay{overflow-x:auto;-webkit-overflow-scrolling:touch}
-body.mobil .hgrid{min-width:660px}
-body.mobil .ayizgara{min-width:560px}
-body.mobil .aygun{height:78px}
-body.mobil .ayoge .t{display:none}
+  /* --- hafta: gün gün liste (yatay kaydırma yok) --- */
+body.mobil .hliste{display:grid;gap:10px}
+body.mobil .hgun{background:var(--paper);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+body.mobil .hgun.bugun{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+body.mobil .hgun-bas{width:100%;display:flex;align-items:center;gap:8px;padding:11px 13px;
+  background:var(--paper-2);border-bottom:1px solid var(--rule);text-align:left}
+body.mobil .hgun.bugun .hgun-bas{background:var(--ink);color:var(--paper)}
+body.mobil .hg-gun{font-family:'Archivo';font-size:13px;font-weight:700;letter-spacing:-.01em}
+body.mobil .hg-tar{font-family:'IBM Plex Mono';font-size:12px;opacity:.7}
+body.mobil .hg-say{font-family:'IBM Plex Mono';font-size:11px;opacity:.65}
+body.mobil .hg-ok{font-size:17px;opacity:.5;line-height:1}
+body.mobil .hgun-liste{display:grid}
+body.mobil .hsatir{display:flex;align-items:stretch;gap:9px;padding:10px 13px;
+  border-top:1px solid var(--rule-soft);cursor:pointer}
+body.mobil .hgun-liste .hsatir:first-child{border-top:none}
+body.mobil .hsatir:active{background:var(--paper-2)}
+body.mobil .hsatir.bitti{opacity:.5}
+body.mobil .hsatir.bitti b{text-decoration:line-through}
+body.mobil .hs-saat{font-size:11.5px;color:var(--ink-faint);width:38px;flex:none;padding-top:1px}
+body.mobil .hs-cizgi{width:3px;border-radius:2px;flex:none}
+body.mobil .hs-ic{flex:1;min-width:0}
+body.mobil .hs-ic b{display:block;font-size:13.5px;font-weight:500;line-height:1.35}
+body.mobil .hs-ic i{display:block;font-style:normal;font-size:11px;color:var(--ink-soft);margin-top:2px}
+
+  /* --- ay: noktalı kompakt ızgara + gün özeti --- */
+body.mobil .ayizgara{min-width:0}
+body.mobil .aygun.mini{height:auto;min-height:46px;padding:5px 2px 6px;align-items:center;
+  justify-content:flex-start;gap:4px;cursor:pointer}
+body.mobil .aygun.mini .no{align-self:center;font-size:13px;padding:2px 6px}
+body.mobil .aygun.mini:active{background:var(--rule-soft)}
+body.mobil .noktalar{display:flex;gap:2px;align-items:center;justify-content:center;
+  min-height:6px;flex-wrap:wrap;max-width:100%}
+body.mobil .noktalar i{width:5px;height:5px;border-radius:50%;flex:none}
+body.mobil .noktalar i.artik{width:3px;height:3px;background:var(--ink-faint)}
+body.mobil .ayozet{margin-top:12px;background:var(--paper);border:1px solid var(--rule);
+  border-radius:10px;overflow:hidden}
+body.mobil .ayozet-bas{display:flex;align-items:center;gap:8px;padding:10px 13px;
+  background:var(--paper-2);border-bottom:1px solid var(--rule);font-size:13px}
+body.mobil .ayozet-bas button{padding:4px 10px;font-size:12px}
+body.mobil .ayozet .bos{margin:12px;border:none}
 
   /* --- araç çubuğu --- */
 body.mobil .arac-ust{padding:9px 10px}
@@ -675,7 +757,7 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
     </button>
     <button class="ghost mobil-gizle" id="ayarBtn">Ayarlar</button>
     <button class="solid" id="yeniBtn">Yeni kayıt</button>
-    <button class="giris" id="girisBtn" title="Google hesabınla giriş yap">Giriş yap</button>
+    <button class="giris" id="girisBtn" title="Google hesabınla giriş yap"><span class="yaz">Giriş yap</span></button>
     <button class="ghost" id="genisBtn" hidden title="Masaüstü düzenine geç">Geniş görünüm</button>
     <button class="ghost mobil-gizle" id="cikisBtn" hidden title="Oturumu kapat">Çıkış</button>
   </div>
@@ -707,12 +789,13 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
         <div class="kisiler" id="fSorumlular"></div></div>
       <div id="zamanAlan">
         <div class="ikili" style="margin-bottom:11px">
-          <div class="alan"><label for="fTarih">Tarih</label><input type="date" id="fTarih"></div>
+          <div class="alan"><label for="fTarih">Tarih<span class="zyildiz" id="zTarih" hidden>zorunlu</span></label>
+            <input type="date" id="fTarih"></div>
           <div class="alan"><label for="fBas">Başlangıç<span class="zyildiz" id="zSaat" hidden>zorunlu</span></label>
-            <input type="time" id="fBas" step="900"></div>
+            <select id="fBas"></select></div>
         </div>
-        <div class="ikili"><div class="alan"><label for="fBit">Bitiş</label><input type="time" id="fBit" step="900"></div></div>
-        <p class="uyari" style="margin-top:11px">Tarih ve saati boş bırakırsan kayıt "Atanmamış" havuzuna düşer, sonra takvime sürükleyerek yerleştirirsin.</p>
+        <div class="ikili"><div class="alan"><label for="fBit">Bitiş</label><select id="fBit"></select></div></div>
+        <p class="uyari" id="atanmamisNot" style="margin-top:11px">Tarih ve saati boş bırakırsan kayıt "Atanmamış" havuzuna düşer.</p>
       </div>
       <div id="deadlineAlan" hidden>
         <div class="alan"><label for="fBitis">Son tarih</label><input type="date" id="fBitis"></div>
@@ -720,6 +803,8 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
       </div>
       <div class="alan"><label for="fSon">Son durum<span class="zyildiz" id="zSonDurum" hidden>zorunlu</span></label>
         <textarea id="fSon" placeholder="Nerede kaldı?"></textarea></div>
+
+      <div class="kilit-uyari" id="paylasimUyari" hidden></div>
 
       <div class="paylasim" id="paylasimPanel" hidden>
         <div class="pay-bas">
@@ -761,9 +846,7 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
         <div class="alan"><label for="aBas">Gün başlangıcı</label><input type="number" id="aBas" min="0" max="22"></div>
         <div class="alan"><label for="aBit">Gün bitişi</label><input type="number" id="aBit" min="1" max="24"></div>
       </div>
-      <div class="alan"><label>Zaman dilimi</label>
-        <div class="satirsec" id="aDilim"><button data-d="15">15 dakika</button><button data-d="30">30 dakika</button></div>
-      </div>
+
       <div class="alan"><label>Veri</label>
         <div class="tanimnot">Excel'den veri alma, hazırladığın tabloyu kayda dönüştürür.
         Dışa aktarma "Kayıtlar" sekmesindedir. Tam yedek ayrıca tanımları, renkleri ve
@@ -835,8 +918,10 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
           <b>Takvimde Yer Kaplar</b> ise başlangıç–bitiş saati alır ve takvime çizilir,
           <b>Hatırlatma/Bildirim</b> ise son tarih alır, takvimde görünmez, sol rayda çıkar.</p>
           <p><b>Alan</b> kayda eklenen bir açılır menüdür. Her alanın kendi seçenek listesi vardır.
-          Bir alanın hangi türlerde çıkacağını, o türün satırındaki kutucuklardan seçersin.
+          Bir alanın hangi türlerde çıkacağını <b>tür satırının altındaki</b> kutucuklardan seçersin.
           Örnek: "Grup" alanı sadece Toplantı'da görünsün, Çalışma Dilimi'nde görünmesin.</p>
+          <p><b>Kişi</b> kayıtlara sorumlu olarak atanır. Hesap bağlarsan (🔗 düğmesi)
+          o kişiye toplantı daveti gönderebilir, müsait saatlerini görebilirsin.</p>
           <p><b>Pasife alma</b>, bir tanımı yeni kayıtlarda gizler ama eski kayıtlarda bırakır.
           İşten ayrılan bir kişiyi veya kapanan bir departmanı silmek yerine pasife al —
           geçmiş kayıtların bozulmaz.</p>
@@ -850,25 +935,23 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
         değiştirmek istediğin bir şey varsa yöneticiye ilet.
       </div>
       <fieldset class="kilitli-alan" id="tanimAlan">
-      <div class="alan">
-        <label>Türler</label>
-        <div class="tanimnot">Adını değiştirirsen mevcut kayıtlar da güncellenir. Davranışını değiştirirsen kayıtların saat/son tarih bilgileri dönüştürülür.</div>
+      <section class="tbolum">
+        <div class="tbaslik"><h4>Türler</h4>
+          <span>Kaydın ne olduğu ve takvimde nasıl davranacağı</span></div>
         <div id="turListe"></div>
-        <button class="ghost ekle" id="turEkle">+ Yeni tür</button>
-      </div>
+      </section>
 
-      <div class="alan">
-        <label>Alanlar</label>
-        <div class="tanimnot">Kayıt formundaki açılır menüler. Yeni alan ekleyip istediğin türe bağlayabilirsin — "Müşteri", "Proje", "Öncelik" gibi.</div>
+      <section class="tbolum">
+        <div class="tbaslik"><h4>Alanlar</h4>
+          <span>Kayıt formundaki açılır menüler — "Müşteri", "Proje", "Öncelik" gibi</span></div>
         <div id="alanListe"></div>
-        <button class="ghost ekle" id="alanEkle">+ Yeni alan</button>
-      </div>
+      </section>
 
-      <div class="alan">
-        <label>Sorumlular</label>
-        <div class="tanimnot">Kayıtlara atanabilecek kişiler. Ayrılan biri için silme yerine pasife almayı tercih et.</div>
+      <section class="tbolum">
+        <div class="tbaslik"><h4>Kişiler</h4>
+          <span>Kayıtlara sorumlu atanabilecek kişiler; hesabı bağlı olanlar davet de alabilir</span></div>
         <div id="lKisiler"></div>
-      </div>
+      </section>
       </fieldset>
     </div>
   </div>
@@ -983,7 +1066,10 @@ function eksikAlanlar(k){
   if(!k.turId)eksik.push('Tür');
   if(!z&&!k.bitis)eksik.push('Son Tarih');
   if(zorunluMu('sorumlular')&&!(k.sorumlular||[]).length)eksik.push('Sorumlular');
-  if(zorunluMu('saat')&&z&&k.tarih&&(!k.bas||!k.bit))eksik.push('Başlangıç ve bitiş saati');
+  if(zorunluMu('saat')&&z){
+    if(!k.tarih)eksik.push('Tarih');
+    if(!k.bas||!k.bit)eksik.push('Başlangıç ve bitiş saati');
+  }
   if(zorunluMu('sonDurum')&&!(k.sonDurum||'').trim())eksik.push('Son durum notu');
   turAlanlari(k.turId).forEach(a=>{
     if(alanZorunluMu(a.id)&&!alanDeger(k,a.id))eksik.push(a.ad);
@@ -1038,6 +1124,18 @@ const copSvg=(b=13)=>`<svg viewBox="0 0 24 24" width="${b}" height="${b}" fill="
   `stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" `+
   `style="display:block"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>`;
 const COP=copSvg(13);
+/* Tanım satırlarındaki işlem düğmeleri için ortak ikon seti.
+   Metin karakteri (@ ◐) yerine ikon: ne yaptıkları bakınca anlaşılsın. */
+const IKON={
+  hesap:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/>'+
+        '<path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+  gizle:'<path d="M9.9 4.2A11 11 0 0 1 12 4c7 0 10 8 10 8a18 18 0 0 1-2.2 3.2M6.6 6.6A18 18 0 0 0 2 12s3 8 10 8a11 11 0 0 0 5.4-1.4"/><path d="M2 2l20 20"/>',
+  goster:'<path d="M2 12s3-8 10-8 10 8 10 8-3 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/>',
+  kalem:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'
+};
+const ikonSvg=(ad,b=14)=>`<svg viewBox="0 0 24 24" width="${b}" height="${b}" fill="none" `+
+  `stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" `+
+  `style="display:block">${IKON[ad]}</svg>`;
 /* Sistemin çalışması için şart olan alanlar. Bunlar kullanıcı tarafından
    değiştirilemez; kapatılırsa kayıt takvime yerleşemez ya da hiç oluşamaz. */
 const SISTEM_ZORUNLU=[
@@ -1049,11 +1147,12 @@ const SISTEM_ZORUNLU=[
    veri kalitesi için zorunlu tutmak isteyebilir. */
 const AYARLANABILIR_ZORUNLU=[
   {id:'sorumlular', ad:'Sorumlular', aciklama:'Kayıtta en az bir sorumlu seçilmelidir.'},
-  {id:'saat',       ad:'Başlangıç ve bitiş saati',
-   aciklama:'Takvimde yer kaplayan türlerde tarih verilmişse saat de zorunlu olur.'},
+  {id:'saat',       ad:'Tarih ve saat',
+   aciklama:'Takvimde yer kaplayan türlerde tarih, başlangıç ve bitiş zorunlu olur. '+
+            'Kapatırsan bu kayıtlar tarihsiz oluşturulup "Atanmamış" havuzunda bekleyebilir.'},
   {id:'sonDurum',   ad:'Son durum notu', aciklama:'Her kayıtta durum notu bulunmalıdır.'}
 ];
-const VARSAYILAN_AYAR={bas:8,bit:17,dilim:15,zorunlu:{},
+const VARSAYILAN_AYAR={bas:8,bit:17,dilim:15,zorunlu:{saat:true},
   kisiler:[{id:'k1',ad:'Ayşe'},{id:'k2',ad:'Mehmet'},{id:'k3',ad:'Zeynep'}],
   turler:kopya(VARSAYILAN_TURLER),
   alanlar:kopya(VARSAYILAN_ALANLAR)};
@@ -1196,10 +1295,7 @@ function gocEt(ham){
 
 /* Mobilde satırlar parmakla dokunulabilir olmalı; aynı zaman dilimi
    daha yüksek çizilir. */
-const slotPx=()=>{
-  const temel=ayar.dilim===15?15:26;
-  return mobilMi()?Math.round(temel*1.3):temel;
-};
+const slotPx=()=>mobilMi()?20:15;
 const slotSayi=()=>Math.max(1,(ayar.bit-ayar.bas)*60/ayar.dilim);
 function renkAl(k){return (turBul(k.turId)||{}).renk||'#8B948F'}
 function turAdi(k){
@@ -1272,9 +1368,12 @@ function gunEkrani(){
   }
   const bloklar=blok.map(k=>{
     const ust=(dk(k.bas)-ayar.bas*60)/ayar.dilim*P, yuk=(dk(k.bit)-dk(k.bas))/ayar.dilim*P, kisa=yuk<34;
-    return `<div class="block kart ${kisa?'kisa':''}" draggable="true" data-id="${k.id}" data-ac="${k.id}" tabindex="0"
+    const kilitli=paylasimliMi(k);
+    return `<div class="block kart ${kisa?'kisa':''} ${kilitli?'kilit':''}" draggable="${!kilitli}"
+      data-id="${k.id}" data-ac="${k.id}" tabindex="0"
+      title="${kilitli?'Paylaşılmış kayıt — sürüklenerek taşınamaz':''}"
       style="top:${ust}px;height:${Math.max(yuk-2,14)}px;background:${renkAl(k)}">
-      <div class="bk2">${guv(kes(k.konu,kisa?42:74))}</div>
+      <div class="bk2">${kilitli?'<span class="bklt">⚯</span> ':''}${guv(kes(k.konu,kisa?40:70))}</div>
       <div class="bmeta">${k.bas}–${k.bit} · ${guv(turAdi(k))}</div>
       <div class="kart-aks"><button class="sil-x" data-sil="${k.id}" title="Kaydı sil">${copSvg(12)}</button></div></div>`;
   }).join('');
@@ -1375,6 +1474,10 @@ function bolgeBagla(){
       e.preventDefault();e.stopPropagation();el.classList.remove('over');
       if(tasinan==null)return;
       const k=kayitlar.find(x=>x.id===tasinan);if(!k)return;
+      if(paylasimliMi(k)&&zamanliMi(k)){
+        bildir('Paylaşılmış kayıt sürüklenerek taşınamaz — kaydı açıp değiştir');
+        return;
+      }
       if(el.dataset.birak==='ay'){
         const g=el.dataset.gun;
         if(!zamanliMi(k)){k.bitis=g;bildir(`Son tarih ${kisaTarih(g)} oldu`)}
@@ -1418,6 +1521,10 @@ function surukle(kaynak,hedef,birak){
 function yerlestir(id,tarih,slot){
   const k=kayitlar.find(x=>x.id===id);if(!k)return;
   if(!zamanliMi(k)){bildir('Bu tür takvimde yer kaplamaz — son tarih şeridine bırak');return}
+  if(paylasimliMi(k)){
+    bildir('Paylaşılmış kayıt sürüklenerek taşınamaz — kaydı açıp saatini değiştir');
+    return;
+  }
   const uzun=(k.bas&&k.bit)?dk(k.bit)-dk(k.bas):60;
   let b=ayar.bas*60+slot*ayar.dilim;
   if(b+uzun>ayar.bit*60)b=ayar.bit*60-uzun;
@@ -1428,6 +1535,9 @@ function yerlestir(id,tarih,slot){
 /* --- hafta --- */
 function haftaEkrani(){
   const bas=haftaBasi(aktifTarih), gl=[...Array(7)].map((_,i)=>ekleGun(bas,i));
+  /* Telefonda 7 sütunluk ızgara okunmaz ve yatay kaydırma gerektirir.
+     Bunun yerine günler alt alta listelenir. */
+  if(mobilMi())return haftaListesi(bas,gl);
   const N=slotSayi(), P=slotPx();
   const head='<div class="hhead"><div></div>'+gl.map(t=>
     `<div class="${t===BUGUN?'bg2':''}"><div class="g">${GUN_KISA[(tn(t).getDay()+6)%7]}</div><div class="d">${tn(t).getDate()}</div></div>`).join('')+'</div>';
@@ -1448,7 +1558,10 @@ function haftaEkrani(){
   const kol=gl.map((t,i)=>{
     const b=gunun(t).map(k=>{
       const ust=(dk(k.bas)-ayar.bas*60)/ayar.dilim*P, yuk=(dk(k.bit)-dk(k.bas))/ayar.dilim*P;
-      return `<div class="hblock" draggable="true" data-id="${k.id}" style="top:${ust}px;height:${Math.max(yuk-2,13)}px;background:${renkAl(k)}"><b>${guv(kes(k.konu,30))}</b><span>${k.bas}</span></div>`;
+      const kl=paylasimliMi(k);
+      return `<div class="hblock ${kl?'kilit':''}" draggable="${!kl}" data-id="${k.id}"
+        style="top:${ust}px;height:${Math.max(yuk-2,13)}px;background:${renkAl(k)}"
+        ><b>${kl?'⚯ ':''}${guv(kes(k.konu,28))}</b><span>${k.bas}</span></div>`;
     }).join('');
     return `<div class="hcol" style="left:${i/7*100}%;width:${100/7}%">${b}</div>`;
   }).join('');
@@ -1456,10 +1569,63 @@ function haftaEkrani(){
     <div class="spacer"></div><div class="nav"><button id="hgeri">‹</button><button class="bugun" id="hbugun">Bu hafta</button><button id="hileri">›</button></div></div>
     <div class="hafta"><div class="hgrid">${head}${dead}<div class="hbody">${satir}<div class="hblocks">${kol}</div></div></div></div>`;
 }
+/* Mobil hafta görünümü: her gün bir bölüm, altında o günün kayıtları.
+   Yatay kaydırma yok, dokunulabilir satırlar var. */
+function haftaListesi(bas,gl){
+  const govde=gl.map(t=>{
+    const zamanli=gunun(t), sz=gunSaatsiz(t);
+    const dl=kayitlar.filter(k=>!zamanliMi(k)&&k.bitis===t);
+    const hepsi=[...zamanli,...sz,...dl];
+    const bugunMu=t===BUGUN;
+    return `<section class="hgun ${bugunMu?'bugun':''}">
+      <button class="hgun-bas" data-git="${t}">
+        <span class="hg-gun">${GUNLER[(tn(t).getDay()+6)%7]}</span>
+        <span class="hg-tar">${kisaTarih(t)}</span>
+        <span class="spacer"></span>
+        <span class="hg-say">${hepsi.length?hepsi.length+' kayıt':'boş'}</span>
+        <span class="hg-ok">›</span>
+      </button>
+      ${hepsi.length?`<div class="hgun-liste">
+        ${zamanli.map(k=>`<div class="hsatir" data-ac="${k.id}">
+          <span class="hs-saat mono">${k.bas}</span>
+          <span class="hs-cizgi" style="background:${renkAl(k)}"></span>
+          <span class="hs-ic"><b>${guv(kes(k.konu,52))}</b>
+            <i>${guv(turAd(k))} · ${k.bas}–${k.bit}</i></span>
+        </div>`).join('')}
+        ${sz.map(k=>`<div class="hsatir" data-ac="${k.id}">
+          <span class="hs-saat mono">—</span>
+          <span class="hs-cizgi" style="background:${renkAl(k)}"></span>
+          <span class="hs-ic"><b>${guv(kes(k.konu,52))}</b>
+            <i>${guv(turAd(k))} · saatsiz</i></span>
+        </div>`).join('')}
+        ${dl.map(k=>`<div class="hsatir ${k.tamam?'bitti':''}" data-ac="${k.id}">
+          <span class="hs-saat mono">⚑</span>
+          <span class="hs-cizgi" style="background:${renkAl(k)}"></span>
+          <span class="hs-ic"><b>${guv(kes(k.konu,52))}</b>
+            <i>${guv(turAd(k))} · son tarih</i></span>
+        </div>`).join('')}
+      </div>`:''}
+    </section>`;
+  }).join('');
+
+  return `<div class="dayhead">
+    <div><div class="gun">Hafta</div><div class="tarih">${kisaTarih(bas)} – ${kisaTarih(ekleGun(bas,6))}</div></div>
+    <div class="spacer"></div>
+    <div class="nav"><button id="hgeri">‹</button><button class="bugun" id="hbugun">Bu hafta</button><button id="hileri">›</button></div>
+  </div>
+  <div class="hliste">${govde}</div>`;
+}
+
 function haftaBagla(){
   document.getElementById('hgeri').onclick=()=>{aktifTarih=ekleGun(aktifTarih,-7);ciz()};
   document.getElementById('hileri').onclick=()=>{aktifTarih=ekleGun(aktifTarih,7);ciz()};
   document.getElementById('hbugun').onclick=()=>{aktifTarih=BUGUN;ciz()};
+  /* mobil liste görünümü */
+  document.querySelectorAll('.hgun-bas[data-git]').forEach(b=>b.onclick=()=>{
+    aktifTarih=b.dataset.git; gorunum='gun'; ciz();
+  });
+  document.querySelectorAll('.hsatir[data-ac]').forEach(x=>x.onclick=()=>modalAc(+x.dataset.ac));
+  if(mobilMi())return;
   surukle('.hblock, .minidead[draggable]','.hl',(id,slot,tarih)=>yerlestir(id,tarih,slot));
   document.querySelectorAll('.hblock').forEach(b=>b.onclick=()=>modalAc(+b.dataset.id));
   document.querySelectorAll('.minidead[draggable]').forEach(b=>b.onclick=()=>modalAc(+b.dataset.id));
@@ -1483,10 +1649,22 @@ function ayEkrani(){
       ...zamanli.map(k=>({k,t:k.bas,b:''})),
       ...sz.map(k=>({k,t:'',b:'○'})),
       ...dl.map(k=>({k,t:'',b:'⚑'}))];
+    if(mobilMi()){
+      /* Telefonda hücreye başlık sığmaz; renkli noktalar durumu özetler,
+         dokununca o günün ekranına gidilir. */
+      const noktalar=hepsi.slice(0,4).map(({k})=>
+        `<i style="background:${renkAl(k)}"></i>`).join('');
+      hucre+=`<div class="aygun mini ${disAy?'disay':''} ${hs?'hafta-sonu':''} ${t===BUGUN?'bugun3':''}"
+        data-git="${t}" title="${uzunTarih(t)} · ${hepsi.length} kayıt">
+        <span class="no">${td.getDate()}</span>
+        <span class="noktalar">${noktalar}${hepsi.length>4?'<i class="artik"></i>':''}</span>
+      </div>`;
+      continue;
+    }
     hucre+=`<div class="aygun ${disAy?'disay':''} ${hs?'hafta-sonu':''} ${t===BUGUN?'bugun3':''} bolge" data-birak="ay" data-gun="${t}">
       <span class="no" data-git="${t}" title="${uzunTarih(t)} — bu güne git">${td.getDate()}</span>
       <div class="ayliste">${hepsi.slice(0,AY_LIMIT).map(({k,t:saat,b})=>
-        `<div class="ayoge ${k.tamam?'bitti':''}" draggable="true" data-id="${k.id}" title="${guv(turAdi(k))} — ${guv(k.konu)}">
+        `<div class="ayoge ${k.tamam?'bitti':''}" draggable="${!paylasimliMi(k)}" data-id="${k.id}" title="${guv(turAdi(k))} — ${guv(k.konu)}${paylasimliMi(k)?' (paylaşılmış — sürüklenemez)':''}">
           <i class="dot" style="background:${renkAl(k)}"></i>${
           b?`<span class="bayrak" style="color:${renkAl(k)}">${b}</span>`:''}${
           saat?`<span class="t">${saat}</span>`:''}
@@ -1509,9 +1687,34 @@ function ayEkrani(){
       ${hucre}
     </div>
   </div>
+  ${mobilMi()?ayGunOzeti():`
   <p style="font-size:11.5px;color:var(--ink-faint);margin-top:10px;font-style:italic">
-    ○ saatsiz iş · ⚑ son tarih · kayıtları başka güne sürükleyebilirsin · gün numarasına tıklayınca o güne gider</p>`;
+    ○ saatsiz iş · ⚑ son tarih · kayıtları başka güne sürükleyebilirsin · gün numarasına tıklayınca o güne gider</p>`}`;
 }
+/* Mobilde ay ızgarasının altında, seçili günün kayıtları listelenir.
+   Nokta göstergeleri neyin olduğunu söylemez; bu liste onu tamamlar. */
+function ayGunOzeti(){
+  const t=aktifTarih;
+  const zamanli=gunun(t), sz=gunSaatsiz(t);
+  const dl=kayitlar.filter(k=>!zamanliMi(k)&&k.bitis===t);
+  const hepsi=[...zamanli,...sz,...dl];
+  return `<div class="ayozet">
+    <div class="ayozet-bas">
+      <b>${uzunTarih(t)}</b>
+      <span class="spacer"></span>
+      <button class="ghost" data-aygit="${t}">Gün ekranı ›</button>
+    </div>
+    ${hepsi.length?`<div class="hgun-liste">${hepsi.map(k=>`
+      <div class="hsatir ${k.tamam?'bitti':''}" data-ac="${k.id}">
+        <span class="hs-saat mono">${k.bas||(k.bitis?'⚑':'—')}</span>
+        <span class="hs-cizgi" style="background:${renkAl(k)}"></span>
+        <span class="hs-ic"><b>${guv(kes(k.konu,52))}</b>
+          <i>${guv(turAd(k))}${k.bas?` · ${k.bas}–${k.bit}`:(k.bitis?' · son tarih':' · saatsiz')}</i></span>
+      </div>`).join('')}</div>`
+      :'<div class="bos">Bu güne kayıt yok.</div>'}
+  </div>`;
+}
+
 function ayAtla(n){
   const d=tn(aktifTarih), y=d.getFullYear(), a=d.getMonth()+n;
   const yeni=new Date(y,a,1), sonGun=new Date(yeni.getFullYear(),yeni.getMonth()+1,0).getDate();
@@ -1522,6 +1725,18 @@ function ayBagla(){
   document.getElementById('aygeri').onclick=()=>ayAtla(-1);
   document.getElementById('ayileri').onclick=()=>ayAtla(1);
   document.getElementById('aybugun').onclick=()=>{aktifTarih=BUGUN;ciz()};
+  if(mobilMi()){
+    /* mobilde gün hücresine dokunmak seçer, ızgara altındaki özet yenilenir */
+    document.querySelectorAll('.aygun.mini[data-git]').forEach(b=>b.onclick=()=>{
+      aktifTarih=b.dataset.git; ciz();
+    });
+    document.querySelectorAll('[data-aygit]').forEach(b=>b.onclick=()=>{
+      aktifTarih=b.dataset.aygit; gorunum='gun'; ciz();
+    });
+    document.querySelectorAll('.ayozet .hsatir[data-ac]').forEach(x=>
+      x.onclick=()=>modalAc(+x.dataset.ac));
+    return;
+  }
   document.querySelectorAll('[data-git]').forEach(b=>b.onclick=()=>{
     aktifTarih=b.dataset.git;gorunum='gun';ciz()});
   document.querySelectorAll('.ayoge').forEach(el=>{
@@ -1723,8 +1938,7 @@ function modalAc(id){
   secenekleriCiz(k?.turId);
   document.getElementById('fTur').value=k?k.turId:(aktifTurler()[0]||{}).id||'';
   document.getElementById('fTarih').value=k?.tarih||aktifTarih;
-  document.getElementById('fBas').value=k?.bas||'';
-  document.getElementById('fBit').value=k?.bit||'';
+  saatAlanlariniKur(k?.bas||'',k?.bit||'');
   document.getElementById('fBitis').value=k?.bitis||'';
   document.getElementById('fSon').value=k?k.sonDurum:'';
   kisilerCiz(k?.sorumlular);
@@ -1732,9 +1946,22 @@ function modalAc(id){
   turDegisti(k);
   paylasimKapat();
   paylasimDugmeleri();
+  const pu=document.getElementById('paylasimUyari');
+  if(paylasimliMi(k)){
+    pu.innerHTML=`<b>Bu kayıt paylaşılmış.</b> ${guv(paylasimNedeni(k))}
+      Tarih ya da saatini değiştirirsen karşı taraf bundan haberdar olmaz —
+      değişikliği ayrıca bildirmen gerekir. Sürükleyerek taşınamaz.`;
+    pu.hidden=false;
+  }else pu.hidden=true;
   document.getElementById('zSorumlu').hidden=!zorunluMu('sorumlular');
   document.getElementById('zSonDurum').hidden=!zorunluMu('sonDurum');
   document.getElementById('zSaat').hidden=!zorunluMu('saat');
+  document.getElementById('zTarih').hidden=!zorunluMu('saat');
+  const an=document.getElementById('atanmamisNot');
+  if(an)an.innerHTML=zorunluMu('saat')
+    ? 'Tarih ve saat zorunlu. Bunu <b>Ayarlar → Zorunlu alanlar</b> bölümünden kapatırsan '+
+      'kayıtlar tarihsiz oluşturulup "Atanmamış" havuzunda bekleyebilir.'
+    : 'Tarih ve saati boş bırakırsan kayıt "Atanmamış" havuzuna düşer, sonra takvime sürükleyerek yerleştirirsin.';
   document.getElementById('perde').hidden=false;
   document.getElementById('fKonu').focus();
 }
@@ -1786,7 +2013,9 @@ function kaydetEt(){
   const v={turId,alanlar,konu,
     sonDurum:document.getElementById('fSon').value.trim(),
     sorumlular:[...document.querySelectorAll('#fSorumlular input:checked')].map(i=>i.value),
-    tarih:z&&bas&&bit?(document.getElementById('fTarih').value||aktifTarih):null,
+    /* Tarih saatten bağımsız: saat verilmeden de bir güne ait olabilir
+       ("saatsiz" kayıt). Böylece eksik alan uyarısı da doğru çıkar. */
+    tarih:z?(document.getElementById('fTarih').value||null):null,
     bas:z&&bas&&bit?bas:null,bit:z&&bas&&bit?bit:null,
     bitis:z?null:(document.getElementById('fBitis').value||null)};
   /* Excel aktarımıyla aynı kural — iki yerde farklı davranış olmasın */
@@ -1794,6 +2023,14 @@ function kaydetEt(){
   if(eksik.length){
     bildir(`Eksik: ${eksik.join(', ')}`);
     return;
+  }
+  /* Paylaşılmış kaydın zamanı değiştiyse kullanıcı bunu bilerek yapmalı */
+  if(duzenlenen){
+    const eskiK=kayitlar.find(x=>x.id===duzenlenen);
+    if(paylasimliMi(eskiK)&&
+       (eskiK.tarih!==v.tarih||eskiK.bas!==v.bas||eskiK.bit!==v.bit)){
+      zamanDegisikligiUyar(eskiK,v);
+    }
   }
   if(duzenlenen){Object.assign(kayitlar.find(x=>x.id===duzenlenen),v);bildir('Kayıt güncellendi')}
   else{kayitlar.push({id:sonrakiId++,kayitTarihi:BUGUN,tamam:false,...v});
@@ -1805,7 +2042,6 @@ function kaydetEt(){
 function ayarAc(){
   document.getElementById('aBas').value=ayar.bas;
   document.getElementById('aBit').value=ayar.bit;
-  document.querySelectorAll('#aDilim button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.d===ayar.dilim));
   uyeOnbellegiTazele().then(()=>{if(!document.getElementById('sekTanim').hidden)tanimCiz()});
   tanimCiz();
   /* tanımlar ortaktır: üye modunda yalnızca yönetici düzenleyebilir.
@@ -1830,8 +2066,7 @@ function ayarSekme(ad){
 function ayarKaydetEt(){
   const b=+document.getElementById('aBas').value, s=+document.getElementById('aBit').value;
   if(!(s>b)){bildir('Gün bitişi başlangıçtan büyük olmalı');return}
-  const secili=document.querySelector('#aDilim button[aria-pressed="true"]');
-  ayar.bas=b;ayar.bit=s;ayar.dilim=+(secili?.dataset.d||15);
+  ayar.bas=b;ayar.bit=s;ayar.dilim=SAAT_ADIM;
   secenekleriCiz();yaz();document.getElementById('ayarPerde').hidden=true;ciz();bildir('Genel ayarlar kaydedildi');
 }
 function kisilerCiz(seciliIdler){
@@ -1871,72 +2106,108 @@ const KUL={
 
 function tanimCiz(){
   /* ---- TURLER ---- */
-  document.getElementById('turListe').innerHTML=ayar.turler.map((t,i)=>{
-    const n=KUL.tur(t.id);
-    return `<div class="tursatir">
-      <input type="color" value="${t.renk}" data-trenk="${i}" title="Rengi değiştir">
-      <input class="ad" value="${guv(t.ad)}" data-tad="${i}" maxlength="28" title="Adı değiştir — mevcut kayıtlar da güncellenir">
-      <select data-tsinif="${i}" title="Takvimdeki davranışı">
-        <option value="zaman" ${t.sinif==='zaman'?'selected':''}>Takvimde Yer Kaplar</option>
-        <option value="hatirlatma" ${t.sinif==='hatirlatma'?'selected':''}>Hatırlatma/Bildirim</option>
-      </select>
-      <span class="kul">${n} kayıt</span>
-      ${t.pasif?'<span class="satirdurum">PASİF</span>':''}
-      <button class="tsil" data-tpas="${i}" title="${t.pasif?'Tekrar aktif et':'Pasife al — yeni kayıtlarda görünmez, eskiler korunur'}">${t.pasif?'↺':'◐'}</button>
-      <button class="cop kose" data-tsil="${i}" ${n?`disabled title="${n} kayıtta kullanılıyor — silmek yerine pasife al"`:'title="Türü sil"'}>${COP}</button>
-      <div class="turalt"><span class="et">Alanlar</span>${
-        ayar.alanlar.length? ayar.alanlar.map(a=>
-          `<label class="bay"><input type="checkbox" data-tal="${i}:${a.id}" ${(t.alanlar||[]).includes(a.id)?'checked':''}>${guv(a.ad)}</label>`).join('')
-        : '<span class="kul">tanımlı alan yok</span>'}</div>
-    </div>`;
-  }).join('')||'<div class="bos">Hiç tür yok. En az bir tane ekle.</div>';
+  document.getElementById('turListe').innerHTML=
+    (ayar.turler.length?`<div class="tlist">`+ayar.turler.map((t,i)=>{
+      const n=KUL.tur(t.id);
+      const zaman=t.sinif==='zaman';
+      const bagli=(t.alanlar||[]).map(alanBul).filter(Boolean);
+      return `<div class="tsatir ${t.pasif?'pasif':''}">
+        <input type="color" class="trenk" value="${t.renk}" data-trenk="${i}" title="Rengi değiştir">
+        <div class="tbilgi">
+          <input class="tadgiris" value="${guv(t.ad)}" data-tad="${i}" maxlength="28"
+            title="Adı değiştir — mevcut kayıtlar da güncellenir">
+          <div class="talt">
+            <span class="tr ${zaman?'zaman':'hatir'}">${zaman?'takvimde yer kaplar':'hatırlatma'}</span>
+            <span class="tayrac"></span>
+            <span class="tsay">${n} kayıt</span>
+            ${t.pasif?'<span class="tayrac"></span><span class="tr pas">pasif</span>':''}
+          </div>
+        </div>
+        <div class="tislem">
+          <select class="tsinif" data-tsinif="${i}" title="Takvimdeki davranışı">
+            <option value="zaman" ${zaman?'selected':''}>Yer kaplar</option>
+            <option value="hatirlatma" ${!zaman?'selected':''}>Hatırlatma</option>
+          </select>
+          <button data-tpas="${i}" title="${t.pasif?'Tekrar aktif et':'Pasife al — yeni kayıtlarda görünmez'}">${ikonSvg(t.pasif?'goster':'gizle')}</button>
+          <button class="tehlikeli" data-tsil="${i}" ${n?`disabled title="${n} kayıtta kullanılıyor — silmek yerine pasife al"`:'title="Türü sil"'}>${copSvg(14)}</button>
+        </div>
+        ${ayar.alanlar.length?`<div class="talan">
+          <span class="tetiket">Bu türde görünen alanlar</span>
+          ${ayar.alanlar.map(a=>
+            `<label class="tkutu"><input type="checkbox" data-tal="${i}:${a.id}" ${
+              (t.alanlar||[]).includes(a.id)?'checked':''}>${guv(a.ad)}</label>`).join('')}
+        </div>`:''}
+      </div>`;
+    }).join('')+`</div>`:'<div class="bos">Hiç tür yok. En az bir tane ekle.</div>')+
+    `<button class="ghost ekle" id="turEkle">+ Yeni tür</button>`;
 
   /* ---- ALANLAR ---- */
-  document.getElementById('alanListe').innerHTML=ayar.alanlar.map((a,i)=>{
-    const n=KUL.alanTum(a.id);
-    const turler=ayar.turler.filter(t=>(t.alanlar||[]).includes(a.id)).map(t=>t.ad);
-    return `<div class="alankart">
-      <div class="alanbas">
-        <input value="${guv(a.ad)}" data-aad="${i}" maxlength="28" title="Alan adı">
-        <span class="kul">${n} kayıtta dolu</span>
-        <button class="cop kose" data-asil="${i}" ${n?`disabled title="${n} kayıtta kullanılıyor — önce seçenekleri temizle"`:'title="Alanı sil"'}>${COP}</button>
-      </div>
-      <div class="tanimnot" style="margin:0 0 6px">${turler.length?'Şu türlerde görünüyor: '+guv(turler.join(', ')):'Hiçbir türe bağlı değil — kayıt formunda çıkmaz.'}</div>
-      <div class="cips">${a.secenekler.map((x,j)=>{
-        const m=KUL.alan(a.id,x.id);
-        return `<span class="cip ${x.pasif?'pasif':''}">${guv(x.ad)}
-          <button class="pas" data-spas="${i}:${j}" title="${x.pasif?'Tekrar aktif et':'Pasife al'}">${x.pasif?'↺':'◐'}</button>
-          <button data-ssil="${i}:${j}" title="${m?m+' kayıtta kullanılıyor — silinirse o kayıtların bilgisi boşalır':'Sil'}">${copSvg(11)}</button></span>`;
-      }).join('')}</div>
-      <div class="eklesatir kucuk">
-        <input data-sekle="${i}" placeholder="Yeni seçenek" maxlength="28">
-        <button class="ghost" data-sekleBtn="${i}">Ekle</button>
-      </div>
-    </div>`;
-  }).join('')||'<div class="bos">Hiç alan yok.</div>';
+  document.getElementById('alanListe').innerHTML=
+    (ayar.alanlar.length?`<div class="tlist">`+ayar.alanlar.map((a,i)=>{
+      const n=KUL.alanTum(a.id);
+      const turler=ayar.turler.filter(t=>(t.alanlar||[]).includes(a.id)).map(t=>t.ad);
+      const aktifSec=a.secenekler.filter(x=>!x.pasif).length;
+      return `<div class="tsatir">
+        <div class="tbilgi">
+          <input class="tadgiris" value="${guv(a.ad)}" data-aad="${i}" maxlength="28" title="Alan adı">
+          <div class="talt">
+            <span class="tsay">${aktifSec} seçenek</span>
+            <span class="tayrac"></span>
+            <span class="tsay">${n} kayıtta dolu</span>
+            <span class="tayrac"></span>
+            <span>${turler.length?guv(turler.join(', ')):'<i style="color:var(--c-istakibi);font-style:normal">hiçbir türe bağlı değil</i>'}</span>
+          </div>
+        </div>
+        <div class="tislem">
+          <button class="tehlikeli" data-asil="${i}" ${n?`disabled title="${n} kayıtta kullanılıyor — önce seçenekleri temizle"`:'title="Alanı sil"'}>${copSvg(14)}</button>
+        </div>
+        <div class="talan">
+          <span class="tetiket">Seçenekler</span>
+          ${a.secenekler.length?`<div class="cips">${a.secenekler.map((x,j)=>{
+            const m=KUL.alan(a.id,x.id);
+            return `<span class="cip ${x.pasif?'pasif':''}">${guv(x.ad)}
+              <button class="pas" data-spas="${i}:${j}" title="${x.pasif?'Tekrar aktif et':'Pasife al'}">${x.pasif?'↺':'◐'}</button>
+              <button data-ssil="${i}:${j}" title="${m?m+' kayıtta kullanılıyor — silinirse o kayıtların bilgisi boşalır':'Sil'}">${copSvg(11)}</button></span>`;
+          }).join('')}</div>`:'<span class="tsay">henüz seçenek yok</span>'}
+          <div class="eklesatir kucuk" style="width:100%">
+            <input data-sekle="${i}" placeholder="Yeni seçenek" maxlength="28">
+            <button class="ghost" data-sekleBtn="${i}">Ekle</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('')+`</div>`:'<div class="bos">Henüz alan yok.<br>"+ Yeni alan" ile başlayabilirsin.</div>')+
+    `<button class="ghost ekle" id="alanEkle">+ Yeni alan</button>`;
 
   /* ---- KİŞİLER ---- */
   document.getElementById('lKisiler').innerHTML=
-    (ayar.kisiler.length?`<div class="kisiler-liste">`+
+    (ayar.kisiler.length?`<div class="tlist">`+
       ayar.kisiler.map((k,i)=>{
         const n=KUL.kisi(k.id);
         const uye=k.eposta?uyeDurumu(k.eposta):null;
-        return `<div class="ksatir ${k.pasif?'pasif':''}">
-          <span class="kic">
-            <b>${guv(k.ad)}</b>
-            ${k.eposta
-              ? `<i>${guv(k.eposta)}${uye?` · <span class="krol ${uye.rol==='yonetici'?'yon':''}">${
+        const rozet=k.eposta
+          ? (uye
+              ? `<span class="tr ${uye.aktif===false?'kapali':(uye.rol==='yonetici'?'yon':'uye')}">${
                   uye.aktif===false?'erişimi kapalı':(uye.rol==='yonetici'?'yönetici':'üye')}</span>`
-                 :' · <span class="krol yok">erişim tanımlı değil</span>'}</i>`
-              : '<i class="etiketsiz">e-posta yok — yalnızca etiket, davet alamaz</i>'}
-          </span>
-          <span class="kul">${n} kayıt</span>
-          ${k.pasif?'<span class="satirdurum">PASİF</span>':''}
-          <button class="tsil" data-keposta="${i}" title="${k.eposta?'Bağlı hesabı değiştir':'Hesap bağla — davet alabilsin'}">@</button>
-          <button class="tsil" data-kpas="${i}" title="${k.pasif?'Tekrar aktif et':'Pasife al'}">${k.pasif?'↺':'◐'}</button>
-          <button class="cop" data-ksil="${i}" title="${n?n+' kayıtta sorumlu':'Sil'}">${copSvg(12)}</button>
+              : '<span class="tr uyari">erişim tanımlı değil</span>')
+          : '<span class="tr etiket">etiket</span>';
+        return `<div class="tsatir ${k.pasif?'pasif':''}">
+          <div class="tbilgi">
+            <div class="tad">${guv(k.ad)}${k.pasif?'<span class="tr pas">pasif</span>':''}</div>
+            <div class="talt">
+              ${rozet}
+              <span class="tayrac"></span>
+              <span>${k.eposta?guv(k.eposta):'hesap bağlı değil — davet alamaz'}</span>
+              <span class="tayrac"></span>
+              <span class="tsay">${n} kayıt</span>
+            </div>
+          </div>
+          <div class="tislem">
+            <button data-keposta="${i}" title="${k.eposta?'Bağlı hesabı değiştir':'Hesap bağla — davet alabilsin'}">${ikonSvg('hesap')}</button>
+            <button data-kpas="${i}" title="${k.pasif?'Tekrar aktif et':'Pasife al — yeni kayıtlarda görünmez'}">${ikonSvg(k.pasif?'goster':'gizle')}</button>
+            <button class="tehlikeli" data-ksil="${i}" title="${n?n+' kayıtta sorumlu — silinirse adı çıkar':'Sil'}">${copSvg(14)}</button>
+          </div>
         </div>`;
-      }).join('')+`</div>`:'<div class="bos">Henüz kişi yok.</div>')+
+      }).join('')+`</div>`:'<div class="bos">Henüz kişi yok.<br>Aşağıdan ad girerek başlayabilirsin.</div>')+
     `<div class="eklesatir">
       <input data-kekle="1" placeholder="Ad Soyad" maxlength="40">
       <button class="solid" data-kekleBtn="1">Ekle</button>
@@ -2145,7 +2416,7 @@ function tanimBagla(){
       bildir('Bu kişi zaten var');return}
     ayar.kisiler.push({id:yeniKisiId(),ad:v});g2.value='';
     tanimKaydet();
-    bildir(`${v} eklendi · hesap bağlamak için @ düğmesini kullan`);
+    bildir(`${v} eklendi · hesap bağlamak için 🔗 düğmesini kullan`);
     const y=document.querySelector('[data-kekle]');if(y)y.focus();
   };
   g('[data-kekle]','onkeydown',e=>ev=>{
@@ -2792,6 +3063,66 @@ function genisGorunumGuncelle(){
 
 
 
+/* ---------- saat seçimi ----------
+   Saatler serbest metin değil, sabit 15 dakikalık dilimlerden seçilir.
+   type="time" alanı elle 09:07 yazılmasına izin veriyordu; bu hem takvim
+   ızgarasına oturmuyor hem müsaitlik karşılaştırmasını bozuyordu. */
+const SAAT_ADIM=15;
+const sureYaz=d2=>{
+  if(d2<=0)return '';
+  const s2=Math.floor(d2/60), m2=d2%60;
+  return s2?(m2?`${s2} sa ${m2} dk`:`${s2} saat`):`${m2} dk`;
+};
+/* Gün aralığı ayarı dar olsa da aralık dışı saatler seçilebilmeli
+   (erken toplantı, akşam çalışması). Liste tam günü kapsar; çalışma
+   saatleri ayrı grupta önce gelir. */
+function saatListesiDoldur(el,secili,enAz){
+  if(!el)return;
+  const hepsi=[];
+  for(let m=0;m<24*60;m+=SAAT_ADIM)hepsi.push(saatFmt(m));
+  if(secili&&!hepsi.includes(secili))hepsi.push(secili);   // eski kayıt uyumu
+  hepsi.sort();
+  const uygun=hepsi.filter(x=>!enAz||dk(x)>dk(enAz));
+  const icinde=x=>dk(x)>=ayar.bas*60&&dk(x)<=ayar.bit*60;
+  const grup=(ad,liste)=>liste.length
+    ? `<optgroup label="${ad}">${liste.map(x=>
+        `<option value="${x}" ${x===secili?'selected':''}>${x}${
+          enAz?` · ${sureYaz(dk(x)-dk(enAz))}`:''}</option>`).join('')}</optgroup>`
+    : '';
+  el.innerHTML='<option value="">—</option>'+
+    grup('Çalışma saatleri',uygun.filter(icinde))+
+    grup('Diğer saatler',uygun.filter(x=>!icinde(x)));
+  el.value=(secili&&uygun.includes(secili))?secili:'';
+}
+function saatAlanlariniKur(bas,bit){
+  const eB=document.getElementById('fBas'), eE=document.getElementById('fBit');
+  saatListesiDoldur(eB,bas||'');
+  saatListesiDoldur(eE,bit||'',eB?eB.value:null);
+}
+
+/* Paylaşılmış bir kaydın zamanı değiştiğinde kullanıcıyı bilgilendirir.
+   Otomatik bildirim gönderilmez — karşı tarafa haber vermek kullanıcıya kalır. */
+function zamanDegisikligiUyar(eski,yeni){
+  setTimeout(()=>bilgiVer({baslik:'Saat değişti',tehlike:true,
+    mesaj:'Paylaşılmış bir kaydın zamanını değiştirdin',
+    detay:`<b>Önce:</b> ${eski.tarih?kisaTarih(eski.tarih):'—'} ${eski.bas||''}–${eski.bit||''}<br>`+
+      `<b>Sonra:</b> ${yeni.tarih?kisaTarih(yeni.tarih):'—'} ${yeni.bas||''}–${yeni.bit||''}<br><br>`+
+      `${guv(paylasimNedeni(eski))} Karşı tarafa otomatik bildirim gitmez; `+
+      `yeni saatin uygun olup olmadığını sormak için yeni bir davet göndermen gerekir.`}),150);
+}
+
+/* Bir kayıt paylaşıma konu olmuşsa saati sürükleyerek değiştirilemez:
+   yeni saat karşı taraf için uygun olmayabilir. */
+const paylasimliMi=k=>!!(k&&(k.davetId||k.atamaId||(k.gonderilenDavet&&k.gonderilenDavet.length)));
+function paylasimNedeni(k){
+  if(!k)return '';
+  if(k.davetId)return 'Bu kayıt sana gönderilen bir davetten oluştu.';
+  if(k.atamaId)return 'Bu kayıt sana atanan bir işten oluştu.';
+  if(k.gonderilenDavet&&k.gonderilenDavet.length)
+    return `Bu kaydı ${k.gonderilenDavet.length} kişiye davet olarak gönderdin.`;
+  return '';
+}
+
 /* Bir kaydın karşı tarafa gidecek özeti.
    Karşı tarafta bu tanımlar olmayabilir, o yüzden kimlik değil AD taşınır. */
 function kayitDetayi(k){
@@ -2961,8 +3292,10 @@ async function paylasimGonder(){
           durum:'bekliyor', olusturma:Date.now()
         });
         adlar.push(alici.ad);
+        k.gonderilenDavet=[...(k.gonderilenDavet||[]),alici.eposta.toLowerCase()];
       }catch(e){ hatalar.push(alici.ad); }
     }
+    if(adlar.length)yaz();
   }else{
     const bitis=document.getElementById('payBitis').value;
     if(!bitis){bildir('Son tarih gerekli');gon.disabled=false;paylasimCiz();return}
@@ -4104,6 +4437,17 @@ document.getElementById('atamaBtn').onclick=()=>paylasimAc('atama');
 document.getElementById('payKapat').onclick=paylasimKapat;
 document.getElementById('payGonder').onclick=paylasimGonder;
 /* tarih ya da saat değişince doluluk tazelensin */
+/* Başlangıç değişince bitiş listesi yeniden kurulur: bitiş her zaman
+   başlangıçtan sonra olur ve yanında süre yazar. */
+document.getElementById('fBas').addEventListener('change',()=>{
+  const eB=document.getElementById('fBas'), eE=document.getElementById('fBit');
+  const eskiBit=eE.value;
+  saatListesiDoldur(eE,eskiBit,eB.value||null);
+  if(!eE.value&&eB.value){
+    const hedef=saatFmt(dk(eB.value)+60);           // varsayılan: bir saat
+    if([...eE.options].some(o=>o.value===hedef))eE.value=hedef;
+  }
+});
 ['fTarih','fBas','fBit'].forEach(id=>{
   const e=document.getElementById(id);
   if(e)e.addEventListener('change',()=>{
@@ -4133,9 +4477,6 @@ document.querySelectorAll('#ayarPerde .atabs button').forEach(b=>b.onclick=()=>a
 document.getElementById('ayarKapat').onclick=()=>document.getElementById('ayarPerde').hidden=true;
 document.getElementById('ayarKaydet').onclick=ayarKaydetEt;
 document.getElementById('ayarPerde').onclick=e=>{if(e.target.id==='ayarPerde')e.currentTarget.hidden=true};
-document.querySelectorAll('#aDilim button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('#aDilim button').forEach(x=>x.setAttribute('aria-pressed','false'));
-  b.setAttribute('aria-pressed','true')});
 document.getElementById('sifirla').onclick=async()=>{
   const uyeMi=mod==='uye';
   const tarihli=kayitlar.map(etkinTarih).filter(Boolean).sort();
