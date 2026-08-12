@@ -1693,14 +1693,21 @@ function excelAktar(){
      talimat sayfası boş şablon olarak işe yarar. Ama sonuç filtre
      yüzünden boşsa kullanıcı bunu bilmeli. */
   if(!secim.length){
-    if(kayitlar.length){
-      bildir('Filtreye uyan kayıt yok — filtreyi temizleyip tekrar dene');
-      return;
-    }
-    if(!confirm('Henüz kaydınız yok.\n\n'+
-      'Boş şablon indirilsin mi?\n\n'+
-      'Dosyada sütun başlıkları, açılır menüler ve doldurma talimatı bulunur; '+
-      'doldurup "Excel\'den veri al" ile yükleyebilirsiniz.'))return;
+    /* Belirleyici olan kaç kayıt olduğu değil, sonucu bir filtrenin
+       eleyip elemediği. Filtre varsa kullanıcıya seçenek sunulur. */
+    const n=aktifFiltreSayisi();
+    const mesaj = n
+      ? `Filtreye uyan kayıt yok.\n\n`+
+        `${n} filtre etkin:\n• ${filtreOzeti().join('\n• ')}\n`+
+        `Toplam kayıt: ${kayitlar.length}\n\n`+
+        `TAMAM: filtreleri yok sayıp ${kayitlar.length?'tüm kayıtları':'boş şablonu'} indir\n`+
+        `İPTAL: vazgeç`
+      : `Henüz kaydınız yok.\n\n`+
+        `Boş şablon indirilsin mi?\n\n`+
+        `Dosyada sütun başlıkları, açılır menüler ve doldurma talimatı bulunur; `+
+        `doldurup "Excel'den veri al" ile yükleyebilirsiniz.`;
+    if(!confirm(mesaj))return;
+    if(n){ filtreleriTemizle(); return excelAktar(); }   // temizle ve baştan çalış
   }
   const AL=ayar.alanlar;
   const BAS=['Konu','Tür',...AL.map(a=>a.ad),'Sorumlular','Tarih','Başlangıç','Bitiş','Süre (dk)','Son Tarih','Durum','Son Durum','Kayıt Tarihi'];
