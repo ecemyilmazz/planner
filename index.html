@@ -1826,7 +1826,11 @@ function tanimCiz(){
         return `<span class="cip ${x.pasif?'pasif':''}">${guv(x.ad)}
           <button class="pas" data-spas="${i}:${j}" title="${x.pasif?'Tekrar aktif et':'Pasife al'}">${x.pasif?'↺':'◐'}</button>
           <button data-ssil="${i}:${j}" title="${m?m+' kayıtta kullanılıyor — silinirse o kayıtların bilgisi boşalır':'Sil'}">${copSvg(11)}</button></span>`;
-      }).join('')}<input class="cipekle" data-sekle="${i}" placeholder="+ seçenek" maxlength="28"></div>
+      }).join('')}</div>
+      <div class="eklesatir kucuk">
+        <input data-sekle="${i}" placeholder="Yeni seçenek" maxlength="28">
+        <button class="ghost" data-sekleBtn="${i}">Ekle</button>
+      </div>
     </div>`;
   }).join('')||'<div class="bos">Hiç alan yok.</div>';
 
@@ -1852,8 +1856,9 @@ function tanimCiz(){
           <button class="cop" data-ksil="${i}" title="${n?n+' kayıtta sorumlu':'Sil'}">${copSvg(12)}</button>
         </div>`;
       }).join('')+`</div>`:'<div class="bos">Henüz kişi yok.</div>')+
-    `<div style="display:flex;gap:7px;margin-top:8px">
-      <input class="cipekle" data-kekle="1" placeholder="+ kişi adı" maxlength="40" style="flex:1;border-radius:7px">
+    `<div class="eklesatir">
+      <input data-kekle="1" placeholder="Ad Soyad" maxlength="40">
+      <button class="solid" data-kekleBtn="1">Ekle</button>
     </div>`;
 
   tanimBagla();
@@ -1996,13 +2001,22 @@ function tanimBagla(){
     }
     a.secenekler.splice(j,1);tanimKaydet();bildir('Seçenek silindi');
   });
-  g('[data-sekle]','onkeydown',e=>enter(e,v=>{
-    const a=ayar.alanlar[+e.dataset.sekle];
-    if(!v)return;
-    if(a.secenekler.some(x=>x.ad===v)){bildir('Bu seçenek zaten var');return}
-    a.secenekler.push({id:yeniSecId(a),ad:v});e.value='';tanimKaydet();bildir(`"${v}" eklendi`);
-    const y=document.querySelector(`[data-sekle="${e.dataset.sekle}"]`);if(y)y.focus();
-  }));
+  /* seçenek ekleme: hem Enter hem düğme aynı işi yapar */
+  const secenekEkle=i=>{
+    const g=document.querySelector(`[data-sekle="${i}"]`);
+    const v=(g.value||'').trim();
+    const a=ayar.alanlar[+i];
+    if(!v){g.focus();return}
+    if(a.secenekler.some(x=>x.ad.toLocaleLowerCase('tr')===v.toLocaleLowerCase('tr'))){
+      bildir('Bu seçenek zaten var');return}
+    a.secenekler.push({id:yeniSecId(a),ad:v});g.value='';
+    tanimKaydet();bildir(`"${v}" eklendi`);
+    const y=document.querySelector(`[data-sekle="${i}"]`);if(y)y.focus();
+  };
+  g('[data-sekle]','onkeydown',e=>ev=>{
+    if(ev.key!=='Enter')return; ev.preventDefault(); secenekEkle(e.dataset.sekle);
+  });
+  g('[data-sekleBtn]','onclick',e=>()=>secenekEkle(e.dataset.seklebtn));
 
   /* --- sorumlular --- */
   /* e-posta ekleme / değiştirme */
@@ -2040,14 +2054,23 @@ function tanimBagla(){
     }
     ayar.kisiler.splice(i,1);tanimKaydet();bildir('Kişi silindi');
   });
-  g('[data-kekle]','onkeydown',e=>enter(e,v=>{
-    if(!v)return;
+  /* kişi ekleme: hem Enter hem düğme */
+  const kisiEkle=()=>{
+    const g2=document.querySelector('[data-kekle]');
+    const v=(g2.value||'').trim();
+    if(!v){g2.focus();return}
+    if(v.length<2){bildir('Ad soyad en az 2 karakter olmalı');g2.focus();return}
     if(ayar.kisiler.some(k=>k.ad.toLocaleLowerCase('tr')===v.toLocaleLowerCase('tr'))){
       bildir('Bu kişi zaten var');return}
-    ayar.kisiler.push({id:yeniKisiId(),ad:v});e.value='';tanimKaydet();
-    bildir(`${v} eklendi · e-posta için @ düğmesini kullan`);
+    ayar.kisiler.push({id:yeniKisiId(),ad:v});g2.value='';
+    tanimKaydet();
+    bildir(`${v} eklendi · hesap bağlamak için @ düğmesini kullan`);
     const y=document.querySelector('[data-kekle]');if(y)y.focus();
-  }));
+  };
+  g('[data-kekle]','onkeydown',e=>ev=>{
+    if(ev.key!=='Enter')return; ev.preventDefault(); kisiEkle();
+  });
+  g('[data-kekleBtn]','onclick',()=>kisiEkle);
 }
 
 function tanimKaydet(){
