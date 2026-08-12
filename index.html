@@ -74,7 +74,7 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
 .sorunsatir .sme b{display:block;font-weight:600}
 .sorunsatir .sme i{display:block;color:var(--ink-soft);font-size:11.5px;font-style:normal;margin-top:1px}
 .onizleme{border:1px solid var(--rule);border-radius:8px;overflow:auto;max-height:200px;background:var(--paper)}
-.onizleme table{width:100%;border-collapse:collapse;min-width:520px}
+.onizleme table{width:100%;border-collapse:collapse;min-width:470px}
 .onizleme th{position:sticky;top:0;background:var(--paper-2);font-family:'Archivo';font-size:9.5px;
   letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);text-align:left;
   padding:7px 10px;border-bottom:1px solid var(--rule);font-weight:700}
@@ -82,12 +82,20 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
 .onizleme tr:last-child td{border-bottom:none}
 .bos2{color:var(--ink-faint)}
 .secim{display:grid;gap:7px}
-.secim>label{display:flex;gap:9px;align-items:flex-start;background:var(--paper-2);
-  border:1px solid var(--rule);border-radius:8px;padding:10px 12px;cursor:pointer;font-size:13px}
-.secim>label:has(input:checked){border-color:var(--ink);background:var(--paper);box-shadow:inset 0 0 0 1px var(--ink)}
-.secim input{margin-top:3px;flex:none;width:auto}
-.secim b{display:block;font-weight:700}
-.secim i{font-style:normal;font-size:11.5px;color:var(--ink-soft);display:block;margin-top:1px}
+/* .alan label kuralı bu etiketleri de yakalayıp büyük harfe çeviriyor ve
+   harf aralığı veriyordu; buradaki değerler onu geri alır. */
+.secim>label{display:flex;gap:10px;align-items:flex-start;background:var(--paper-2);
+  border:1px solid var(--rule);border-radius:8px;padding:11px 13px;cursor:pointer;
+  font-family:'Karla',system-ui,sans-serif;font-size:13px;font-weight:400;
+  letter-spacing:normal;text-transform:none;color:var(--ink);line-height:1.45}
+.secim>label:has(input:checked){border-color:var(--ink);background:var(--paper);
+  box-shadow:inset 0 0 0 1px var(--ink)}
+.secim>label>input{margin:3px 0 0;flex:none;width:16px;height:16px}
+.secim .ic{flex:1;min-width:0}          /* metnin genişleyebilmesi için */
+.secim .ic b{display:block;font-family:'Archivo';font-weight:700;font-size:13.5px;
+  letter-spacing:-.01em;text-transform:none;color:var(--ink)}
+.secim .ic i{display:block;font-style:normal;font-size:11.5px;color:var(--ink-soft);
+  margin-top:2px;letter-spacing:normal;text-transform:none;line-height:1.5}
 .hataKutu{display:flex;gap:12px;align-items:flex-start;background:#F6E3DE;border:1px solid #E3BDB2;
   border-left:3px solid var(--c-istakibi);border-radius:0 8px 8px 0;padding:14px 16px}
 .hataKutu .im2{width:22px;height:22px;border-radius:50%;background:var(--c-istakibi);color:#fff;
@@ -322,9 +330,10 @@ tr.tamam .kt{text-decoration:line-through}
 .modal{background:var(--paper);border-radius:11px;width:100%;max-width:530px;max-height:88vh;overflow:auto;box-shadow:0 18px 44px rgba(28,35,41,.28)}
 .mhead{display:flex;align-items:center;justify-content:space-between;padding:15px 19px;border-bottom:1px solid var(--rule)}
 .mhead h2{font-size:16px}
-.mbody{padding:17px 19px;display:grid;gap:13px}
+.mbody{padding:17px 19px;display:grid;gap:13px;min-width:0}
+.mbody>*{min-width:0}
 .alan{display:grid;gap:4px}
-.alan label{font-family:'Archivo';font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+.alan>label{font-family:'Archivo';font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
 .alan input,.alan select,.alan textarea{background:var(--paper-2);border:1px solid var(--rule);border-radius:6px;padding:8px 10px;font-size:13px;width:100%}
 .alan textarea{resize:vertical;min-height:56px;font-family:inherit}
 .ikili{display:grid;grid-template-columns:1fr 1fr;gap:11px}
@@ -2294,9 +2303,9 @@ async function excelAl(dosya){
     <div class="alan"><label>Mevcut kayıtların ne olsun?</label>
       <div class="secim">
         <label><input type="radio" name="iceMod" value="ekle" checked>
-          <span><b>Üzerine ekle</b><i>Mevcut ${kayitlar.length} kaydın kalır, ${yeni.length} yeni kayıt eklenir — toplam ${kayitlar.length+yeni.length}.</i></span></label>
+          <span class="ic"><b>Üzerine ekle</b><i>Mevcut ${kayitlar.length} kaydın kalır, ${yeni.length} yeni kayıt eklenir — toplam ${kayitlar.length+yeni.length} olur.</i></span></label>
         <label><input type="radio" name="iceMod" value="degistir">
-          <span><b>Hepsini değiştir</b><i>Mevcut ${kayitlar.length} kayıt silinir, yerine bu ${yeni.length} kayıt gelir. Geri alınamaz.</i></span></label>
+          <span class="ic"><b>Hepsini değiştir</b><i>Mevcut ${kayitlar.length} kayıt silinir, yerine bu ${yeni.length} kayıt gelir. Geri alınamaz.</i></span></label>
       </div>
     </div>`;
 
