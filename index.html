@@ -257,6 +257,25 @@ body.mobil .yara{padding:10px 14px 0}
   background:var(--paper)}
 .pay-durum{flex:1;font-size:11.5px;color:var(--ink-soft);min-width:0}
 .pay-ayak button{padding:8px 20px;font-size:13px}
+.tsec{display:flex;gap:5px;flex-wrap:wrap}
+.tsec button{height:var(--d-sm);padding:0 13px;border:1px solid var(--rule);
+  border-radius:var(--r-md);background:var(--paper);font-size:12.5px;color:var(--ink-soft)}
+.tsec button:hover{border-color:var(--ink-faint);color:var(--ink)}
+.tsec button.secili{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600}
+.tgun{display:flex;gap:4px;flex-wrap:wrap}
+.tgun label{display:flex;align-items:center;gap:5px;height:var(--d-sm);padding:0 10px;
+  background:var(--paper);border:1px solid var(--rule);border-radius:var(--r-md);
+  font-size:12px;cursor:pointer;color:var(--ink-soft)}
+.tgun label:has(input:checked){background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600}
+.tgun input{width:auto;height:auto;margin:0;flex:none}
+.tonizle{background:var(--paper);border:1px solid var(--rule);border-radius:var(--r-md);padding:11px 12px}
+.to-bas{font-size:12.5px;font-weight:600;margin-bottom:8px}
+.to-liste{display:flex;flex-wrap:wrap;gap:5px}
+.to-liste span{font-family:'IBM Plex Mono';font-size:11px;background:var(--paper-2);
+  border:1px solid var(--rule-soft);border-radius:var(--r-sm);padding:3px 8px;color:var(--ink-soft)}
+.to-liste .to-artik{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.to-son{font-size:11px;color:var(--ink-faint);margin-top:8px}
+.to-yok{font-size:12px;color:var(--c-istakibi)}
 .pay-kisiler{display:flex;flex-wrap:wrap;gap:6px}
 .pay-kisiler label{display:flex;align-items:center;gap:6px;background:var(--paper);border:1px solid var(--rule);
   border-radius:20px;padding:5px 12px;font-size:12.5px;cursor:pointer;font-family:'Karla';
@@ -874,6 +893,21 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
 
       <div class="kilit-uyari" id="paylasimUyari" hidden></div>
 
+      <div class="paylasim" id="tekrarPanel" hidden>
+        <div class="pay-bas">
+          <h3>Tekrarla</h3>
+          <button class="pay-kapat" id="tekrarKapat" title="Kapat">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div class="pay-ic" id="tekrarIc"></div>
+        <div class="pay-ayak">
+          <span class="pay-durum" id="tekrarDurum"></span>
+          <button class="solid" id="tekrarOlustur">Oluştur</button>
+        </div>
+      </div>
+
       <div class="paylasim" id="paylasimPanel" hidden>
         <div class="pay-bas">
           <h3 id="payBaslik">Davet gönder</h3>
@@ -891,8 +925,10 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
     </div>
     <div class="mfoot">
       <button class="ghost" id="sil" hidden>Kaydı sil</button>
+      <button class="ghost" id="seriSil" hidden title="Bu tekrar serisinin tamamını sil">Seriyi sil</button>
       <button class="ghost" id="davetBtn" hidden title="Bu kaydı birine toplantı daveti olarak gönder">Davet gönder</button>
       <button class="ghost" id="atamaBtn" hidden title="Bu işi birine ata">İş ata</button>
+      <button class="ghost" id="tekrarBtn" hidden title="Bu kaydı düzenli aralıklarla tekrarla">Tekrarla</button>
       <span class="spacer"></span>
       <button class="ghost" id="vazgec">Vazgeç</button><button class="solid" id="kaydet">Kaydet</button>
     </div>
@@ -1168,7 +1204,10 @@ const pad=n=>String(n).padStart(2,'0');
 function isoNow(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
 const BUGUN=isoNow();
 function tn(s){const [y,a,g]=s.split('-').map(Number);return new Date(y,a-1,g)}
-function ekleGun(s,n){const d=tn(s);d.setDate(d.getDate()+n);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function ekleGun(s,n){const d=tn(s);d.setDate(d.getDate()+n);return tarihStr(d)}
+/* Date nesnesini YYYY-AA-GG metnine çevirir. toISOString() saat dilimi
+   kaydırması yaptığı için kullanılmaz. */
+const tarihStr=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 function haftaBasi(s){return ekleGun(s,-((tn(s).getDay()+6)%7))}
 function gunAdi(s){return GUNLER[(tn(s).getDay()+6)%7]}
 function uzunTarih(s){const d=tn(s);return `${d.getDate()} ${AYLAR[d.getMonth()]} ${d.getFullYear()}`}
@@ -2024,7 +2063,13 @@ function modalAc(id){
   document.querySelectorAll('#fSorumlular input').forEach(i=>i.checked=k?k.sorumlular.includes(i.value):false);
   turDegisti(k);
   paylasimKapat();
-  paylasimDugmeleri();
+  tekrarPanelKapat();
+  paylasimDugmeleri();   /* tarih boşsa Tekrarla düğmesi gizli kalır */
+  /* seri bilgisi */
+  const ss=document.getElementById('seriSil');
+  const seriSayi=k&&k.seriId?kayitlar.filter(x=>x.seriId===k.seriId).length:0;
+  ss.hidden=!(seriSayi>1);
+  if(seriSayi>1)ss.textContent=`Seriyi sil (${seriSayi})`;
   const pu=document.getElementById('paylasimUyari');
   if(paylasimliMi(k)){
     pu.innerHTML=`<b>Bu kayıt paylaşılmış.</b> ${guv(paylasimNedeni(k))}
@@ -2046,6 +2091,7 @@ function modalAc(id){
 }
 const modalKapat=()=>{
   paylasimKapat();
+  tekrarPanelKapat();
   document.getElementById('perde').hidden=true;
   duzenlenen=null;
 };
@@ -2078,6 +2124,14 @@ function paylasimDugmeleri(){
   a.hidden=!(uygun&&!zaman&&yoneticiMi);
   d.classList.toggle('acik',payTur==='davet');
   a.classList.toggle('acik',payTur==='atama');
+  /* Tekrarla her türde çalışır; tek şart bir tarihin girilmiş olması. */
+  const tb=document.getElementById('tekrarBtn');
+  if(tb){
+    const tarihVar=zaman
+      ? !!document.getElementById('fTarih').value
+      : !!document.getElementById('fBitis').value;
+    tb.hidden=!(uygun&&tarihVar);
+  }
 }
 function kaydetEt(){
   const konu=document.getElementById('fKonu').value.trim();
@@ -3401,6 +3455,271 @@ async function paylasimGonder(){
 }
 
 
+
+/* ================= TEKRARLAYAN KAYITLAR ================= */
+/* Kural verilir, sistem gerçek kayıtları üretir (bağımsız kopyalar).
+   Her kopya normal bir kayıttır: sürüklenebilir, davet gönderilebilir,
+   tek tek silinebilir. Ortak bir seri kimliği taşırlar; "seriyi sil"
+   bunun sayesinde çalışır. */
+
+const TEKRAR_SINIR=40;
+
+/* Ayın n. haftasındaki belirli gün — 'ilk pazartesi' gibi.
+   sira: 1..4 ya da -1 (son). gun: 0=Pazartesi … 6=Pazar */
+function ayinGunu(yil,ay,sira,gun){
+  if(sira>0){
+    const ilk=new Date(yil,ay,1);
+    const ilkGun=(ilk.getDay()+6)%7;                 // Pazartesi=0
+    let g=1+((gun-ilkGun)+7)%7+(sira-1)*7;
+    const sonGun=new Date(yil,ay+1,0).getDate();
+    return g<=sonGun?new Date(yil,ay,g):null;
+  }
+  const son=new Date(yil,ay+1,0);
+  const sonGunNo=(son.getDay()+6)%7;
+  const g=son.getDate()-((sonGunNo-gun)+7)%7;
+  return new Date(yil,ay,g);
+}
+
+/* Kurala göre tarih listesi üretir. Bitiş ya sayıyla ya tarihle sınırlanır;
+   her durumda TEKRAR_SINIR aşılmaz. */
+function tekrarTarihleri(bas,kural){
+  const {tip,aralik=1,gunler=[],ayGun=1,ayTip='gun',aySira=1,ayHaftaGun=0}=kural;
+  const bitisTipi=kural.bitisTipi||'sayi';
+  const adet=Math.min(+kural.adet||TEKRAR_SINIR,TEKRAR_SINIR);
+  const sonTarih=kural.sonTarih||null;
+  const liste=[];
+  const ekle=t=>{
+    if(!t)return false;
+    if(t<bas)return true;
+    if(bitisTipi==='tarih'&&sonTarih&&t>sonTarih)return false;
+    liste.push(t);
+    if(liste.length>=(bitisTipi==='sayi'?adet:TEKRAR_SINIR))return false;
+    return true;
+  };
+
+  if(tip==='gun'){
+    let t=bas, guvenlik=0;
+    while(guvenlik++<400){ if(!ekle(t))break; t=ekleGun(t,Math.max(1,aralik)); }
+  }
+  else if(tip==='hafta'){
+    const sec=gunler.length?[...gunler].sort((a,b)=>a-b):[(tn(bas).getDay()+6)%7];
+    let haftaBas=haftaBasi(bas), guvenlik=0;
+    dis: while(guvenlik++<200){
+      for(const g of sec){ if(!ekle(ekleGun(haftaBas,g)))break dis; }
+      haftaBas=ekleGun(haftaBas,7*Math.max(1,aralik));
+    }
+  }
+  else if(tip==='ay'){
+    const b=tn(bas);
+    let yil=b.getFullYear(), ay=b.getMonth(), guvenlik=0;
+    while(guvenlik++<200){
+      let t=null;
+      if(ayTip==='gun'){
+        const sonGun=new Date(yil,ay+1,0).getDate();
+        if(ayGun<=sonGun)t=tarihStr(new Date(yil,ay,ayGun));
+      }else{
+        const d=ayinGunu(yil,ay,aySira,ayHaftaGun);
+        if(d)t=tarihStr(d);
+      }
+      if(t&&!ekle(t))break;
+      ay+=Math.max(1,aralik);
+      while(ay>11){ay-=12;yil++}
+      if(bitisTipi==='tarih'&&sonTarih&&tarihStr(new Date(yil,ay,1))>sonTarih)break;
+    }
+  }
+  return liste;
+}
+
+/* Kuralın insan diliyle özeti — kullanıcı ne seçtiğini görsün */
+function tekrarOzeti(kural){
+  const {tip,aralik=1,gunler=[],ayGun=1,ayTip='gun',aySira=1,ayHaftaGun=0}=kural;
+  const gAd=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+  const sAd={1:'ilk',2:'ikinci',3:'üçüncü',4:'dördüncü','-1':'son'};
+  if(tip==='gun')return aralik===1?'Her gün':`${aralik} günde bir`;
+  if(tip==='hafta'){
+    const g=gunler.length?gunler.slice().sort((a,b)=>a-b).map(x=>gAd[x]).join(', '):'başlangıç günü';
+    return (aralik===1?'Her hafta':`${aralik} haftada bir`)+` · ${g}`;
+  }
+  if(ayTip==='gun')return (aralik===1?'Her ay':`${aralik} ayda bir`)+` · ayın ${ayGun}. günü`;
+  return (aralik===1?'Her ay':`${aralik} ayda bir`)+` · ayın ${sAd[aySira]} ${gAd[ayHaftaGun]} günü`;
+}
+
+
+/* ---------- tekrar paneli ---------- */
+let tekrarKural={tip:'hafta',aralik:1,gunler:[],ayGun:1,ayTip:'gun',aySira:1,ayHaftaGun:0,
+                 bitisTipi:'sayi',adet:10,sonTarih:''};
+
+function tekrarPanelKapat(){
+  const e=document.getElementById('tekrarPanel');
+  if(e)e.hidden=true;
+  const b=document.getElementById('tekrarBtn');
+  if(b)b.classList.remove('acik');
+}
+
+function tekrarAc(){
+  const t=turBul(document.getElementById('fTur').value)||{};
+  const bas=t.sinif==='zaman'
+    ? (document.getElementById('fTarih').value||BUGUN)
+    : (document.getElementById('fBitis').value||BUGUN);
+  if(!bas){bildir('Önce tarih gir');return}
+  /* başlangıç gününü varsayılan olarak seç */
+  tekrarKural={...tekrarKural,gunler:[(tn(bas).getDay()+6)%7],
+               ayGun:tn(bas).getDate(),sonTarih:ekleGun(bas,90)};
+  document.getElementById('tekrarPanel').hidden=false;
+  document.getElementById('tekrarBtn').classList.add('acik');
+  tekrarCiz();
+  setTimeout(()=>{
+    const el=document.getElementById('tekrarPanel');
+    if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },60);
+}
+
+function tekrarBaslangic(){
+  const t=turBul(document.getElementById('fTur').value)||{};
+  return t.sinif==='zaman'
+    ? (document.getElementById('fTarih').value||BUGUN)
+    : (document.getElementById('fBitis').value||BUGUN);
+}
+
+function tekrarCiz(){
+  const ic=document.getElementById('tekrarIc');
+  if(!ic)return;
+  const k=tekrarKural;
+  const bas=tekrarBaslangic();
+  const tarihler=tekrarTarihleri(bas,k);
+  const gAd=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+
+  ic.innerHTML=
+    `<div class="alan"><label>Sıklık</label>
+      <div class="tsec" id="tkTip">
+        ${[['gun','Günlük'],['hafta','Haftalık'],['ay','Aylık']].map(([v,a])=>
+          `<button data-tkt="${v}" ${k.tip===v?'class="secili"':''}>${a}</button>`).join('')}
+      </div></div>
+
+    ${k.tip==='gun'?`
+      <div class="alan"><label for="tkAralik">Kaç günde bir</label>
+        <select id="tkAralik">${[1,2,3,4,5,6,7,10,14].map(n=>
+          `<option value="${n}" ${k.aralik===n?'selected':''}>${n===1?'Her gün':n+' günde bir'}</option>`).join('')}</select>
+      </div>`:''}
+
+    ${k.tip==='hafta'?`
+      <div class="alan"><label for="tkAralik">Kaç haftada bir</label>
+        <select id="tkAralik">${[1,2,3,4].map(n=>
+          `<option value="${n}" ${k.aralik===n?'selected':''}>${n===1?'Her hafta':n+' haftada bir'}</option>`).join('')}</select>
+      </div>
+      <div class="alan"><label>Hangi günler</label>
+        <div class="tgun" id="tkGunler">${gAd.map((g,i)=>
+          `<label><input type="checkbox" value="${i}" ${k.gunler.includes(i)?'checked':''}>${g}</label>`).join('')}</div>
+      </div>`:''}
+
+    ${k.tip==='ay'?`
+      <div class="alan"><label for="tkAralik">Kaç ayda bir</label>
+        <select id="tkAralik">${[1,2,3,6,12].map(n=>
+          `<option value="${n}" ${k.aralik===n?'selected':''}>${n===1?'Her ay':n+' ayda bir'}</option>`).join('')}</select>
+      </div>
+      <div class="alan"><label>Ayın hangi günü</label>
+        <div class="tsec" id="tkAyTip">
+          <button data-tkat="gun" ${k.ayTip==='gun'?'class="secili"':''}>Belirli gün</button>
+          <button data-tkat="hafta" ${k.ayTip==='hafta'?'class="secili"':''}>Kaçıncı hafta</button>
+        </div>
+      </div>
+      ${k.ayTip==='gun'?`
+        <div class="alan"><label for="tkAyGun">Ayın kaçı</label>
+          <select id="tkAyGun">${[...Array(31)].map((_,i)=>
+            `<option value="${i+1}" ${k.ayGun===i+1?'selected':''}>${i+1}. gün</option>`).join('')}</select>
+          <div class="tanimnot">O günü içermeyen aylar atlanır (örn. 31'i seçilirse Şubat).</div>
+        </div>`:`
+        <div class="ikili">
+          <div class="alan"><label for="tkSira">Kaçıncı</label>
+            <select id="tkSira">${[[1,'İlk'],[2,'İkinci'],[3,'Üçüncü'],[4,'Dördüncü'],[-1,'Son']].map(([v,a])=>
+              `<option value="${v}" ${k.aySira===v?'selected':''}>${a}</option>`).join('')}</select></div>
+          <div class="alan"><label for="tkHGun">Gün</label>
+            <select id="tkHGun">${['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'].map((g,i)=>
+              `<option value="${i}" ${k.ayHaftaGun===i?'selected':''}>${g}</option>`).join('')}</select></div>
+        </div>`}`:''}
+
+    <div class="alan"><label>Ne zamana kadar</label>
+      <div class="tsec" id="tkBitis">
+        <button data-tkb="sayi" ${k.bitisTipi==='sayi'?'class="secili"':''}>Tekrar sayısı</button>
+        <button data-tkb="tarih" ${k.bitisTipi==='tarih'?'class="secili"':''}>Bir tarihe kadar</button>
+      </div>
+    </div>
+    ${k.bitisTipi==='sayi'?`
+      <div class="alan"><label for="tkAdet">Kaç tekrar</label>
+        <select id="tkAdet">${[2,3,4,5,6,8,10,12,15,20,26,30,40].map(n=>
+          `<option value="${n}" ${k.adet===n?'selected':''}>${n} kayıt</option>`).join('')}</select>
+      </div>`:`
+      <div class="alan"><label for="tkSon">Son tarih</label>
+        <input type="date" id="tkSon" value="${k.sonTarih||''}">
+      </div>`}
+
+    <div class="tonizle">
+      <div class="to-bas">${guv(tekrarOzeti(k))}</div>
+      ${tarihler.length?`
+        <div class="to-liste">${tarihler.slice(0,8).map(t=>
+          `<span>${kisaTarih(t)}</span>`).join('')}
+          ${tarihler.length>8?`<span class="to-artik">+${tarihler.length-8}</span>`:''}</div>
+        <div class="to-son">İlk: ${uzunTarih(tarihler[0])} · Son: ${uzunTarih(tarihler[tarihler.length-1])}</div>`
+        :'<div class="to-yok">Bu kuralla kayıt oluşmuyor — ayarları gözden geçir.</div>'}
+    </div>
+    ${tarihler.length>=TEKRAR_SINIR?`<p class="uyari">En fazla ${TEKRAR_SINIR} kayıt oluşturulur.</p>`:''}`;
+
+  /* bağlantılar */
+  const dg=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
+  dg('#tkTip button',b=>b.onclick=()=>{tekrarKural.tip=b.dataset.tkt;tekrarKural.aralik=1;tekrarCiz()});
+  dg('#tkAyTip button',b=>b.onclick=()=>{tekrarKural.ayTip=b.dataset.tkat;tekrarCiz()});
+  dg('#tkBitis button',b=>b.onclick=()=>{tekrarKural.bitisTipi=b.dataset.tkb;tekrarCiz()});
+  const bg=(id,alan,sayi)=>{const e=document.getElementById(id);
+    if(e)e.onchange=()=>{tekrarKural[alan]=sayi?+e.value:e.value;tekrarCiz()}};
+  bg('tkAralik','aralik',1); bg('tkAyGun','ayGun',1); bg('tkSira','aySira',1);
+  bg('tkHGun','ayHaftaGun',1); bg('tkAdet','adet',1); bg('tkSon','sonTarih',0);
+  dg('#tkGunler input',el=>el.onchange=()=>{
+    const g=new Set(tekrarKural.gunler);
+    if(el.checked)g.add(+el.value); else g.delete(+el.value);
+    tekrarKural.gunler=[...g]; tekrarCiz();
+  });
+
+  const d=document.getElementById('tekrarDurum');
+  d.textContent=tarihler.length?`${tarihler.length} kayıt oluşturulacak`:'Kayıt oluşmuyor';
+  document.getElementById('tekrarOlustur').disabled=!tarihler.length;
+}
+
+/* Kuralı uygular: her tarih için bağımsız bir kayıt üretir. */
+async function tekrarUygula(){
+  const bas=tekrarBaslangic();
+  const tarihler=tekrarTarihleri(bas,tekrarKural);
+  if(!tarihler.length){bildir('Bu kuralla kayıt oluşmuyor');return}
+
+  const kaynak=await paylasimIcinKaydet();
+  if(!kaynak)return;
+
+  const zaman=zamanliMi(kaynak);
+  if(!await onayla({baslik:'Tekrarlayan kayıt',
+    mesaj:`${tarihler.length} kayıt oluşturulacak`,
+    detay:`<b>${guv(kes(kaynak.konu,60))}</b><br>${guv(tekrarOzeti(tekrarKural))}<br><br>`+
+      `Her biri bağımsız bir kayıttır: tek tek düzenleyebilir, silebilir, `+
+      `davet gönderebilirsin. İstersen sonradan tümünü birden de silebilirsin.`,
+    sayaclar:[{sayi:tarihler.length,etiket:'yeni kayıt',sinif:'iyi'},
+              {sayi:kisaTarih(tarihler[0]),etiket:'ilk'},
+              {sayi:kisaTarih(tarihler[tarihler.length-1]),etiket:'son'}],
+    onayMetni:`${tarihler.length} kaydı oluştur`}))return;
+
+  const seri='s'+Date.now().toString(36);
+  kaynak.seriId=seri;
+  /* ilk tarih kaynak kaydın kendisiyse tekrar üretme */
+  const kaynakTarih=zaman?kaynak.tarih:kaynak.bitis;
+  let eklenen=0;
+  tarihler.forEach(t=>{
+    if(t===kaynakTarih)return;
+    const yeni={...kopya(kaynak),id:sonrakiId++,seriId:seri,tamam:false};
+    delete yeni.gonderilenDavet; delete yeni.davetId; delete yeni.atamaId;
+    if(zaman)yeni.tarih=t; else yeni.bitis=t;
+    kayitlar.push(yeni); eklenen++;
+  });
+  yaz(); ciz(); tekrarPanelKapat(); modalKapat();
+  bildir(`${eklenen+1} kayıt oluşturuldu · ${tekrarOzeti(tekrarKural)}`);
+}
+
 /* ================= KILAVUZ ================= */
 /* Uygulamanın içinde duran yardım. Ekleme yaparken yeni bir bölüm
    yazmak yeterli; arama ve gezinme kendiliğinden çalışır. */
@@ -3453,6 +3772,23 @@ const KILAVUZ=[
   {s:'Renkler',
    p:['Her türün kendi rengi vardır; takvimde hangi işin ne olduğunu renkten anlarsın. '+
       'Ekranın altındaki renk açıklaması hangi rengin ne olduğunu söyler.']}]},
+
+ {b:'Tekrarlayan kayıtlar', ic:[
+  {s:'Rutin bir işi tekrarlatma',
+   p:['Her hafta yapılan bir toplantıyı ya da her ay tekrarlanan bir işi tek tek '+
+      'açmana gerek yok.',
+      'Kaydı bir kez oluştur (konu, tür, tarih, saat), sonra <b>Tekrarla</b> düğmesine bas.',
+      'Sıklığı seç: <b>Günlük</b> (her gün ya da 2–14 günde bir), <b>Haftalık</b> '+
+      '(hangi günler olduğunu işaretlersin, birden fazla olabilir), '+
+      '<b>Aylık</b> (ayın belirli günü ya da "ayın ilk Pazartesisi" gibi).',
+      'Ne zamana kadar: <b>tekrar sayısı</b> ya da <b>bir tarihe kadar</b>. En fazla 40 kayıt oluşur.',
+      'Altta hangi tarihlerde oluşacağını önce görürsün, sonra <b>Oluştur</b> dersin.'],
+   n:'Oluşan kayıtlar bağımsızdır: birini silmek ya da saatini değiştirmek '+
+     'diğerlerini etkilemez. Birine ayrı ayrı davet de gönderebilirsin.'},
+  {s:'Serinin tamamını silme',
+   p:['Seriden herhangi bir kaydı aç, altta <b>Seriyi sil</b> düğmesini göreceksin — '+
+      'yanında kaç kayıt olduğu yazar.',
+      'Tamamlanmış olanlar da silinir ve geri alınamaz.']}]},
 
  {b:'Toplantı daveti', ic:[
   {s:'Davet gönderme',
@@ -4704,6 +5040,28 @@ async function paylasimIcinKaydet(){
   if(kayitlar.length===oncekiSayi&&!duzenlenen)return null;   // kaydedilemedi
   return kayitlar[kayitlar.length-1];
 }
+document.getElementById('seriSil').onclick=async()=>{
+  const k=kayitlar.find(x=>x.id===duzenlenen); if(!k||!k.seriId)return;
+  const seri=kayitlar.filter(x=>x.seriId===k.seriId);
+  const tarihli=seri.map(etkinTarih).filter(Boolean).sort();
+  if(!await onayla({baslik:'Seriyi sil',tehlike:true,
+    mesaj:`${seri.length} kayıt silinecek`,
+    detay:`"${guv(kes(k.konu,60))}" tekrar serisinin tamamı silinir.<br>`+
+      `Tamamlanmış olanlar da dahil. <b>Geri alınamaz.</b>`,
+    sayaclar:[{sayi:seri.length,etiket:'kayıt',sinif:'kotu'},
+              {sayi:seri.filter(x=>x.tamam).length,etiket:'tamamlanmış'},
+              ...(tarihli.length?[{sayi:`${kisaTarih(tarihli[0])} – ${kisaTarih(tarihli[tarihli.length-1])}`,
+                                   etiket:'aralık'}]:[])],
+    onayMetni:'Tümünü sil'}))return;
+  kayitlar=kayitlar.filter(x=>x.seriId!==k.seriId);
+  yaz(); modalKapat(); ciz();
+  bildir(`${seri.length} kayıtlık seri silindi`);
+};
+document.getElementById('tekrarBtn').onclick=()=>{
+  if(document.getElementById('tekrarPanel').hidden)tekrarAc(); else tekrarPanelKapat();
+};
+document.getElementById('tekrarKapat').onclick=tekrarPanelKapat;
+document.getElementById('tekrarOlustur').onclick=tekrarUygula;
 document.getElementById('davetBtn').onclick=()=>paylasimAc('davet');
 document.getElementById('atamaBtn').onclick=()=>paylasimAc('atama');
 document.getElementById('payKapat').onclick=paylasimKapat;
@@ -4720,10 +5078,12 @@ document.getElementById('fBas').addEventListener('change',()=>{
     if([...eE.options].some(o=>o.value===hedef))eE.value=hedef;
   }
 });
-['fTarih','fBas','fBit'].forEach(id=>{
+['fTarih','fBas','fBit','fBitis'].forEach(id=>{
   const e=document.getElementById(id);
   if(e)e.addEventListener('change',()=>{
     if(payTur==='davet')payMesguliyetYukle();
+    paylasimDugmeleri();
+    if(!document.getElementById('tekrarPanel').hidden)tekrarCiz();
   });
 });
 document.getElementById('yardimBtn').onclick=()=>{
