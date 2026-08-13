@@ -2095,8 +2095,8 @@ function modalAc(id){
       (gelen
         ? `Saatini değiştirirsen yalnızca senin takviminde değişir; gönderen haberdar olmaz. `+
           `Katılamayacaksan zil → Gelen bölümünden <b>Takvimden çıkar</b> demek daha doğru.`
-        : `Tarihini ya da saatini değiştirirsen, kaydettikten sonra `+
-          `<b>davetlilere bildirmen</b> teklif edilir — onların onayı yeniden alınır.`)+
+        : `Tarihini ya da saatini değiştirirsen değişiklik <b>davetlilere otomatik iletilir</b> `+
+          `ve onayları yeniden alınır. Kaydetmeden önce sana sorulur.`)+
       ` Sürükleyerek taşınamaz.`;
     pu.hidden=false;
   }else pu.hidden=true;
@@ -2157,7 +2157,8 @@ function paylasimDugmeleri(){
     tb.hidden=!(uygun&&tarihVar);
   }
 }
-function kaydetEt(){
+let bekleyenRevizyon=null;
+async function kaydetEt(){
   const konu=document.getElementById('fKonu').value.trim();
   if(!konu){bildir('Konu alanı boş olamaz');document.getElementById('fKonu').focus();return}
   const turId=document.getElementById('fTur').value, td=turBul(turId)||{sinif:'zaman'}, z=td.sinif==='zaman';
@@ -2181,10 +2182,10 @@ function kaydetEt(){
     bildir(`Eksik: ${eksik.join(', ')}`);
     return;
   }
-  /* Paylaşılmış kaydın zamanı değiştiyse kullanıcı bunu bilerek yapmalı.
-     Uyarı bekletmeli olduğu için eski değerlerin KOPYASI alınır —
-     aksi halde aşağıdaki Object.assign onları da ezer ve
-     "önce/sonra" karşılaştırması aynı çıkar. */
+  /* Paylaşılmış kaydın zamanı değiştiyse: KAYDETMEDEN ÖNCE onay alınır.
+     Bildirim isteğe bağlı değildir — bildirilmezse iki takvim çelişir ve
+     taraflar farklı saatlere gider. Kullanıcının kararı "değişikliği
+     yapayım mı", "haber vereyim mi" değil. */
   if(duzenlenen){
     const eskiK=kayitlar.find(x=>x.id===duzenlenen);
     if(paylasimliMi(eskiK)&&
@@ -2192,10 +2193,19 @@ function kaydetEt(){
       const oncekiHal={id:eskiK.id,tarih:eskiK.tarih,bas:eskiK.bas,bit:eskiK.bit,
                        davetId:eskiK.davetId,atamaId:eskiK.atamaId,
                        gonderilenDavet:eskiK.gonderilenDavet};
-      zamanDegisikligiUyar(oncekiHal,{tarih:v.tarih,bas:v.bas,bit:v.bit});
+      const yeniHal={tarih:v.tarih,bas:v.bas,bit:v.bit};
+      if(!await zamanDegisikligiOnayi(oncekiHal,yeniHal))return;   // vazgeçildi
+      bekleyenRevizyon={eski:oncekiHal,yeni:yeniHal};
     }
   }
-  if(duzenlenen){Object.assign(kayitlar.find(x=>x.id===duzenlenen),v);bildir('Kayıt güncellendi')}
+  if(duzenlenen){
+    Object.assign(kayitlar.find(x=>x.id===duzenlenen),v);
+    bildir('Kayıt güncellendi');
+    if(bekleyenRevizyon){
+      const r=bekleyenRevizyon; bekleyenRevizyon=null;
+      revizyonuGonder(r.eski,r.yeni);      // arka planda, kayıt zaten yazıldı
+    }
+  }
   else{kayitlar.push({id:sonrakiId++,kayitTarihi:BUGUN,tamam:false,...v});
     bildir(v.tarih?'Takvime eklendi':'Atanmamış havuzuna eklendi')}
   yaz();modalKapat();ciz();
@@ -3276,46 +3286,47 @@ function degisimAdi(eski,yeni){
   return {b:'Saat değişti', k:'yeni saat'};
 }
 
-async function zamanDegisikligiUyar(eski,yeni){
-  await new Promise(r=>setTimeout(r,150));
+/* Kaydetmeden ÖNCE sorulur: bu değişiklik karşı tarafı da etkiler.
+   Onaylanırsa kayıt yazılır ve davetler otomatik revize edilir. */
+async function zamanDegisikligiOnayi(eski,yeni){
   const D=degisimAdi(eski,yeni);
-  const kayit=kayitlar.find(x=>x.id===eski.id);
+  const bicim=x=>`${x.tarih?kisaTarih(x.tarih):'—'} ${x.bas||''}–${x.bit||''}`;
 
-  /* Bu kayıt bize gönderilmiş bir davetten oluştuysa revize edemeyiz —
-     saati belirleyen taraf gönderendir. */
-  if(kayit&&(kayit.davetId||kayit.atamaId)){
-    return bilgiVer({baslik:D.b,tehlike:true,
-      mesaj:'Bu kaydı yalnızca kendi takviminde değiştirdin',
-      detay:`${guv(paylasimNedeni(eski))}<br><br>`+
-        `Gönderene otomatik bildirim gitmez. Bu zaman sana uymuyorsa `+
-        `zil → Gelen bölümünden <b>Takvimden çıkar</b> demen daha doğru olur — `+
-        `böylece karşı taraf haberdar olur.`});
+  /* Bu kayıt bize gönderilmiş bir davetten oluştuysa saati belirleyen
+     taraf gönderendir; revize edemeyiz, yalnızca uyarırız. */
+  if(eski.davetId||eski.atamaId){
+    return await onayla({baslik:D.b,tehlike:true,
+      mesaj:'Bu değişiklik yalnızca senin takviminde geçerli olur',
+      detay:`<b>Önce:</b> ${bicim(eski)} → <b>Sonra:</b> ${bicim(yeni)}<br><br>`+
+        `${guv(paylasimNedeni(eski))} Gönderene bildirim gitmez ve `+
+        `takvimleriniz farklı görünür.<br><br>`+
+        `Katılamayacaksan zil → Gelen bölümünden <b>Takvimden çıkar</b> demek `+
+        `daha doğru olur — orada sebebi de iletebilirsin.`,
+      onayMetni:'Yine de değiştir', iptalMetni:'Vazgeç'});
   }
 
-  /* Bizim gönderdiğimiz davetler varsa yeniden onay teklif et */
-  const ilgili=davetler.filter(d=>d.yon==='giden'&&d.kayitId===eski.id
-                                  &&d.durum!=='red');
-  if(!ilgili.length){
-    return bilgiVer({baslik:D.b,
-      mesaj:'Kaydın zamanı güncellendi',
-      detay:`<b>Önce:</b> ${eski.tarih?kisaTarih(eski.tarih):'—'} ${eski.bas||''}–${eski.bit||''}<br>`+
-        `<b>Sonra:</b> ${yeni.tarih?kisaTarih(yeni.tarih):'—'} ${yeni.bas||''}–${yeni.bit||''}`});
-  }
+  const ilgili=davetler.filter(d=>d.yon==='giden'&&d.kayitId===eski.id&&d.durum!=='red');
+  if(!ilgili.length)return true;              // paylaşılan kimse kalmamış
 
-  const adlar=ilgili.map(d=>kisiAdEposta(d.alici));
-  if(!await onayla({baslik:D.b,
-    mesaj:`${ilgili.length} kişiye değişikliği bildir`,
-    detay:`<b>Önce:</b> ${eski.tarih?kisaTarih(eski.tarih):'—'} ${eski.bas||''}–${eski.bit||''}<br>`+
-      `<b>Sonra:</b> ${yeni.tarih?kisaTarih(yeni.tarih):'—'} ${yeni.bas||''}–${yeni.bit||''}<br><br>`+
-      `Bildirirsen daha önce verdikleri onay <b>sıfırlanır</b>; ${D.k}ı `+
-      `tekrar kabul etmeleri gerekir. Kabul etmeyen olursa göreceksin.<br><br>`+
-      `Bildirmezsen onlarda eski hali kalır ve fark etmezler.`,
+  return await onayla({baslik:D.b,
+    mesaj:`${ilgili.length} kişiye yeniden onay gönderilecek`,
+    detay:`<b>Önce:</b> ${bicim(eski)} → <b>Sonra:</b> ${bicim(yeni)}<br><br>`+
+      `Bu kayıt paylaşıldığı için değişiklik karşı tarafa <b>otomatik iletilir</b>; `+
+      `daha önce verdikleri onay sıfırlanır ve ${D.k}ı tekrar kabul etmeleri gerekir.<br><br>`+
+      `Kabul etmeyen olursa <b>Gönderdiğim</b> bölümünde görürsün.`,
     liste:ilgili.map(d=>({baslik:kisiAdEposta(d.alici),
       aciklama:{bekliyor:'henüz yanıtlamamıştı',kabul:'kabul etmişti',
                 iptal:'takvimden çıkarmıştı'}[d.durum]||d.durum})),
-    listeBaslik:'Bildirilecek kişiler',
-    onayMetni:'Bildir ve yeniden onay iste',
-    iptalMetni:'Bildirme'}))return;
+    listeBaslik:'Yeniden onay istenecek kişiler',
+    onayMetni:'Değiştir ve bildir', iptalMetni:'Vazgeç'});
+}
+
+/* Onay alındıktan sonra çalışır: davetleri yeni zamanla günceller. */
+async function revizyonuGonder(eski,yeni){
+  const D=degisimAdi(eski,yeni);
+  if(eski.davetId||eski.atamaId)return;       // gelen kayıtta revizyon yok
+  const ilgili=davetler.filter(d=>d.yon==='giden'&&d.kayitId===eski.id&&d.durum!=='red');
+  if(!ilgili.length)return;
 
   let ok=0;
   for(const d of ilgili){
@@ -3326,9 +3337,13 @@ async function zamanDegisikligiUyar(eski,yeni){
         detay:kayitDetayi(kayitlar.find(x=>x.id===eski.id)||eski)
       });
       ok++;
-    }catch(e){ console.warn('revizyon hatası:',e); }
+    }catch(e){ console.error('Revizyon gönderilemedi:',d.alici,e.code||'',e.message||e); }
   }
-  bildir(ok?`${ok} kişiye ${D.k} bildirildi — onayları bekleniyor`:'Bildirilemedi');
+  if(ok)bildir(`${ok} kişiye ${D.k} bildirildi — onayları bekleniyor`);
+  else bilgiVer({baslik:'Bildirilemedi',tehlike:true,
+    mesaj:'Değişiklik karşı tarafa iletilemedi',
+    detay:'Kaydın güncellendi ama davetler revize edilemedi. '+
+      'Bağlantını kontrol edip kaydı tekrar kaydetmeyi dene.'});
   await kutuTazele();
 }
 
@@ -3947,15 +3962,16 @@ const KILAVUZ=[
   {s:'Toplantının saatini değiştirmek',
    p:['Silip yeniden davet etmene gerek yok. Kaydı aç, tarih ya da saatini değiştir, '+
       '<b>Kaydet</b> de.',
-      'Kaydettikten sonra <b>"Saat değişti — N kişiye bildir"</b> diye sorulur. '+
+      'Kaydetmeden önce <b>"N kişiye yeniden onay gönderilecek"</b> diye sorulur. '+
       'Kimlerin bildirileceğini ve her birinin önceki durumunu (kabul etmişti, '+
       'henüz yanıtlamamıştı) görürsün.',
-      '<b>Bildir</b> dersen daha önce verdikleri onay sıfırlanır; yeni saati '+
-      'tekrar kabul etmeleri gerekir. Zillerinde "yeni saat onayı bekliyor" olarak belirir '+
-      've eski–yeni saat karşılaştırmalı görünür.',
-      '<b>Bildirme</b> dersen sadece senin takviminde değişir, onlarda eski saat kalır.'],
-   n:'Karşı taraf yeni saati reddederse kayıt onun takviminden çıkar ve sen '+
-     '"Gönderdiğim" bölümünde görürsün.'},
+      '<b>Değiştir ve bildir</b> dersen kayıt güncellenir ve değişiklik otomatik iletilir; '+
+      'daha önce verdikleri onay sıfırlanır. Zillerinde "yeni saat onayı bekliyor" olarak '+
+      'belirir ve eski–yeni karşılaştırmalı görünür.',
+      '<b>Vazgeç</b> dersen hiçbir şey değişmez — kayıt da eski halinde kalır.'],
+   n:'Bildirim isteğe bağlı değildir: bildirilmezse iki takvim çelişir ve '+
+     'taraflar farklı saatlere giderdi.'},
+
   {s:'Bana gelen bir toplantının saatini değiştirirsem',
    p:['Sadece kendi takviminde değişir, gönderen haberdar olmaz.',
       'Katılamayacaksan zil → Gelen → <b>Takvimden çıkar</b> demek daha doğru; '+
@@ -5315,7 +5331,7 @@ document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{gorunum=b.da
 document.getElementById('yeniBtn').onclick=()=>modalAc();
 document.getElementById('kapat').onclick=modalKapat;
 document.getElementById('vazgec').onclick=modalKapat;
-document.getElementById('kaydet').onclick=kaydetEt;
+document.getElementById('kaydet').onclick=()=>kaydetEt();
 document.getElementById('fTur').onchange=()=>turDegisti();
 document.getElementById('perde').onclick=e=>{if(e.target.id==='perde')modalKapat()};
 document.getElementById('sil').onclick=async()=>{
@@ -5333,7 +5349,7 @@ async function paylasimIcinKaydet(){
     if(k)return k;
   }
   const oncekiSayi=kayitlar.length;
-  kaydetEt();                                  // doğrulama burada da çalışır
+  await kaydetEt();                            // doğrulama burada da çalışır
   if(kayitlar.length===oncekiSayi&&!duzenlenen)return null;   // kaydedilemedi
   return kayitlar[kayitlar.length-1];
 }
