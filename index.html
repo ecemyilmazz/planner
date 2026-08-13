@@ -218,6 +218,13 @@ body.mobil .yara{padding:10px 14px 0}
 .dvt.kabul{border-left-color:#1E5A46}
 .dvt.red{border-left-color:var(--c-istakibi);opacity:.75}
 .dvt.iptal{border-left-color:var(--ink-faint);opacity:.75}
+.dvt-rev{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:7px;
+  background:#F6E9D9;border:1px solid #E0C9A8;border-radius:var(--r-sm);
+  padding:6px 10px;font-size:11.5px}
+.dvt-rev b{color:var(--c-calisma);font-size:11px}
+.dvt-rev .eski{font-family:'IBM Plex Mono';text-decoration:line-through;color:var(--ink-faint)}
+.dvt-rev .ok{color:var(--ink-faint)}
+.dvt-rev .yeni{font-family:'IBM Plex Mono';font-weight:600;color:var(--ink)}
 .dvt-durum.iptal{background:var(--rule);color:var(--ink-soft)}
 .dvt-ust{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
 .dvt-kim{font-size:11.5px;color:var(--ink-soft)}
@@ -281,6 +288,14 @@ body.mobil .yara{padding:10px 14px 0}
   border-radius:20px;padding:5px 12px;font-size:12.5px;cursor:pointer;font-family:'Karla';
   font-weight:400;letter-spacing:normal;text-transform:none;color:var(--ink)}
 .pay-kisiler label:has(input:checked){background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pay-kisiler label.kilitli{opacity:.6;cursor:not-allowed;background:var(--paper-2)}
+.pay-kisiler label.kilitli:has(input:checked){background:var(--paper-2);color:var(--ink)}
+.pay-kisiler label{gap:7px}
+.pk-rozet{font-family:'IBM Plex Mono';font-size:9px;background:var(--rule);color:var(--ink-soft);
+  border-radius:3px;padding:1px 5px;margin-left:2px;white-space:nowrap}
+.pk-rozet.kabul{background:#DCEDE4;color:#1E5A46}
+.pk-rozet.red{background:#F6E3DE;color:var(--c-istakibi)}
+.pk-rozet.bekliyor{background:#F6E9D9;color:var(--c-calisma)}
 .pay-kisiler input{width:auto;margin:0}
 .pay-mesgul{display:grid;gap:6px}
 .not-akis{margin-top:9px;display:grid;gap:6px}
@@ -2072,9 +2087,14 @@ function modalAc(id){
   if(seriSayi>1)ss.textContent=`Seriyi sil (${seriSayi})`;
   const pu=document.getElementById('paylasimUyari');
   if(paylasimliMi(k)){
-    pu.innerHTML=`<b>Bu kayıt paylaşılmış.</b> ${guv(paylasimNedeni(k))}
-      Tarih ya da saatini değiştirirsen karşı taraf bundan haberdar olmaz —
-      değişikliği ayrıca bildirmen gerekir. Sürükleyerek taşınamaz.`;
+    const gelen=!!(k.davetId||k.atamaId);
+    pu.innerHTML=`<b>Bu kayıt paylaşılmış.</b> ${guv(paylasimNedeni(k))} `+
+      (gelen
+        ? `Saatini değiştirirsen yalnızca senin takviminde değişir; gönderen haberdar olmaz. `+
+          `Katılamayacaksan zil → Gelen bölümünden <b>Takvimden çıkar</b> demek daha doğru.`
+        : `Tarihini ya da saatini değiştirirsen, kaydettikten sonra `+
+          `<b>davetlilere bildirmen</b> teklif edilir — onların onayı yeniden alınır.`)+
+      ` Sürükleyerek taşınamaz.`;
     pu.hidden=false;
   }else pu.hidden=true;
   document.getElementById('zSorumlu').hidden=!zorunluMu('sorumlular');
@@ -2120,10 +2140,11 @@ function paylasimDugmeleri(){
   const t=turBul(document.getElementById('fTur').value)||{};
   const zaman=t.sinif==='zaman';
   const uygun=(mod==='uye');
-  d.hidden=!(uygun&&zaman);
-  a.hidden=!(uygun&&!zaman&&yoneticiMi);
-  d.classList.toggle('acik',payTur==='davet');
-  a.classList.toggle('acik',payTur==='atama');
+  /* Panel açıkken alt bardaki düğme gizlenir: aksi halde ekranda iki tane
+     "Davet gönder" görünüyor ve hangisinin ne yaptığı belirsiz kalıyor.
+     Paneli kapatmak için başlıktaki × kullanılır. */
+  d.hidden=!(uygun&&zaman)||payTur==='davet';
+  a.hidden=!(uygun&&!zaman&&yoneticiMi)||payTur==='atama';
   /* Tekrarla her türde çalışır; tek şart bir tarihin girilmiş olması. */
   const tb=document.getElementById('tekrarBtn');
   if(tb){
@@ -2157,12 +2178,18 @@ function kaydetEt(){
     bildir(`Eksik: ${eksik.join(', ')}`);
     return;
   }
-  /* Paylaşılmış kaydın zamanı değiştiyse kullanıcı bunu bilerek yapmalı */
+  /* Paylaşılmış kaydın zamanı değiştiyse kullanıcı bunu bilerek yapmalı.
+     Uyarı bekletmeli olduğu için eski değerlerin KOPYASI alınır —
+     aksi halde aşağıdaki Object.assign onları da ezer ve
+     "önce/sonra" karşılaştırması aynı çıkar. */
   if(duzenlenen){
     const eskiK=kayitlar.find(x=>x.id===duzenlenen);
     if(paylasimliMi(eskiK)&&
        (eskiK.tarih!==v.tarih||eskiK.bas!==v.bas||eskiK.bit!==v.bit)){
-      zamanDegisikligiUyar(eskiK,v);
+      const oncekiHal={id:eskiK.id,tarih:eskiK.tarih,bas:eskiK.bas,bit:eskiK.bit,
+                       davetId:eskiK.davetId,atamaId:eskiK.atamaId,
+                       gonderilenDavet:eskiK.gonderilenDavet};
+      zamanDegisikligiUyar(oncekiHal,{tarih:v.tarih,bas:v.bas,bit:v.bit});
     }
   }
   if(duzenlenen){Object.assign(kayitlar.find(x=>x.id===duzenlenen),v);bildir('Kayıt güncellendi')}
@@ -3233,15 +3260,73 @@ function saatAlanlariniKur(bas,bit){
   saatListesiDoldur(eE,bit||'',eB?eB.value:null);
 }
 
-/* Paylaşılmış bir kaydın zamanı değiştiğinde kullanıcıyı bilgilendirir.
-   Otomatik bildirim gönderilmez — karşı tarafa haber vermek kullanıcıya kalır. */
-function zamanDegisikligiUyar(eski,yeni){
-  setTimeout(()=>bilgiVer({baslik:'Saat değişti',tehlike:true,
-    mesaj:'Paylaşılmış bir kaydın zamanını değiştirdin',
+/* Paylaşılmış bir kaydın zamanı değiştiğinde davetlilere yeniden onay gönderir.
+   Silip yeniden davet etmeye gerek yok: mevcut davetler revize edilir,
+   karşı tarafın onayı sıfırlanır ve zilinde "saat değişti" olarak belirir. */
+/* Başlık ve metinler neyin değiştiğine göre yazılır: yalnızca saat,
+   yalnızca gün ya da ikisi birden. */
+function degisimAdi(eski,yeni){
+  const gun=eski.tarih!==yeni.tarih;
+  const saat=eski.bas!==yeni.bas||eski.bit!==yeni.bit;
+  if(gun&&saat)return {b:'Tarih ve saat değişti', k:'yeni tarih ve saat'};
+  if(gun)return {b:'Tarih değişti', k:'yeni tarih'};
+  return {b:'Saat değişti', k:'yeni saat'};
+}
+
+async function zamanDegisikligiUyar(eski,yeni){
+  await new Promise(r=>setTimeout(r,150));
+  const D=degisimAdi(eski,yeni);
+  const kayit=kayitlar.find(x=>x.id===eski.id);
+
+  /* Bu kayıt bize gönderilmiş bir davetten oluştuysa revize edemeyiz —
+     saati belirleyen taraf gönderendir. */
+  if(kayit&&(kayit.davetId||kayit.atamaId)){
+    return bilgiVer({baslik:D.b,tehlike:true,
+      mesaj:'Bu kaydı yalnızca kendi takviminde değiştirdin',
+      detay:`${guv(paylasimNedeni(eski))}<br><br>`+
+        `Gönderene otomatik bildirim gitmez. Bu zaman sana uymuyorsa `+
+        `zil → Gelen bölümünden <b>Takvimden çıkar</b> demen daha doğru olur — `+
+        `böylece karşı taraf haberdar olur.`});
+  }
+
+  /* Bizim gönderdiğimiz davetler varsa yeniden onay teklif et */
+  const ilgili=davetler.filter(d=>d.yon==='giden'&&d.kayitId===eski.id
+                                  &&d.durum!=='red');
+  if(!ilgili.length){
+    return bilgiVer({baslik:D.b,
+      mesaj:'Kaydın zamanı güncellendi',
+      detay:`<b>Önce:</b> ${eski.tarih?kisaTarih(eski.tarih):'—'} ${eski.bas||''}–${eski.bit||''}<br>`+
+        `<b>Sonra:</b> ${yeni.tarih?kisaTarih(yeni.tarih):'—'} ${yeni.bas||''}–${yeni.bit||''}`});
+  }
+
+  const adlar=ilgili.map(d=>kisiAdEposta(d.alici));
+  if(!await onayla({baslik:D.b,
+    mesaj:`${ilgili.length} kişiye değişikliği bildir`,
     detay:`<b>Önce:</b> ${eski.tarih?kisaTarih(eski.tarih):'—'} ${eski.bas||''}–${eski.bit||''}<br>`+
       `<b>Sonra:</b> ${yeni.tarih?kisaTarih(yeni.tarih):'—'} ${yeni.bas||''}–${yeni.bit||''}<br><br>`+
-      `${guv(paylasimNedeni(eski))} Karşı tarafa otomatik bildirim gitmez; `+
-      `yeni saatin uygun olup olmadığını sormak için yeni bir davet göndermen gerekir.`}),150);
+      `Bildirirsen daha önce verdikleri onay <b>sıfırlanır</b>; ${D.k}ı `+
+      `tekrar kabul etmeleri gerekir. Kabul etmeyen olursa göreceksin.<br><br>`+
+      `Bildirmezsen onlarda eski hali kalır ve fark etmezler.`,
+    liste:ilgili.map(d=>({baslik:kisiAdEposta(d.alici),
+      aciklama:{bekliyor:'henüz yanıtlamamıştı',kabul:'kabul etmişti',
+                iptal:'takvimden çıkarmıştı'}[d.durum]||d.durum})),
+    listeBaslik:'Bildirilecek kişiler',
+    onayMetni:'Bildir ve yeniden onay iste',
+    iptalMetni:'Bildirme'}))return;
+
+  let ok=0;
+  for(const d of ilgili){
+    try{
+      await FB.davetRevize(d.id,{
+        tarih:yeni.tarih, bas:yeni.bas, bit:yeni.bit,
+        oncekiTarih:d.tarih, oncekiBas:d.bas, oncekiBit:d.bit,
+        detay:kayitDetayi(kayitlar.find(x=>x.id===eski.id)||eski)
+      });
+      ok++;
+    }catch(e){ console.warn('revizyon hatası:',e); }
+  }
+  bildir(ok?`${ok} kişiye ${D.k} bildirildi — onayları bekleniyor`:'Bildirilemedi');
+  await kutuTazele();
 }
 
 /* Bir kayıt paylaşıma konu olmuşsa saati sürükleyerek değiştirilemez:
@@ -3340,21 +3425,49 @@ async function payMesguliyetYukle(){
   payMesgul=yeni; payYukleniyor=false; paylasimCiz();
 }
 
+/* Bu kayıt için o kişiye daha önce gönderilmiş davet/atama */
+function oncekiPaylasim(kayitId,eposta){
+  const e=(eposta||'').toLowerCase();
+  if(payTur==='davet')
+    return davetler.find(d=>d.yon==='giden'&&d.kayitId===kayitId&&d.alici===e)||null;
+  return atamalar.find(a=>a.yon==='benden'&&a.kayitId===kayitId&&a.alici===e)||null;
+}
+
 function paylasimCiz(){
   const ic=document.getElementById('payIc');
   if(!ic||!payTur)return;
   const adaylar=kullaniciKisiler().filter(x=>x.eposta!==(oturum?.email||'').toLowerCase());
   const davet=payTur==='davet';
+  const kayitId=duzenlenen;
   const tarih=document.getElementById('fTarih').value||BUGUN;
   const bas=document.getElementById('fBas').value||'09:00';
   const bit=document.getElementById('fBit').value||'10:00';
   const secList=[...paySecililer].map(id=>ayar.kisiler.find(x=>x.id===id)).filter(Boolean);
 
   ic.innerHTML=
-    `<div class="alan"><label>Kime<span class="zyildiz">${paySecililer.size} kişi</span></label>
-      <div class="pay-kisiler" id="payKisiler">${adaylar.map(x=>
-        `<label><input type="checkbox" value="${x.id}" ${paySecililer.has(x.id)?'checked':''}>${guv(x.ad)}</label>`
-      ).join('')}</div></div>`+
+    `<div class="alan"><label>Kime<span class="zyildiz">${paySecililer.size} kişi seçili</span></label>
+      <div class="pay-kisiler" id="payKisiler">${adaylar.map(x=>{
+        const onceki=oncekiPaylasim(kayitId,x.eposta);
+        /* Bekleyen ya da kabul edilmiş bir davet varsa tekrar gönderilemez.
+           Reddedilmiş ya da iptal edilmişse yeniden gönderilebilir. */
+        const kilitli=!!(onceki&&(davet
+          ? ['bekliyor','kabul'].includes(onceki.durum)
+          : true));
+        const rozet=!onceki?'':(davet
+          ? {bekliyor:'yanıt bekliyor',kabul:'kabul etti',red:'reddetti',
+             iptal:'çıkardı'}[onceki.durum]||onceki.durum
+          : (onceki.gorulme?'gördü':'görmedi'));
+        return `<label class="${kilitli?'kilitli':''}" ${
+          kilitli?`title="Zaten gönderildi — ${guv(rozet)}"`:''}>
+          <input type="checkbox" value="${x.id}" ${paySecililer.has(x.id)?'checked':''} ${kilitli?'disabled':''}>
+          ${guv(x.ad)}${onceki?`<span class="pk-rozet ${onceki.durum||''}">${guv(rozet)}</span>`:''}
+        </label>`;
+      }).join('')}</div>
+      ${adaylar.every(x=>{const o2=oncekiPaylasim(kayitId,x.eposta);
+        return o2&&(davet?['bekliyor','kabul'].includes(o2.durum):true)})&&adaylar.length
+        ?`<div class="tanimnot">Herkese gönderilmiş. Durumları zil → ${
+          davet?'Gönderdiğim':'İşler'} bölümünden izleyebilirsin.</div>`:''}
+      </div>`+
 
     (davet
       ? `<div class="alan"><label>${kisaTarih(tarih)} · ${bas}–${bit} için doluluk</label>
@@ -3405,6 +3518,7 @@ async function paylasimGonder(){
   const detay=kayitDetayi(k);
   const not=(document.getElementById('payNot').value||'').trim();
   const adlar=[], hatalar=[];
+  let sonHata=null;
   const gon=document.getElementById('payGonder');
   gon.disabled=true; document.getElementById('payDurum').textContent='Gönderiliyor…';
 
@@ -3422,11 +3536,16 @@ async function paylasimGonder(){
           gonderen:(oturum.email||'').toLowerCase(),
           alici:alici.eposta.toLowerCase(),
           konu:k.konu, tarih, bas, bit, not, detay,
+          kayitId:k.id,                       /* revizyon için bağ */
           durum:'bekliyor', olusturma:Date.now()
         });
         adlar.push(alici.ad);
         k.gonderilenDavet=[...(k.gonderilenDavet||[]),alici.eposta.toLowerCase()];
-      }catch(e){ hatalar.push(alici.ad); }
+      }catch(e){
+        hatalar.push(alici.ad);
+        console.error('Davet oluşturulamadı:',alici.eposta,e.code||'',e.message||e);
+        sonHata=e;
+      }
     }
     if(adlar.length)yaz();
   }else{
@@ -3440,16 +3559,30 @@ async function paylasimGonder(){
           atayan:(oturum.email||'').toLowerCase(),
           alici:alici.eposta.toLowerCase(),
           konu:k.konu, bitis, not, detay,
+          kayitId:k.id,
           gorulme:null, notlar:[], olusturma:Date.now()
         });
         adlar.push(alici.ad);
-      }catch(e){ hatalar.push(alici.ad); }
+      }catch(e){
+        hatalar.push(alici.ad);
+        console.error('Atama oluşturulamadı:',alici.eposta,e.code||'',e.message||e);
+        sonHata=e;
+      }
     }
   }
 
   gon.disabled=false;
   if(adlar.length)bildir(`${adlar.length} kişiye ${payTur==='davet'?'davet gönderildi':'iş atandı'}: ${adlar.join(', ')}`);
-  if(hatalar.length)bildir(`Gönderilemedi: ${hatalar.join(', ')}`);
+  if(hatalar.length){
+    bilgiVer({baslik:'Gönderilemedi',tehlike:true,
+      mesaj:`${hatalar.length} kişiye ulaşılamadı`,
+      detay:`${guv(hatalar.join(', '))}<br><br>`+
+        (sonHata&&sonHata.code==='permission-denied'
+          ? 'Güvenlik kuralları bu işlemi reddetti. Firestore kurallarının güncel '+
+            'sürümü yayınlanmış olmalı.'
+          : 'Bağlantı sorunu olabilir.')+
+        `<br><code>${guv((sonHata&&sonHata.code)||'')} ${guv((sonHata&&sonHata.message)||'')}</code>`});
+  }
   paylasimKapat();
   await kutuTazele();
 }
@@ -3808,6 +3941,22 @@ const KILAVUZ=[
       'Kendi takviminde o saatte bir şey varsa uyarı çıkar.',
       '<b>Kabul et</b> dersen kayıt takvimine düşer. <b>Reddet</b> dersen sebep '+
       'yazabilirsin, gönderene iletilir.']},
+  {s:'Toplantının saatini değiştirmek',
+   p:['Silip yeniden davet etmene gerek yok. Kaydı aç, tarih ya da saatini değiştir, '+
+      '<b>Kaydet</b> de.',
+      'Kaydettikten sonra <b>"Saat değişti — N kişiye bildir"</b> diye sorulur. '+
+      'Kimlerin bildirileceğini ve her birinin önceki durumunu (kabul etmişti, '+
+      'henüz yanıtlamamıştı) görürsün.',
+      '<b>Bildir</b> dersen daha önce verdikleri onay sıfırlanır; yeni saati '+
+      'tekrar kabul etmeleri gerekir. Zillerinde "yeni saat onayı bekliyor" olarak belirir '+
+      've eski–yeni saat karşılaştırmalı görünür.',
+      '<b>Bildirme</b> dersen sadece senin takviminde değişir, onlarda eski saat kalır.'],
+   n:'Karşı taraf yeni saati reddederse kayıt onun takviminden çıkar ve sen '+
+     '"Gönderdiğim" bölümünde görürsün.'},
+  {s:'Bana gelen bir toplantının saatini değiştirirsem',
+   p:['Sadece kendi takviminde değişir, gönderen haberdar olmaz.',
+      'Katılamayacaksan zil → Gelen → <b>Takvimden çıkar</b> demek daha doğru; '+
+      'böylece karşı taraf sebebiyle birlikte bilgilendirilir.']},
   {s:'Kabul ettim ama vazgeçtim',
    p:['Zil → Gelen → o davetin altındaki <b>Takvimden çıkar</b> düğmesi. '+
       'Sebep yazarsın, kaydın silinir ve gönderen bilgilendirilir.']},
@@ -3946,14 +4095,23 @@ function zilGuncelle(){
   if(i)i.textContent=gorulmemisIs()||'';
 }
 
+let kutuHata=null;
 async function kutuTazele(){
   if(mod!=='uye'||!FB||!oturum)return;
-  try{
-    [davetler,atamalar]=await Promise.all([
-      FB.davetleriOku(oturum.email),
-      FB.atamalariOku(oturum.email)
-    ]);
-  }catch(e){ console.warn('kutu okunamadı:',e); }
+  kutuHata=null;
+  /* Davetler ve atamalar ayrı okunur: biri başarısız olsa da diğeri gelsin.
+     Hata sessizce yutulmaz — kullanıcı neden boş göründüğünü bilmeli. */
+  try{ davetler=await FB.davetleriOku(oturum.email); }
+  catch(e){
+    davetler=[]; kutuHata=e;
+    console.error('Davetler okunamadı:',e.code||'',e.message||e);
+  }
+  try{ atamalar=await FB.atamalariOku(oturum.email); }
+  catch(e){
+    atamalar=[]; kutuHata=kutuHata||e;
+    console.error('Atamalar okunamadı:',e.code||'',e.message||e);
+  }
+  if(kutuHata)bildir('Gelen kutusu okunamadı — zile basıp ayrıntıya bak');
   zilGuncelle();
   if(!document.getElementById('kutuPerde').hidden)kutuCiz();
 }
@@ -3972,8 +4130,13 @@ const kisiAdEposta=e=>{const k=kisiEpostaIle(e);return k?k.ad:(e||'').split('@')
 
 function davetKarti(d){
   const gelen=d.yon==='gelen';
-  const durumAd={bekliyor:'yanıt bekliyor',kabul:'kabul edildi',red:'reddedildi',
-                 iptal:'takvimden çıkarıldı'}[d.durum]||d.durum;
+  const revize=!!(d.oncekiTarih&&d.durum==='bekliyor');
+  const revGun=revize&&d.oncekiTarih!==d.tarih;
+  const revSaat=revize&&(d.oncekiBas!==d.bas||d.oncekiBit!==d.bit);
+  const revAd=revGun&&revSaat?'tarih ve saat':(revGun?'tarih':'saat');
+  const durumAd=revize?`yeni ${revAd} onayı bekliyor`
+    :({bekliyor:'yanıt bekliyor',kabul:'kabul edildi',red:'reddedildi',
+       iptal:'takvimden çıkarıldı'}[d.durum]||d.durum);
   const cak=gelen&&d.durum==='bekliyor'
     ? kendiMesguliyetim(d.tarih).filter(x=>cakisiyorMu(d.bas,d.bit,x.b,x.e))
     : [];
@@ -3985,6 +4148,13 @@ function davetKarti(d){
     </div>
     <div class="dvt-konu">${guv(d.konu)}</div>
     <div class="dvt-zaman">${uzunTarih(d.tarih)} · ${d.bas}–${d.bit}</div>
+    ${d.oncekiTarih&&(d.oncekiTarih!==d.tarih||d.oncekiBas!==d.bas||d.oncekiBit!==d.bit)?`
+      <div class="dvt-rev">
+        <b>${revAd==='saat'?'Saat':revAd==='tarih'?'Tarih':'Tarih ve saat'} değişti</b>
+        <span class="eski">${kisaTarih(d.oncekiTarih)} ${d.oncekiBas}–${d.oncekiBit}</span>
+        <span class="ok">→</span>
+        <span class="yeni">${kisaTarih(d.tarih)} ${d.bas}–${d.bit}</span>
+      </div>`:''}
     ${d.not?`<div class="dvt-not">${guv(d.not)}</div>`:''}
     ${detayBlogu(d.detay)}
     ${d.yanitNot?`<div class="dvt-not">${d.durum==='iptal'?'İptal sebebi':'Yanıt'}: ${guv(d.yanitNot)}</div>`:''}
@@ -4048,6 +4218,22 @@ function kutuCiz(){
     bosMetin=yoneticiMi
       ? 'Atanmış iş yok.<br>Bir kaydı açıp "İş olarak ata" ile birine iş verebilirsin.'
       : 'Sana atanmış iş yok.';
+  }
+  if(kutuHata){
+    const kod=kutuHata.code||'';
+    const aciklama=kod==='permission-denied'
+      ? 'Güvenlik kuralları bu okumayı reddetti. Yönetici Firestore kurallarının '+
+        'güncel sürümünü yayınlamış olmalı.'
+      : kod==='failed-precondition'
+      ? 'Firestore bu sorgu için dizin istiyor. Konsoldaki bağlantıya tıklayıp '+
+        'dizini oluşturmak gerekiyor.'
+      : 'Bağlantı kurulamadı ya da beklenmedik bir hata oluştu.';
+    g.innerHTML=`<div class="hataKutu"><span class="im2">!</span><span>
+      <b>Gelen kutusu okunamadı</b>
+      <i>${aciklama}<br><br><code>${guv(kod||'')} ${guv(kutuHata.message||'')}</code></i>
+      </span></div>`;
+    zilGuncelle();
+    return;
   }
   g.innerHTML=liste.length
     ? liste.map(x=>kutuSekme==='isler'?atamaKarti(x):davetKarti(x)).join('')
@@ -4121,34 +4307,61 @@ async function davetYanit(id,durum){
   if(!d)return;
   const cak=kendiMesguliyetim(d.tarih).filter(x=>cakisiyorMu(d.bas,d.bit,x.b,x.e));
 
+  const revizyon=!!(d.oncekiTarih&&kayitlar.some(x=>x.davetId===d.id));
   if(durum==='kabul'){
-    if(!await onayla({baslik:'Daveti kabul et',
-      mesaj:`"${guv(kes(d.konu,50))}" takvimine eklenecek`,
-      detay:`${uzunTarih(d.tarih)} · ${d.bas}–${d.bit}<br>`+
+    const rGun=revizyon&&d.oncekiTarih!==d.tarih;
+    const rSaat=revizyon&&(d.oncekiBas!==d.bas||d.oncekiBit!==d.bit);
+    const rAd=rGun&&rSaat?'tarih ve saati':(rGun?'tarihi':'saati');
+    if(!await onayla({baslik:revizyon?`Yeni ${rAd} kabul et`:'Daveti kabul et',
+      mesaj:revizyon
+        ? `"${guv(kes(d.konu,50))}" yeni zamana taşınacak`
+        : `"${guv(kes(d.konu,50))}" takvimine eklenecek`,
+      detay:(revizyon?`<b>Eski:</b> ${kisaTarih(d.oncekiTarih)} ${d.oncekiBas}–${d.oncekiBit}<br>`+
+                      `<b>Yeni:</b> ${uzunTarih(d.tarih)} · ${d.bas}–${d.bit}<br>`
+                    :`${uzunTarih(d.tarih)} · ${d.bas}–${d.bit}<br>`)+
         `${guv(kisiAdEposta(d.gonderen))} kişisine kabul bildirimi gider.`+
         (cak.length?`<br><br><b>Dikkat:</b> bu saatte ${cak.length} kaydın var.`:''),
       tehlike:cak.length>0,
       sayaclar:cak.length?[{sayi:cak.length,etiket:'çakışan kaydın',sinif:'kotu'}]:[],
       liste:cak.map(x=>({baslik:`${x.b}–${x.e}`,aciklama:kes(x.konu,60)})),
       listeBaslik:'Aynı saatteki kayıtların',
-      onayMetni:'Kabul et ve ekle'}))return;
+      onayMetni:revizyon?`Yeni ${rAd} kabul et`:'Kabul et ve ekle'}))return;
 
-    const tur=(zamanTurleri()[0]||{}).id;
-    kayitlar.push({id:sonrakiId++,turId:tur,konu:d.konu,alanlar:{},
-      sorumlular:[kisiEpostaIle(d.gonderen)?.id].filter(Boolean),
-      sonDurum:d.not||'',kayitTarihi:BUGUN,
-      tarih:d.tarih,bas:d.bas,bit:d.bit,bitis:null,tamam:false,davetId:d.id});
+    /* Daha önce kabul edip kayıt oluşturduysak (saat revizyonu durumu)
+       yenisini eklemek yerine mevcut kaydı güncelleriz. */
+    const mevcut=kayitlar.find(x=>x.davetId===d.id);
+    if(mevcut){
+      mevcut.tarih=d.tarih; mevcut.bas=d.bas; mevcut.bit=d.bit;
+    }else{
+      const tur=(zamanTurleri()[0]||{}).id;
+      kayitlar.push({id:sonrakiId++,turId:tur,konu:d.konu,alanlar:{},
+        sorumlular:[kisiEpostaIle(d.gonderen)?.id].filter(Boolean),
+        sonDurum:d.not||'',kayitTarihi:BUGUN,
+        tarih:d.tarih,bas:d.bas,bit:d.bit,bitis:null,tamam:false,davetId:d.id});
+    }
     yaz(); ciz();
   }else{
-    const not=await notSor('Reddetme sebebi',
-      'İstersen kısa bir açıklama yazabilirsin — gönderene iletilir.',
+    const not=await notSor(revizyon?'Yeni zamanı reddet':'Reddetme sebebi',
+      revizyon
+        ? 'Yeni zaman sana uymuyorsa sebebini yazabilirsin — kayıt takviminden çıkarılır.'
+        : 'İstersen kısa bir açıklama yazabilirsin — gönderene iletilir.',
       'Örn: o saatte başka toplantım var');
     if(not===null)return;
-    try{ await FB.davetYanitla(id,'red',not); bildir('Davet reddedildi'); await kutuTazele(); }
-    catch(e){ bildir('Yanıtlanamadı'); }
+    /* Revizyon reddedildiyse eski kayıt da takvimde kalmamalı */
+    if(revizyon){
+      kayitlar=kayitlar.filter(x=>x.davetId!==d.id);
+      yaz(); ciz();
+    }
+    try{
+      await FB.davetYanitla(id,'red',not);
+      bildir(revizyon?'Yeni zaman reddedildi, kayıt takvimden çıkarıldı':'Davet reddedildi');
+      await kutuTazele();
+    }catch(e){ bildir('Yanıtlanamadı'); }
     return;
   }
-  try{ await FB.davetYanitla(id,'kabul',''); bildir('Kabul edildi, takvimine eklendi'); await kutuTazele(); }
+  try{ await FB.davetYanitla(id,'kabul','');
+    bildir(revizyon?'Yeni zaman kabul edildi, kayıt güncellendi':'Kabul edildi, takvimine eklendi');
+    await kutuTazele(); }
   catch(e){ bildir('Yanıt kaydedilemedi'); }
 }
 
@@ -5311,6 +5524,11 @@ const API = {
   davetOlustur(veri){ return addDoc(collection(db,'davetler'),veri); },
   davetYanitla(id,durum,not){
     return updateDoc(doc(db,'davetler',id),{durum,yanitNot:not||'',yanitZamani:Date.now()});
+  },
+  /* Gönderen saati değiştirdiğinde: yeni zaman yazılır, onay sıfırlanır. */
+  davetRevize(id,veri){
+    return updateDoc(doc(db,'davetler',id),{...veri,durum:'bekliyor',
+      yanitNot:'',revizyonZamani:Date.now()});
   },
   davetSil(id){ return deleteDoc(doc(db,'davetler',id)); },
   async davetleriOku(eposta){
