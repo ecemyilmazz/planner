@@ -176,6 +176,31 @@ fieldset.kilitli-alan[disabled]{opacity:.55}
   background:var(--rule);color:var(--ink-soft);white-space:nowrap}
 .uyesatir .rol.yon{background:#1E5A46;color:#fff}
 .uyesatir .rol.pas{background:var(--c-istakibi);color:#fff}
+/* --- kılavuz --- */
+.yara{padding:12px 19px 0}
+.yara input{background:var(--paper-2)}
+.ybolum{margin-bottom:16px}
+.ybolum:last-child{margin-bottom:0}
+.ybolum h3{font-family:'Archivo';font-size:11px;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink-faint);margin-bottom:7px}
+.ymadde{border:1px solid var(--rule);border-radius:var(--r-md);margin-bottom:5px;
+  background:var(--paper);overflow:hidden}
+.ymadde.acik{border-color:var(--ink-faint);background:var(--paper-2)}
+.ybas{width:100%;display:flex;align-items:center;gap:10px;padding:11px 13px;text-align:left;
+  font-size:13.5px;font-weight:600;color:var(--ink);background:none}
+.ybas:hover{background:var(--paper-2)}
+.ymadde.acik .ybas{background:none}
+.ybas span{flex:1;min-width:0}
+.ybas i{font-style:normal;font-family:'IBM Plex Mono';font-size:15px;color:var(--ink-faint);
+  width:16px;text-align:center;flex:none}
+.yic{padding:2px 13px 13px;border-top:1px solid var(--rule-soft);margin-top:-1px}
+.yic p{font-size:13px;line-height:1.6;color:var(--ink-soft);margin-top:9px}
+.yic p b{color:var(--ink);font-weight:600}
+.ynot{margin-top:10px;background:var(--paper);border-left:3px solid var(--c-toplanti);
+  border-radius:0 var(--r-sm) var(--r-sm) 0;padding:9px 11px;font-size:12px;
+  color:var(--ink-soft);line-height:1.55}
+.ynot b{color:var(--ink)}
+body.mobil .yara{padding:10px 14px 0}
 .zil{position:relative;width:var(--d-md);height:var(--d-md);border-radius:var(--r-md);
   display:grid;place-items:center;border:1px solid var(--rule);background:var(--paper);
   color:var(--ink-soft);flex:none}
@@ -645,7 +670,7 @@ body.mobil .tabs{display:none}            /* sekmeler alta taşındı */
 body.mobil .hesap{max-width:112px;font-size:10.5px;padding:2px 8px}
 body.mobil .hesap .yrozet{display:none}
 body.mobil .senkron{font-size:9.5px;padding:2px 7px}
-body.mobil .zil{width:32px;height:32px}
+body.mobil .zil{width:var(--d-md);height:var(--d-md)}
 body.mobil .giris{padding:6px 10px;font-size:12px}
 body.mobil .giris .yaz{display:none}          /* yalnızca Google halkası kalır */
 body.mobil .topbar .solid{padding:8px 13px;font-size:13px}
@@ -786,6 +811,12 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
       <button role="tab" data-gorunum="kayit" aria-selected="false">Kayıtlar</button>
     </div>
     <div class="spacer"></div>
+    <button class="zil" id="yardimBtn" title="Yardım — nerede ne var">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/><path d="M9.2 9a3 3 0 0 1 5.8 1c0 2-3 2.5-3 4"/>
+        <path d="M12 17.5v.01"/></svg>
+    </button>
     <button class="zil" id="zilBtn" hidden title="Davetler ve atamalar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
         stroke-linecap="round" stroke-linejoin="round">
@@ -991,6 +1022,17 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
       </section>
       </fieldset>
     </div>
+  </div>
+</div>
+
+<div class="perde" id="yardimPerde" hidden>
+  <div class="modal enis" role="dialog" aria-modal="true">
+    <div class="mhead"><h2>Kılavuz</h2>
+      <button class="ghost" id="yardimKapat">Kapat</button></div>
+    <div class="yara">
+      <input id="yardimAra" placeholder="Ara — örn: davet, excel, tür, şifre">
+    </div>
+    <div class="mbody" id="yardimGovde"></div>
   </div>
 </div>
 
@@ -3358,6 +3400,199 @@ async function paylasimGonder(){
   await kutuTazele();
 }
 
+
+/* ================= KILAVUZ ================= */
+/* Uygulamanın içinde duran yardım. Ekleme yaparken yeni bir bölüm
+   yazmak yeterli; arama ve gezinme kendiliğinden çalışır. */
+const KILAVUZ=[
+ {b:'Başlarken', ic:[
+  {s:'İlk giriş',
+   p:['Sağ üstteki <b>Giriş yap</b> düğmesine bas, Google hesabını seç. '+
+      'Erişim davetlidir: listede olmayan bir hesap girse bile içeri alınmaz.',
+      'Giriş yapmadan da uygulamayı gezebilirsin — buna <b>demo modu</b> denir. '+
+      'Orada her şey çalışır ama hiçbir şey kaydedilmez; sayfayı yenileyince örnek verilere döner.',
+      'Giriş yaptıktan sonra e-postan üst barda görünür. Verilerin hesabına bağlıdır: '+
+      'telefonda da bilgisayarda da aynı kayıtları görürsün.']},
+  {s:'İlk kaydını oluştur',
+   p:['Sağ üstteki <b>Yeni kayıt</b> düğmesine bas.',
+      '<b>Konu</b> yaz — ne yapılacağı. <b>Tür</b> seç — bu kaydın nasıl davranacağını belirler.',
+      'Tarih ve saat gir, <b>Kaydet</b> de. Kayıt takvimde yerini alır.']},
+  {s:'Kaydedildi mi nasıl anlarım',
+   p:['Bir değişiklik yaptığında üst barda küçük bir yazı belirir: '+
+      '<b>kaydediliyor…</b> sonra <b>kaydedildi</b>. İkincisini gördüysen veri hesabına yazılmıştır.',
+      'İnternet kesilirse uygulama çalışmaya devam eder; bağlantı gelince '+
+      'birikenler kendiliğinden gönderilir.']}]},
+
+ {b:'Ekranlar', ic:[
+  {s:'Bugün',
+   p:['Günün ekranı. Solda <b>hatırlatmalar</b> (son tarihi yaklaşanlar) ve '+
+      '<b>atanmamış</b> işler; sağda saat saat takvim.',
+      'Kırmızı çizgi şu anki saati gösterir.',
+      'Bir işi takvime yerleştirmek için soldan sağa sürükle. Saatini değiştirmek için '+
+      'takvimdeki bloğu tut ve başka saate bırak.']},
+  {s:'Hafta',
+   p:['Yedi günü birlikte gösterir. Üstteki şeritte o haftanın son tarihleri durur.',
+      'Telefonda hafta, günler alt alta liste halinde görünür.']},
+  {s:'Ay',
+   p:['Ayın tamamı. Gün numarasına tıklayınca o günün ekranına gider.',
+      'Telefonda hücrelerde renkli noktalar görünür; bir güne dokununca '+
+      'ızgaranın altında o günün kayıtları listelenir.']},
+  {s:'Kayıtlar',
+   p:['Bütün kayıtların listesi. <b>Filtrele</b> ile türe, kişiye, tarihe göre daraltabilirsin.',
+      'Sütun başlıklarına tıklayarak sıralarsın.',
+      'Sağdaki <b>Excel\'e aktar</b> ile görüneni dosya olarak indirirsin.']}]},
+
+ {b:'Türler ne işe yarar', ic:[
+  {s:'İki tür davranışı var',
+   p:['<b>Takvimde yer kaplar</b> — Toplantı, Çalışma Dilimi gibi. '+
+      'Tarih ve saat ister, takvimde blok olarak görünür.',
+      '<b>Hatırlatma / Bildirim</b> — İş Takibi, Bireysel Konu gibi. '+
+      'Son tarih ister, takvimde yer kaplamaz; son tarihi yaklaşınca sol rayda belirir.'],
+   n:'Bir kaydın hangi düğmeleri göreceği de buna bağlıdır: yer kaplayan türlerde '+
+     '"Davet gönder", hatırlatmalarda "İş ata" çıkar.'},
+  {s:'Renkler',
+   p:['Her türün kendi rengi vardır; takvimde hangi işin ne olduğunu renkten anlarsın. '+
+      'Ekranın altındaki renk açıklaması hangi rengin ne olduğunu söyler.']}]},
+
+ {b:'Toplantı daveti', ic:[
+  {s:'Davet gönderme',
+   p:['Saatli bir kaydı aç, <b>Davet gönder</b> düğmesine bas. Kayıt penceresinin '+
+      'içinde bir bölüm açılır.',
+      'Kişileri seç — birden fazla seçebilirsin. Her seçtiğin kişinin o günkü '+
+      '<b>dolu saatleri</b> altta görünür.',
+      'Senin seçtiğin saat birinin doluluğuna denk gelirse kırmızıyla uyarır. '+
+      'Yine de gönderebilirsin.',
+      'İstersen not ekle, <b>Daveti gönder</b> de.'],
+   n:'Karşı taraf ne yaptığını değil, sadece dolu olduğu saatleri görür. '+
+     'Toplantı konusu, kiminle olduğu paylaşılmaz.'},
+  {s:'Davet alma',
+   p:['Sana davet geldiğinde üst bardaki <b>zil</b> simgesinde sayı belirir.',
+      'Zile bas, <b>Gelen</b> sekmesinde daveti gör. Kaydın tüm bilgileri orada: '+
+      'tür, alanlar, sorumlular, not.',
+      'Kendi takviminde o saatte bir şey varsa uyarı çıkar.',
+      '<b>Kabul et</b> dersen kayıt takvimine düşer. <b>Reddet</b> dersen sebep '+
+      'yazabilirsin, gönderene iletilir.']},
+  {s:'Kabul ettim ama vazgeçtim',
+   p:['Zil → Gelen → o davetin altındaki <b>Takvimden çıkar</b> düğmesi. '+
+      'Sebep yazarsın, kaydın silinir ve gönderen bilgilendirilir.']},
+  {s:'Gönderdiklerim ne oldu',
+   p:['Zil → <b>Gönderdiğim</b> sekmesi. Her davetin durumu yazar: '+
+      'yanıt bekliyor, kabul edildi, reddedildi ya da takvimden çıkarıldı.',
+      'Yanıtlanmamış bir daveti <b>geri çekebilirsin</b>.']}]},
+
+ {b:'İş atama', ic:[
+  {s:'İş atama (yalnızca yönetici)',
+   p:['Hatırlatma türündeki bir kaydı aç, <b>İş ata</b> düğmesine bas.',
+      'Kişileri ve son tarihi seç, istersen not ekle.',
+      'Atanan kişi işi <b>reddedemez</b>. Gördüğünde kendi kayıtlarına ekler, '+
+      'sen de "görüldü" bilgisini alırsın.']},
+  {s:'Bana iş atandı',
+   p:['Zil → <b>İşler</b> sekmesi. <b>Gördüm, kayıtlarıma ekle</b> dersin, '+
+      'iş kendi listene düşer.',
+      'Sonrasında <b>Not ekle</b> ile durum yazabilirsin — notu atayan da görür, '+
+      'karşılıklı yazışabilirsiniz.']}]},
+
+ {b:'Excel', ic:[
+  {s:'Excel\'e aktarma',
+   p:['Kayıtlar sekmesi → <b>Excel\'e aktar</b>. İnen dosya aynı zamanda şablondur.',
+      'Dosyada iki sayfa var: <b>Kayıtlar</b> (verilerin) ve '+
+      '<b>Nasıl doldurulur</b> (açıklamalar).',
+      'Tür ve alan hücrelerine tıklayınca açılır menü çıkar — elle yazmana gerek yok.']},
+  {s:'Excel\'den yükleme',
+   p:['Ayarlar → Veri → <b>Excel\'den veri al</b>.',
+      'Yüklemeden önce bir önizleme çıkar: kaç kayıt bulundu, hangi satırlarda '+
+      'sorun var, hangi sütunlar okunamadı.',
+      'Hatalı satır varsa <b>hiçbir şey aktarılmaz</b> — önce dosyayı düzeltmen gerekir. '+
+      'Satır numaraları Excel\'deki gerçek numaralardır.'],
+   n:'Kaydın yokken "Excel\'e aktar" dersen boş şablon iner — sıfırdan doldurmak için.'}]},
+
+ {b:'Ayarlar', ic:[
+  {s:'Erişim — kimler girebilir',
+   p:['Ayarlar → <b>Erişim</b>. Ad soyad ve Gmail adresi yazıp <b>Ekle</b> de.',
+      'Eklenen kişi hem giriş yapabilir hem de tüm ekibin sorumlu listesinde görünür.',
+      'Birinin erişimini geçici kapatmak için <b>pasife al</b>, tamamen çıkarmak için '+
+      '<b>çöp kutusu</b>. Pasife alınan kişinin kayıtları silinmez.'],
+   n:'Son yöneticiyi silemezsin — kendini kilitlemeni engeller.'},
+  {s:'Tanımlar — türler, alanlar, kişiler',
+   p:['<b>Türler:</b> rengi, adı ve davranışı buradan değişir. Kullanımdaki bir tür '+
+      'silinemez, pasife alınır.',
+      '<b>Alanlar:</b> kayıt formundaki açılır menüler. Yeni alan ekleyip istediğin '+
+      'türe bağlayabilirsin — "Müşteri", "Proje" gibi.',
+      '<b>Kişiler:</b> kayıtlara sorumlu atanacak kişiler. Zincir düğmesiyle bir '+
+      'hesap bağlarsan o kişiye davet de gönderebilirsin.']},
+  {s:'Zorunlu alanlar',
+   p:['Hangi alanların boş bırakılamayacağını belirlersin.',
+      'Üstteki <b>sistem zorunlulukları</b> değiştirilemez — onlar olmadan kayıt oluşmaz.',
+      'Alttakiler senin tercihindir. Bir alanı zorunlu yaparsan hem kayıt formunda '+
+      'hem Excel yüklemesinde aranır.']},
+  {s:'Yedek alma',
+   p:['Ayarlar → Veri → <b>Tam yedek al</b>. Tüm kayıtlar ve tanımlar tek dosyada iner.',
+      'Ayda bir almak iyi bir alışkanlıktır.']}]},
+
+ {b:'Takıldığında', ic:[
+  {s:'Giriş yapamıyorum',
+   p:['Tarayıcı açılır pencereyi engellemiş olabilir — adres çubuğunun sağındaki '+
+      'engel simgesine bakıp bu siteye izin ver.',
+      'Hâlâ olmuyorsa sayfayı <b>Ctrl + Shift + R</b> ile yenile.']},
+  {s:'Kaydettim ama görünmüyor',
+   p:['Hangi ekranda olduğuna bak: kayıt başka bir güne aitse Bugün ekranında görünmez. '+
+      '<b>Kayıtlar</b> sekmesinden ara.',
+      'Kayıtlar sekmesinde bir filtre açık olabilir — <b>Filtrele</b> düğmesinin '+
+      'yanındaki sayıya bak.']},
+  {s:'Kaydı sürükleyemiyorum',
+   p:['Üzerinde ⚯ işareti varsa o kayıt paylaşılmıştır (davet gönderilmiş ya da '+
+      'sana gelmiş). Saatini değiştirmek karşı tarafı etkileyeceği için sürüklenemez.',
+      'Değiştirmen gerekiyorsa kaydı aç, saatini oradan düzelt — ama karşı tarafa '+
+      'ayrıca haber vermen gerekir.']},
+  {s:'Yanlışlıkla sildim',
+   p:['Silme geri alınamaz. Düzenli yedek aldıysan Ayarlar → Veri → '+
+      '<b>Yedekten geri yükle</b> ile dönebilirsin.'],
+   n:'Bu yüzden kişi ve tür silmek yerine pasife almak önerilir.'},
+  {s:'Telefonda farklı görünüyor',
+   p:['Telefonda düzen otomatik değişir: sekmeler alta iner, Ayarlar ve Excel gizlenir.',
+      'Masaüstü düzenini zorlamak istersen üst bardaki <b>Geniş görünüm</b> '+
+      'düğmesini kullan.']}]}
+];
+
+let yardimAcik=null;
+
+function yardimCiz(filtre){
+  const g=document.getElementById('yardimGovde');
+  const f=(filtre||'').trim().toLocaleLowerCase('tr');
+  const uyar=x=>!f||x.toLocaleLowerCase('tr').includes(f);
+  let bulunan=0;
+
+  g.innerHTML=KILAVUZ.map((bol,bi)=>{
+    const maddeler=bol.ic.filter(m=>
+      uyar(bol.b)||uyar(m.s)||m.p.some(uyar)||(m.n&&uyar(m.n)));
+    if(!maddeler.length)return '';
+    bulunan+=maddeler.length;
+    return `<section class="ybolum">
+      <h3>${guv(bol.b)}</h3>
+      ${maddeler.map((m,mi)=>{
+        const kimlik=`${bi}-${bol.ic.indexOf(m)}`;
+        const acik=f?true:(yardimAcik===kimlik);
+        return `<div class="ymadde ${acik?'acik':''}">
+          <button class="ybas" data-yac="${kimlik}">
+            <span>${guv(m.s)}</span><i>${acik?'−':'+'}</i></button>
+          ${acik?`<div class="yic">
+            ${m.p.map(x=>`<p>${x}</p>`).join('')}
+            ${m.n?`<div class="ynot">${m.n}</div>`:''}
+          </div>`:''}
+        </div>`;
+      }).join('')}
+    </section>`;
+  }).join('')||'';
+
+  if(!bulunan)g.innerHTML=`<div class="bos">"${guv(filtre)}" için sonuç yok.<br>
+    Başka bir kelime dene — örneğin "davet", "excel", "yedek".</div>`;
+
+  g.querySelectorAll('[data-yac]').forEach(b=>b.onclick=()=>{
+    yardimAcik=(yardimAcik===b.dataset.yac)?null:b.dataset.yac;
+    yardimCiz(document.getElementById('yardimAra').value);
+  });
+}
+
 /* ================= GELEN KUTUSU ================= */
 let davetler=[], atamalar=[], kutuSekme='gelen', dinlemeIptal=[];
 
@@ -4491,6 +4726,16 @@ document.getElementById('fBas').addEventListener('change',()=>{
     if(payTur==='davet')payMesguliyetYukle();
   });
 });
+document.getElementById('yardimBtn').onclick=()=>{
+  yardimAcik=null;
+  document.getElementById('yardimAra').value='';
+  yardimCiz('');
+  document.getElementById('yardimPerde').hidden=false;
+};
+document.getElementById('yardimKapat').onclick=()=>document.getElementById('yardimPerde').hidden=true;
+document.getElementById('yardimPerde').onclick=e=>{
+  if(e.target.id==='yardimPerde')document.getElementById('yardimPerde').hidden=true};
+document.getElementById('yardimAra').oninput=e=>yardimCiz(e.target.value);
 document.getElementById('zilBtn').onclick=()=>{
   kutuSekme='gelen'; kutuCiz();
   document.getElementById('kutuPerde').hidden=false;
@@ -4555,7 +4800,9 @@ document.getElementById('excelAlBtn').onclick=()=>demoMu()
 document.getElementById('excelSec').onchange=e=>{if(e.target.files[0])excelAl(e.target.files[0]);e.target.value=''};
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){modalKapat();document.getElementById('ayarPerde').hidden=true;
-    icePanelKapat();panelKapat();document.getElementById('kutuPerde').hidden=true}
+    icePanelKapat();panelKapat();
+    document.getElementById('kutuPerde').hidden=true;
+    document.getElementById('yardimPerde').hidden=true}
   if(e.key==='n'&&(e.ctrlKey||e.metaKey)){e.preventDefault();modalAc()}
 });
 window.addEventListener('beforeunload',e=>{
