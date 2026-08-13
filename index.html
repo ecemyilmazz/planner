@@ -3969,7 +3969,12 @@ const KILAVUZ=[
       'Zil → <b>Gönderdiğim</b> sekmesi. Yanıtlanan davetler <b>yeni</b> etiketiyle '+
       've çerçeveli görünür; reddedildiyse sebebi de yazar.',
       'Sekmeye bakman yeterli — birkaç saniye sonra okundu sayılır ve sayaç düşer.',
-      'Yanıtlanmamış bir daveti <b>geri çekebilirsin</b>.']}]},
+      'Yanıtlanmamış bir daveti <b>geri çekebilirsin</b>.',
+      'Reddedilen bir davette <b>Yeni saat öner</b> düğmesi çıkar: kaydı açar, '+
+      'davet panelini hazırlar ve reddeden kişiyi seçili getirir. Saati değiştirip '+
+      'yeniden gönderirsin.',
+      '<b>Geçmişten sil</b> yalnızca yazışma kaydını siler — takvimindeki kayıt yerinde kalır, '+
+      'ama karşı tarafın gelen kutusundan da kaybolur.']}]},
 
  {b:'İş atama', ic:[
   {s:'İş atama (yalnızca yönetici)',
@@ -4201,8 +4206,10 @@ function davetKarti(d){
         <button class="rdt" data-diptal="${d.id}">Takvimden çıkar</button>`:''}
       ${!gelen&&d.durum==='bekliyor'?`
         <button class="ghost" data-dgeri="${d.id}">Daveti geri çek</button>`:''}
+      ${!gelen&&['red','iptal'].includes(d.durum)&&kayitlar.some(x=>x.id===d.kayitId)?`
+        <button class="kbl" data-dyeni="${d.id}">Yeni saat öner</button>`:''}
       ${!gelen&&d.durum!=='bekliyor'?`
-        <button class="ghost" data-dsil="${d.id}">Listeden kaldır</button>`:''}
+        <button class="ghost" data-dsil="${d.id}">Geçmişten sil</button>`:''}
     </div>
   </div>`;
 }
@@ -4324,7 +4331,32 @@ function kutuBagla(){
     catch(e){ bildir('Geri çekilemedi'); }
   });
   g.querySelectorAll('[data-dsil]').forEach(b=>b.onclick=async()=>{
-    try{ await FB.davetSil(b.dataset.dsil); await kutuTazele(); }catch(e){}
+    const d=davetler.find(x=>x.id===b.dataset.dsil);
+    if(!await onayla({baslik:'Geçmişten sil',tehlike:true,
+      mesaj:'Bu davet kaydı tamamen silinecek',
+      detay:`"${guv(kes(d.konu,50))}" · ${guv(kisiAdEposta(d.alici))} — `+
+        `<b>${{kabul:'kabul etmişti',red:'reddetmişti',iptal:'takvimden çıkarmıştı'}[d.durum]||d.durum}</b><br><br>`+
+        `Yalnızca bu <b>yazışma kaydı</b> silinir; takvimindeki kayıt yerinde kalır.<br>`+
+        `Karşı tarafın gelen kutusundan da kaybolur. Geri alınamaz.`,
+      onayMetni:'Sil'}))return;
+    try{ await FB.davetSil(d.id); bildir('Davet kaydı silindi'); await kutuTazele(); }
+    catch(e){ bildir('Silinemedi'); }
+  });
+
+  /* Reddedilen davet için yeni saat önerme: ilgili kaydı açar, davet
+     panelini hazır getirir ve reddeden kişiyi seçili işaretler. */
+  g.querySelectorAll('[data-dyeni]').forEach(b=>b.onclick=()=>{
+    const d=davetler.find(x=>x.id===b.dataset.dyeni);
+    const k=kayitlar.find(x=>x.id===d.kayitId);
+    if(!k){bildir('İlgili kayıt bulunamadı — silinmiş olabilir');return}
+    document.getElementById('kutuPerde').hidden=true;
+    modalAc(k.id);
+    setTimeout(()=>{
+      paylasimAc('davet');
+      const kisi=kisiEpostaIle(d.alici);
+      if(kisi){ paySecililer=new Set([kisi.id]); payMesguliyetYukle(); }
+      bildir(`${kisiAdEposta(d.alici)} için yeni saat seç ve gönder`);
+    },80);
   });
   g.querySelectorAll('[data-agor]').forEach(b=>b.onclick=()=>atamaGor(b.dataset.agor));
   g.querySelectorAll('[data-anot]').forEach(b=>b.onclick=async()=>{
