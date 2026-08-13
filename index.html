@@ -218,6 +218,9 @@ body.mobil .yara{padding:10px 14px 0}
 .dvt.kabul{border-left-color:#1E5A46}
 .dvt.red{border-left-color:var(--c-istakibi);opacity:.75}
 .dvt.iptal{border-left-color:var(--ink-faint);opacity:.75}
+.dvt.yeni{box-shadow:0 0 0 1px var(--ink)}
+.yeni-rozet{font-family:'IBM Plex Mono';font-size:9px;background:var(--ink);color:var(--paper);
+  border-radius:3px;padding:2px 6px;letter-spacing:.04em;flex:none}
 .dvt-rev{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:7px;
   background:#F6E9D9;border:1px solid #E0C9A8;border-radius:var(--r-sm);
   padding:6px 10px;font-size:11.5px}
@@ -1093,7 +1096,7 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
       <button class="ghost" id="kutuKapat">Kapat</button></div>
     <div class="atabs" role="tablist">
       <button role="tab" data-kt="gelen" aria-selected="true">Gelen<span class="ksay" id="ksGelen"></span></button>
-      <button role="tab" data-kt="giden" aria-selected="false">Gönderdiğim</button>
+      <button role="tab" data-kt="giden" aria-selected="false">Gönderdiğim<span class="ksay" id="ksGiden"></span></button>
       <button role="tab" data-kt="isler" aria-selected="false">İşler<span class="ksay" id="ksIsler"></span></button>
     </div>
     <div class="mbody" id="kutuGovde"></div>
@@ -3961,8 +3964,11 @@ const KILAVUZ=[
    p:['Zil → Gelen → o davetin altındaki <b>Takvimden çıkar</b> düğmesi. '+
       'Sebep yazarsın, kaydın silinir ve gönderen bilgilendirilir.']},
   {s:'Gönderdiklerim ne oldu',
-   p:['Zil → <b>Gönderdiğim</b> sekmesi. Her davetin durumu yazar: '+
-      'yanıt bekliyor, kabul edildi, reddedildi ya da takvimden çıkarıldı.',
+   p:['Biri davetini kabul ya da reddettiğinde <b>zilde sayı belirir</b> — '+
+      'sen de haberdar olursun.',
+      'Zil → <b>Gönderdiğim</b> sekmesi. Yanıtlanan davetler <b>yeni</b> etiketiyle '+
+      've çerçeveli görünür; reddedildiyse sebebi de yazar.',
+      'Sekmeye bakman yeterli — birkaç saniye sonra okundu sayılır ve sayaç düşer.',
       'Yanıtlanmamış bir daveti <b>geri çekebilirsin</b>.']}]},
 
  {b:'İş atama', ic:[
@@ -3971,6 +3977,9 @@ const KILAVUZ=[
       'Kişileri ve son tarihi seç, istersen not ekle.',
       'Atanan kişi işi <b>reddedemez</b>. Gördüğünde kendi kayıtlarına ekler, '+
       'sen de "görüldü" bilgisini alırsın.']},
+  {s:'Atadığım iş ne durumda',
+   p:['Karşı taraf işi gördüğünde ya da not eklediğinde zilde sayı belirir.',
+      'Zil → <b>İşler</b> sekmesinde "görüldü" bilgisini ve yazdığı notları görürsün.']},
   {s:'Bana iş atandı',
    p:['Zil → <b>İşler</b> sekmesi. <b>Gördüm, kayıtlarıma ekle</b> dersin, '+
       'iş kendi listene düşer.',
@@ -4081,8 +4090,28 @@ function yardimCiz(filtre){
 /* ================= GELEN KUTUSU ================= */
 let davetler=[], atamalar=[], kutuSekme='gelen', dinlemeIptal=[];
 
-const bekleyenDavet=()=>davetler.filter(d=>d.yon==='gelen'&&d.durum==='bekliyor').length;
-const gorulmemisIs=()=>atamalar.filter(a=>a.yon==='bana'&&!a.gorulme).length;
+/* Bir öğede benim için yeni bir gelişme var mı?
+   Karşı tarafın son hareketi, benim en son bakışımdan sonraysa "yeni"dir. */
+function davetYeni(d){
+  if(d.yon==='gelen')
+    return d.durum==='bekliyor'&&(d.aliciGordu||0)<(d.revizyonZamani||d.olusturma||0);
+  /* giden: alıcı yanıtladıysa ve ben görmediysem */
+  return d.durum!=='bekliyor'&&(d.gonderenGordu||0)<(d.yanitZamani||0);
+}
+function atamaYeni(a){
+  const sonNot=(a.notlar||[]).reduce((m,n)=>Math.max(m,n.zaman||0),0);
+  if(a.yon==='bana'){
+    if(!a.gorulme)return true;                       // henüz görmedim
+    const karsiNot=(a.notlar||[]).filter(n=>n.yazan!==(oturum?.email||'').toLowerCase())
+      .reduce((m,n)=>Math.max(m,n.zaman||0),0);
+    return (a.aliciGordu||0)<karsiNot;
+  }
+  /* benden: alıcı gördüyse ya da not yazdıysa */
+  const hareket=Math.max(a.gorulme||0,sonNot);
+  return hareket>0&&(a.atayanGordu||0)<hareket;
+}
+const bekleyenDavet=()=>davetler.filter(davetYeni).length;
+const gorulmemisIs=()=>atamalar.filter(atamaYeni).length;
 
 function zilGuncelle(){
   const z=document.getElementById('zilBtn'), s=document.getElementById('zilSayi');
@@ -4090,8 +4119,11 @@ function zilGuncelle(){
   z.hidden=(mod!=='uye');
   const n=bekleyenDavet()+gorulmemisIs();
   s.hidden=!n; s.textContent=n>9?'9+':n;
-  const g=document.getElementById('ksGelen'), i=document.getElementById('ksIsler');
-  if(g)g.textContent=bekleyenDavet()||'';
+  const g=document.getElementById('ksGelen'),
+        gd=document.getElementById('ksGiden'),
+        i=document.getElementById('ksIsler');
+  if(g)g.textContent=davetler.filter(x=>x.yon==='gelen'&&davetYeni(x)).length||'';
+  if(gd)gd.textContent=davetler.filter(x=>x.yon==='giden'&&davetYeni(x)).length||'';
   if(i)i.textContent=gorulmemisIs()||'';
 }
 
@@ -4140,8 +4172,9 @@ function davetKarti(d){
   const cak=gelen&&d.durum==='bekliyor'
     ? kendiMesguliyetim(d.tarih).filter(x=>cakisiyorMu(d.bas,d.bit,x.b,x.e))
     : [];
-  return `<div class="dvt ${d.durum}">
+  return `<div class="dvt ${d.durum} ${davetYeni(d)?'yeni':''}">
     <div class="dvt-ust">
+      ${davetYeni(d)&&!gelen?'<span class="yeni-rozet">yeni</span>':''}
       <span class="dvt-kim">${gelen?'Gönderen':'Alıcı'}: <b>${guv(kisiAdEposta(gelen?d.gonderen:d.alici))}</b></span>
       <span class="spacer"></span>
       <span class="dvt-durum ${d.durum}">${durumAd}</span>
@@ -4177,8 +4210,9 @@ function davetKarti(d){
 function atamaKarti(a){
   const bana=a.yon==='bana';
   const notlar=a.notlar||[];
-  return `<div class="dvt ${a.gorulme?'kabul':'bekliyor'}">
+  return `<div class="dvt ${a.gorulme?'kabul':'bekliyor'} ${atamaYeni(a)?'yeni':''}">
     <div class="dvt-ust">
+      ${atamaYeni(a)?'<span class="yeni-rozet">yeni</span>':''}
       <span class="dvt-kim">${bana?'Atayan':'Atanan'}: <b>${guv(kisiAdEposta(bana?a.atayan:a.alici))}</b></span>
       <span class="spacer"></span>
       <span class="dvt-durum ${a.gorulme?'kabul':'bekliyor'}">${a.gorulme?'görüldü':'görülmedi'}</span>
@@ -4200,6 +4234,23 @@ function atamaKarti(a){
       ${!bana?`<button class="ghost" data-asil="${a.id}">Geri çek</button>`:''}
     </div>
   </div>`;
+}
+
+/* Bir sekme açıldığında oradaki yeni gelişmeler okundu sayılır.
+   Kabul/red bildirimini gördükten sonra zil sayacı düşer. */
+async function okunduIsaretle(){
+  if(!FB||!oturum)return;
+  const isler=[];
+  if(kutuSekme==='giden')
+    davetler.filter(d=>d.yon==='giden'&&davetYeni(d))
+      .forEach(d=>isler.push(FB.davetOkundu(d.id,'gonderenGordu')));
+  if(kutuSekme==='isler')
+    atamalar.filter(a=>atamaYeni(a)&&(a.yon==='benden'||a.gorulme))
+      .forEach(a=>isler.push(FB.atamaOkundu(a.id,
+        a.yon==='benden'?'atayanGordu':'aliciGordu')));
+  if(!isler.length)return;
+  try{ await Promise.all(isler); await kutuTazele(); }
+  catch(e){ console.warn('okundu işaretlenemedi:',e); }
 }
 
 function kutuCiz(){
@@ -4240,6 +4291,7 @@ function kutuCiz(){
     : `<div class="bos">${bosMetin}</div>`;
   kutuBagla();
   zilGuncelle();
+  setTimeout(okunduIsaretle,900);        // kullanıcı görmeye fırsat bulsun
 }
 
 function kutuBagla(){
@@ -5531,6 +5583,8 @@ const API = {
       yanitNot:'',revizyonZamani:Date.now()});
   },
   davetSil(id){ return deleteDoc(doc(db,'davetler',id)); },
+  /* Okundu damgası — zil sayacının iki yönde çalışması için */
+  davetOkundu(id,alan){ return updateDoc(doc(db,'davetler',id),{[alan]:Date.now()}); },
   async davetleriOku(eposta){
     const e=eposta.toLowerCase();
     const [gelen,giden]=await Promise.all([
@@ -5542,10 +5596,13 @@ const API = {
     giden.forEach(d=>l.push({id:d.id,yon:'giden',...d.data()}));
     return l.sort((a,b)=>(b.olusturma||0)-(a.olusturma||0));
   },
-  /* canlı dinleme — yeni davet geldiğinde zil anında güncellenir */
+  /* Canlı dinleme — hem bana gelenler hem gönderdiklerim izlenir,
+     böylece kabul/red yanıtı da anında zile düşer. */
   davetleriDinle(eposta,gerial){
-    return onSnapshot(query(collection(db,'davetler'),where('alici','==',eposta.toLowerCase())),
-      ()=>gerial(), ()=>{});
+    const e=eposta.toLowerCase();
+    const a=onSnapshot(query(collection(db,'davetler'),where('alici','==',e)),()=>gerial(),()=>{});
+    const b=onSnapshot(query(collection(db,'davetler'),where('gonderen','==',e)),()=>gerial(),()=>{});
+    return ()=>{a();b()};
   },
 
   /* --- iş atamaları --- */
@@ -5553,6 +5610,7 @@ const API = {
   atamaGoruldu(id){ return updateDoc(doc(db,'atamalar',id),{gorulme:Date.now()}); },
   atamaNotYaz(id,notlar){ return updateDoc(doc(db,'atamalar',id),{notlar}); },
   atamaSil(id){ return deleteDoc(doc(db,'atamalar',id)); },
+  atamaOkundu(id,alan){ return updateDoc(doc(db,'atamalar',id),{[alan]:Date.now()}); },
   async atamalariOku(eposta){
     const e=eposta.toLowerCase();
     const [bana,benden]=await Promise.all([
@@ -5565,8 +5623,10 @@ const API = {
     return l.sort((a,b)=>(b.olusturma||0)-(a.olusturma||0));
   },
   atamalariDinle(eposta,gerial){
-    return onSnapshot(query(collection(db,'atamalar'),where('alici','==',eposta.toLowerCase())),
-      ()=>gerial(), ()=>{});
+    const e=eposta.toLowerCase();
+    const a=onSnapshot(query(collection(db,'atamalar'),where('alici','==',e)),()=>gerial(),()=>{});
+    const b=onSnapshot(query(collection(db,'atamalar'),where('atayan','==',e)),()=>gerial(),()=>{});
+    return ()=>{a();b()};
   }
 };
 
