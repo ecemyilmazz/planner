@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Planner</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231C2329'/><rect x='8' y='9' width='16' height='2.5' rx='1' fill='%23DCE0D7'/><rect x='8' y='15' width='11' height='2.5' rx='1' fill='%23C2452E'/><rect x='8' y='21' width='14' height='2.5' rx='1' fill='%23DCE0D7'/></svg>">
+<!-- Push bildirimleri iOS'ta yalnızca ana ekrana eklenmiş (PWA) modda çalışır;
+     bu etiketler o kurulumu ve bildirim ikonunu sağlar. -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Planner">
+<meta name="theme-color" content="#1C2329">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Karla:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
@@ -526,9 +534,9 @@ body.mobil .yara{padding:10px 14px 0}
 .arac-ust{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px}
 .ara{flex:1 1 200px;position:relative;display:flex;align-items:center}
 .ara svg{position:absolute;left:10px;width:13px;height:13px;stroke:var(--ink-faint);fill:none;stroke-width:2;pointer-events:none}
-.ara input{width:100%;background:var(--paper-2);border:1px solid var(--rule);border-radius:7px;
-  padding:8px 11px 8px 30px;font-size:13px}
-.ara input:focus{background:var(--paper);border-color:var(--ink-faint);outline:none}
+.ara #flAra{width:100%;background:var(--paper-2);border:1px solid var(--rule);border-radius:7px;
+  padding:8px 11px 8px 30px;font-size:13px;height:auto}
+.ara #flAra:focus{background:var(--paper);border-color:var(--ink-faint);outline:none}
 .suz{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--rule);background:var(--paper-2);
   border-radius:7px;padding:8px 13px;font-size:12.5px;font-weight:500;color:var(--ink-soft);white-space:nowrap}
 .suz:hover{border-color:var(--ink-faint);color:var(--ink)}
@@ -995,6 +1003,16 @@ body.mobil .lejant{font-size:10.5px;gap:9px}
         <div class="alan"><label for="aBit">Gün bitişi</label><input type="number" id="aBit" min="1" max="24"></div>
       </div>
 
+      <div class="alan" id="bildirimAlan" hidden><label>Bildirimler</label>
+        <div class="tanimnot">Toplantı daveti geldiğinde, gönderdiğin davet kabul/red
+        edildiğinde ya da sana iş atandığında, uygulama kapalıyken de telefonuna/bilgisayarına
+        bildirim gitsin.</div>
+        <div style="display:grid;gap:6px">
+          <button class="ghost" id="bildirimAcBtn" style="text-align:left">Bildirimleri aç</button>
+        </div>
+        <p class="uyari" id="bildirimDurum" style="margin-top:9px"></p>
+      </div>
+
       <div class="alan"><label>Veri</label>
         <div class="tanimnot">Excel'den veri alma, hazırladığın tabloyu kayda dönüştürür.
         Dışa aktarma "Kayıtlar" sekmesindedir. Tam yedek ayrıca tanımları, renkleri ve
@@ -1350,7 +1368,13 @@ let kayitlar=ornekVeri(), sonrakiId=11;
 /* ---------- kalıcılık ---------- */
 /* Tek kayit yeri Firestore. Demo modunda hicbir sey saklanmaz;
    sayfa yenilenince ornek veriye doner. */
-function yaz(){ bulutaYaz(); musaitlikYaz(); }
+function yaz(){ sonTarihSenkron(); bulutaYaz(); musaitlikYaz(); }
+/* Takvimde yer kaplayan kayıtlarda (toplantı vb.) son tarih ayrı girilmez —
+   kaydın kendi tarihiyle aynı tutulur. Her yazımdan önce çalışır, hangi yoldan
+   (form, sürükle-bırak, tekrar, davet, içe aktarma) değiştiyse fark etmez. */
+function sonTarihSenkron(){
+  kayitlar.forEach(k=>{ if(zamanliMi(k))k.bitis=k.tarih||null; });
+}
 /* Eski surumlerden gelen veriyi guncel yapiya tasir. Degisiklik olduysa true doner.
    Adim 1: duz listeler -> alan tanimlari    Adim 2: adlar -> kalici kimlikler
    Hicbir veri kaybolmaz; tanimda olmayan bir deger gorulurse tanima eklenir. */
@@ -1964,7 +1988,7 @@ const SIRALAMA={
   tur:   k=>turAd(k),
   sorumlular: k=>sorumluAdlari(k).join(', '),
   tarih: k=>k.tarih?k.tarih+' '+(k.bas||'00:00'):'',
-  bitis: k=>k.bitis||'',
+  bitis: k=>k.bitis||k.tarih||'',
   durum: k=>k.tamam?'1':'0'
 };
 function sirAlanFn(){
@@ -2054,7 +2078,7 @@ function kayitEkrani(){
       ${ayar.alanlar.map(a=>`<td>${guv(alanDegerAd(k,a.id))||'<span style="color:var(--ink-faint)">—</span>'}</td>`).join('')}
       <td>${sorumluAdlari(k).map(x=>`<span class="kisi">${guv(x)}</span>`).join('')||'—'}</td>
       <td class="mono" style="font-size:11.5px">${k.tarih?`${kisaTarih(k.tarih)}<br>${k.bas?k.bas+'–'+k.bit:'saatsiz'}`:'<span style="color:var(--ink-faint)">atanmamış</span>'}</td>
-      <td class="mono" style="font-size:11.5px">${k.bitis?kisaTarih(k.bitis):'—'}</td>
+      <td class="mono" style="font-size:11.5px">${k.bitis?kisaTarih(k.bitis):(k.tarih?kisaTarih(k.tarih):'—')}</td>
       <td style="white-space:nowrap"><button class="tik" data-tik="${k.id}" title="${k.tamam?'Tekrar aç':'Tamamlandı olarak işaretle'}" style="width:19px;height:19px;border:1.5px solid var(--rule);border-radius:5px;display:inline-grid;place-items:center;font-size:12px;color:${k.tamam?'#fff':'transparent'};background:${k.tamam?'var(--ink-soft)':'var(--paper)'};vertical-align:middle">✓</button></td></tr>`).join('')
       ||`<tr><td colspan="${6+ayar.alanlar.length}" style="text-align:center;padding:28px;color:var(--ink-faint)">
          ${n?'Filtreye uyan kayıt yok.':'Henüz kayıt yok.'}</td></tr>`}
@@ -2252,6 +2276,36 @@ function ayarAc(){
   document.getElementById('zorunluKilit').hidden=duzenleyebilir;
   document.getElementById('erisimSekme').hidden=!(mod==='uye'&&yoneticiMi);
   document.getElementById('ayarPerde').hidden=false;
+  bildirimAlaniCiz();
+}
+
+/* ---------- push bildirim ayarı ---------- */
+const IOS_CIHAZ = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const IOS_ANAEKRAN = window.navigator.standalone===true
+  || window.matchMedia('(display-mode: standalone)').matches;
+
+function bildirimAlaniCiz(){
+  const alan=document.getElementById('bildirimAlan'), btn=document.getElementById('bildirimAcBtn'),
+        durum=document.getElementById('bildirimDurum');
+  if(!alan)return;
+  alan.hidden = mod!=='uye';                 // push, buluta bağlı bir hesap gerektirir
+  if(mod!=='uye')return;
+
+  if(IOS_CIHAZ && !IOS_ANAEKRAN){
+    btn.hidden=true;
+    durum.textContent='iPhone/iPad\'de bildirim alabilmek için önce bu sayfayı ana ekranına ekle: Paylaş → Ana Ekrana Ekle, sonra uygulamayı ana ekrandaki simgeden aç.';
+    return;
+  }
+
+  const s = FB?FB.pushBildirimDurumu():'desteklenmiyor';
+  const metin={
+    desteklenmiyor:'Bu tarayıcı push bildirimlerini desteklemiyor.',
+    denied:'Bildirimlere izin verilmedi. Tarayıcının site ayarlarından bildirimlere izin verip sayfayı yenile.',
+    granted:'Bildirimler açık.',
+    default:''
+  };
+  durum.textContent=metin[s]||'';
+  btn.hidden = (s==='granted' || s==='desteklenmiyor' || s==='denied');
 }
 function ayarSekme(ad){
   document.querySelectorAll('#ayarPerde .atabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.at===ad));
@@ -5065,6 +5119,7 @@ async function excelAl(dosya){
    Tanımlar ortaktır ve sadece yönetici yazabilir; kayıtlar kişiseldir. */
 
 let FB=null, oturum=null, yoneticiMi=false, bulutHazir=false;
+let pushJetonu=null;   // aktif push token'ı — logout'ta silinir
 let yazZaman=null, bekleyenYazma=false;
 
 function durumYaz(tip,mesaj){
@@ -5178,6 +5233,15 @@ async function bulutuYukle(){
     kutuTazele(); kutuDinle();
     durumYaz('tamam'); setTimeout(()=>durumYaz(null),1800);
     bildir(`Giriş yapıldı · ${kayitlar.length} kayıt yüklendi`);
+    /* push bildirimine tıklanıp yeni sekmede açıldıysa gelen kutusunu göster */
+    if(new URLSearchParams(location.search).get('bildirim')){
+      zilAc();
+      history.replaceState(null,'',location.pathname);
+    }
+    /* izin zaten verilmişse token'ı sessizce tazele (yeniden izin istemez) */
+    if(FB.pushBildirimDurumu()==='granted'){
+      FB.pushEtkinlestir().then(s=>{ if(s.tamam)pushJetonu=s.jeton; });
+    }
   }catch(e){
     console.warn('bulut okunamadı:',e);
     durumYaz('hata','bağlanılamadı');
@@ -5450,6 +5514,9 @@ document.getElementById('cikisBtn').onclick=async()=>{
         'birkaç saniye bekleyip "kaydedildi" yazısını görmek daha güvenli.'
       : 'Demo moduna dönülecek. Verilerin hesabında saklı kalır, tekrar giriş yaptığında yerinde olur.',
     onayMetni:'Çıkış yap'}))return;
+  /* paylaşılan bilgisayarda bir sonraki kullanıcı bu hesabın bildirimini almasın */
+  if(FB && pushJetonu && oturum) try{ await FB.pushJetonSil(oturum.email,pushJetonu); }catch(e){}
+  pushJetonu=null;
   try{ if(FB)await FB.cikisYap(); }catch(e){}
   dinlemeIptal.forEach(f=>{try{f()}catch(e){}}); dinlemeIptal=[];
   davetler=[];atamalar=[];
@@ -5539,11 +5606,14 @@ document.getElementById('yardimKapat').onclick=()=>document.getElementById('yard
 document.getElementById('yardimPerde').onclick=e=>{
   if(e.target.id==='yardimPerde')document.getElementById('yardimPerde').hidden=true};
 document.getElementById('yardimAra').oninput=e=>yardimCiz(e.target.value);
-document.getElementById('zilBtn').onclick=()=>{
+function zilAc(){
+  if(mod!=='uye')return;             // push bildirimi demo modda gelmez
   kutuSekme='gelen'; kutuCiz();
   document.getElementById('kutuPerde').hidden=false;
   kutuTazele();
-};
+}
+window.zilAc=zilAc;                  // service worker bildirim tıklamasından çağrılır
+document.getElementById('zilBtn').onclick=zilAc;
 document.getElementById('kutuKapat').onclick=()=>document.getElementById('kutuPerde').hidden=true;
 document.getElementById('kutuPerde').onclick=e=>{
   if(e.target.id==='kutuPerde')document.getElementById('kutuPerde').hidden=true};
@@ -5561,6 +5631,17 @@ document.getElementById('yeniUyeAd').onkeydown=e=>{if(e.key==='Enter'){e.prevent
 document.querySelectorAll('#ayarPerde .atabs button').forEach(b=>b.onclick=()=>ayarSekme(b.dataset.at));
 document.getElementById('ayarKapat').onclick=()=>document.getElementById('ayarPerde').hidden=true;
 document.getElementById('ayarKaydet').onclick=ayarKaydetEt;
+document.getElementById('bildirimAcBtn').onclick=async()=>{
+  if(!FB)return;
+  const btn=document.getElementById('bildirimAcBtn'); btn.disabled=true;
+  const s=await FB.pushEtkinlestir();
+  btn.disabled=false;
+  if(s.tamam){ pushJetonu=s.jeton; bildir('Bildirimler açıldı'); }
+  else if(s.sebep==='reddedildi') bildir('Bildirim izni reddedildi');
+  else if(s.sebep==='yapilandirilmamis') bildir('Bildirimler henüz yapılandırılmadı');
+  else bildir('Bildirimler açılamadı — tekrar dene');
+  bildirimAlaniCiz();
+};
 document.getElementById('ayarPerde').onclick=e=>{if(e.target.id==='ayarPerde')e.currentTarget.hidden=true};
 document.getElementById('sifirla').onclick=async()=>{
   const uyeMi=mod==='uye';
@@ -5649,7 +5730,7 @@ const FIREBASE_AYAR = {
    kaydın rol alanından okunur ve güvenlik kuralları da aynı kaynağa bakar. */
 const SURUM = 'https://www.gstatic.com/firebasejs/10.12.0/';
 
-let A,B,C;
+let A,B,C,D;
 try{
   A = await import(SURUM+'firebase-app.js');
   B = await import(SURUM+'firebase-auth.js');
@@ -5659,17 +5740,33 @@ try{
   if(window.firebaseYok) window.firebaseYok(e);
   throw e;
 }
+try{
+  D = await import(SURUM+'firebase-messaging.js');
+}catch(e){
+  console.warn('Firebase Messaging yüklenemedi — push bildirimleri bu tarayıcıda kapalı kalacak:',e);
+}
 
 const { initializeApp } = A;
 const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
         getRedirectResult, signOut, onAuthStateChanged } = B;
 const { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs,
         query, where, addDoc, updateDoc, onSnapshot,
-        enableIndexedDbPersistence } = C;
+        enableIndexedDbPersistence, arrayUnion, arrayRemove } = C;
 
 const app  = initializeApp(FIREBASE_AYAR);
 const auth = getAuth(app);
 const db   = getFirestore(app);
+
+/* Web Push sertifikası — Firebase Console > Project settings > Cloud
+   Messaging > Web Push certificates'ta üretilir (Faz 0). Üretilmeden
+   pushEtkinlestir() 'yapilandirilmamis' döner, uygulamanın geri kalanı
+   bundan etkilenmez. */
+const VAPID_KEY = 'VAPID_ANAHTARINI_BURAYA_YAPISTIR';
+
+let messaging = null;
+if(D){
+  try{ messaging = D.getMessaging(app); }catch(e){ console.warn('messaging başlatılamadı:',e); }
+}
 
 /* çevrimdışı önbellek — bağlantı koptuğunda son veriyle çalışmayı sürdürür */
 try{ await enableIndexedDbPersistence(db); }catch(e){ /* birden fazla sekme açıksa desteklenmez */ }
@@ -5750,6 +5847,43 @@ const API = {
     return g.exists() ? (g.data().dilimler||[]) : [];
   },
 
+  /* --- push bildirim jetonları ---
+     Zildeki aynı olaylar (davet geldi, kabul/red edildi, iş atandı)
+     uygulama kapalıyken de OS bildirimi olarak gitsin diye kullanılır.
+     Cloud Functions (functions/index.js) tetiklenince burayı okur. */
+  async pushJetonYaz(eposta,jeton){
+    const ref = doc(db,'pushJetonlari',eposta.toLowerCase());
+    try{ await updateDoc(ref,{jetonlar:arrayUnion(jeton),guncelleme:Date.now()}); }
+    catch(e){ await setDoc(ref,{jetonlar:[jeton],guncelleme:Date.now()}); } // ilk kayıt
+  },
+  pushJetonSil(eposta,jeton){
+    return updateDoc(doc(db,'pushJetonlari',eposta.toLowerCase()),
+      {jetonlar:arrayRemove(jeton),guncelleme:Date.now()}).catch(()=>{});
+  },
+  /* Kullanıcı jestiyle (düğme tıklaması) çağrılmalı — tarayıcılar sessiz
+     izin isteğini genelde otomatik reddeder. */
+  async pushEtkinlestir(){
+    if(!D||!messaging) return {tamam:false, sebep:'desteklenmiyor'};
+    if(!('serviceWorker' in navigator) || !('Notification' in window)) return {tamam:false, sebep:'desteklenmiyor'};
+    if(VAPID_KEY==='VAPID_ANAHTARINI_BURAYA_YAPISTIR') return {tamam:false, sebep:'yapilandirilmamis'};
+    try{
+      const izin = await Notification.requestPermission();
+      if(izin!=='granted') return {tamam:false, sebep:'reddedildi'};
+      const kayit = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+      const jeton = await D.getToken(messaging,{vapidKey:VAPID_KEY, serviceWorkerRegistration:kayit});
+      if(!jeton) return {tamam:false, sebep:'jeton-yok'};
+      await API.pushJetonYaz(epostaAl(API.kullanici), jeton);
+      return {tamam:true, jeton};
+    }catch(e){
+      console.warn('push etkinleştirilemedi:',e);
+      return {tamam:false, sebep:'hata'};
+    }
+  },
+  pushBildirimDurumu(){
+    if(!D||!messaging||!('Notification' in window)) return 'desteklenmiyor';
+    return Notification.permission; // 'default' | 'granted' | 'denied'
+  },
+
   /* --- davetler --- */
   davetOlustur(veri){ return addDoc(collection(db,'davetler'),veri); },
   davetYanitla(id,durum,not){
@@ -5807,6 +5941,22 @@ const API = {
     return ()=>{a();b()};
   }
 };
+
+/* Sekme açıkken gelen push — native OS bildirimi yerine uygulamanın
+   kendi toast'ı ile gösterilir, aksi halde aynı olay iki kez görünür. */
+if(D && messaging){
+  D.onMessage(messaging, payload=>{
+    const b=(payload.notification&&payload.notification.title)||'Bildirim';
+    if(window.bildir) window.bildir(b);
+  });
+}
+
+/* Service worker'daki bildirim tıklaması: sekme odaklanınca zili açar. */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('message', e=>{
+    if(e.data && e.data.tip==='planner-bildirim-tiklandi' && window.zilAc) window.zilAc();
+  });
+}
 
 onAuthStateChanged(auth, async u=>{
   API.kullanici = u;
