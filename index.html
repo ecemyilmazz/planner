@@ -219,6 +219,32 @@ body.mobil .yara{padding:10px 14px 0}
 .dvt.red{border-left-color:var(--c-istakibi);opacity:.75}
 .dvt.iptal{border-left-color:var(--ink-faint);opacity:.75}
 .dvt.yeni{box-shadow:0 0 0 1px var(--ink)}
+.kat-liste{display:grid;gap:1px;margin-top:9px;background:var(--rule-soft);
+  border:1px solid var(--rule);border-radius:var(--r-md);overflow:hidden}
+.kat{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--paper);
+  font-size:12.5px;flex-wrap:wrap}
+.kat.red,.kat.iptal{background:var(--paper-2)}
+.kat-ad{font-weight:600}
+.kat-zaman{font-size:11px;color:var(--ink-faint)}
+.kat-not{font-size:11px;color:var(--ink-soft);font-style:italic;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
+.kat-durum{font-family:'IBM Plex Mono';font-size:9.5px;border-radius:3px;padding:2px 6px;
+  background:var(--rule);color:var(--ink-soft);white-space:nowrap}
+.kat-durum.kabul{background:#DCEDE4;color:#1E5A46}
+.kat-durum.red{background:#F6E3DE;color:var(--c-istakibi)}
+.kat-durum.bekliyor{background:#F6E9D9;color:var(--c-calisma)}
+.kat-aks{display:flex;gap:5px;align-items:center;flex:none}
+.kat-aks button{height:26px;padding:0 10px;font-size:11.5px;border-radius:var(--r-sm)}
+.kat-aks .tsil{width:26px;height:26px;padding:0;border:1px solid var(--rule)}
+.dvt-gecmis{margin-top:9px;font-size:12px}
+.dvt-gecmis summary{cursor:pointer;color:var(--ink-soft);font-size:11.5px;
+  padding:5px 0;user-select:none}
+.dvt-gecmis summary:hover{color:var(--ink)}
+.gec-satir{display:flex;align-items:center;gap:8px;padding:5px 9px;background:var(--paper-2);
+  border-radius:var(--r-sm);margin-top:4px;font-size:11.5px;flex-wrap:wrap}
+.gec-satir b{font-weight:600}
+.gec-satir i{color:var(--ink-faint);font-size:11px}
+.dvt-zaman i{font-style:normal;font-size:11px;color:var(--ink-faint)}
 .yeni-rozet{font-family:'IBM Plex Mono';font-size:9px;background:var(--ink);color:var(--paper);
   border-radius:3px;padding:2px 6px;letter-spacing:.04em;flex:none}
 .dvt-rev{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:7px;
@@ -3549,19 +3575,35 @@ async function paylasimGonder(){
     for(const id of paySecililer){
       const alici=ayar.kisiler.find(x=>x.id===id);
       if(!alici||!alici.eposta)continue;
+      const eposta=alici.eposta.toLowerCase();
+      /* Aynı kayıt + aynı kişi için ikinci bir belge oluşturulmaz.
+         Daha önce reddedilmiş ya da iptal edilmişse o belge canlandırılır;
+         böylece gelen kutusunda mükerrer kart birikmez. */
+      const eski=davetler.find(d=>d.yon==='giden'&&d.kayitId===k.id&&d.alici===eposta);
       try{
-        await FB.davetOlustur({
-          gonderen:(oturum.email||'').toLowerCase(),
-          alici:alici.eposta.toLowerCase(),
-          konu:k.konu, tarih, bas, bit, not, detay,
-          kayitId:k.id,                       /* revizyon için bağ */
-          durum:'bekliyor', olusturma:Date.now()
-        });
+        if(eski){
+          await FB.davetRevize(eski.id,{
+            konu:k.konu, tarih, bas, bit, not, detay,
+            oncekiTarih:eski.tarih, oncekiBas:eski.bas, oncekiBit:eski.bit,
+            gecmis:[...(eski.gecmis||[]),
+              {tarih:eski.tarih,bas:eski.bas,bit:eski.bit,
+               durum:eski.durum,not:eski.yanitNot||'',zaman:eski.yanitZamani||eski.olusturma||0}]
+          });
+        }else{
+          await FB.davetOlustur({
+            gonderen:(oturum.email||'').toLowerCase(),
+            alici:eposta,
+            konu:k.konu, tarih, bas, bit, not, detay,
+            kayitId:k.id, gecmis:[],
+            durum:'bekliyor', olusturma:Date.now()
+          });
+        }
         adlar.push(alici.ad);
-        k.gonderilenDavet=[...(k.gonderilenDavet||[]),alici.eposta.toLowerCase()];
+        if(!(k.gonderilenDavet||[]).includes(eposta))
+          k.gonderilenDavet=[...(k.gonderilenDavet||[]),eposta];
       }catch(e){
         hatalar.push(alici.ad);
-        console.error('Davet oluşturulamadı:',alici.eposta,e.code||'',e.message||e);
+        console.error('Davet gönderilemedi:',eposta,e.code||'',e.message||e);
         sonHata=e;
       }
     }
@@ -3572,6 +3614,10 @@ async function paylasimGonder(){
     for(const id of paySecililer){
       const alici=ayar.kisiler.find(x=>x.id===id);
       if(!alici||!alici.eposta)continue;
+      if(atamalar.some(a=>a.yon==='benden'&&a.kayitId===k.id
+                          &&a.alici===alici.eposta.toLowerCase())){
+        continue;                       /* zaten atanmış, ikinci kez atama */
+      }
       try{
         await FB.atamaOlustur({
           atayan:(oturum.email||'').toLowerCase(),
@@ -3982,8 +4028,12 @@ const KILAVUZ=[
   {s:'Gönderdiklerim ne oldu',
    p:['Biri davetini kabul ya da reddettiğinde <b>zilde sayı belirir</b> — '+
       'sen de haberdar olursun.',
-      'Zil → <b>Gönderdiğim</b> sekmesi. Yanıtlanan davetler <b>yeni</b> etiketiyle '+
-      've çerçeveli görünür; reddedildiyse sebebi de yazar.',
+      'Zil → <b>Gönderdiğim</b> sekmesi. Her toplantı <b>tek kart</b> halinde görünür; '+
+      'kaç kişiye gönderdiğin ve özet durum üstte yazar (örn. "1 kabul · 1 bekliyor · 1 red").',
+      'Kartın altında katılımcılar tek tek listelenir: kim ne yanıt vermiş, '+
+      'reddettiyse sebebi ne. Her satırın kendi düğmeleri vardır.',
+      'Aynı kişiye yeniden davet gönderdiğinde yeni bir kayıt oluşmaz — '+
+      'mevcut davet güncellenir, eski deneme <b>Önceki denemeler</b> başlığı altına düşer.',
       'Sekmeye bakman yeterli — birkaç saniye sonra okundu sayılır ve sayaç düşer.',
       'Yanıtlanmamış bir daveti <b>geri çekebilirsin</b>.',
       'Reddedilen bir davette <b>Yeni saat öner</b> düğmesi çıkar: kaydı açar, '+
@@ -4181,6 +4231,72 @@ function kutuDinle(){
 
 const kisiAdEposta=e=>{const k=kisiEpostaIle(e);return k?k.ad:(e||'').split('@')[0]};
 
+
+/* Gönderdiğim davetler kişi başına değil, TOPLANTI başına gösterilir.
+   Bir toplantıya üç kişi çağırdıysan üç ayrı kart değil, tek kart altında
+   üç katılımcı satırı görürsün — "aynı şey iki kez var" hissi ortadan kalkar. */
+function gidenGrupKarti(grup){
+  const ilk=grup[0];
+  const yeniVar=grup.some(davetYeni);
+  const sayim={bekliyor:0,kabul:0,red:0,iptal:0};
+  grup.forEach(d=>{sayim[d.durum]=(sayim[d.durum]||0)+1});
+  const ozet=[
+    sayim.kabul?`${sayim.kabul} kabul`:'',
+    sayim.bekliyor?`${sayim.bekliyor} bekliyor`:'',
+    sayim.red?`${sayim.red} red`:'',
+    sayim.iptal?`${sayim.iptal} çıktı`:''
+  ].filter(Boolean).join(' · ');
+
+  /* Aynı toplantının katılımcıları farklı saatlerde olabilir (biri revize
+     edilmiş, biri değil). Baskın saati göster, farklıysa satırda belirt. */
+  const anaZaman=`${uzunTarih(ilk.tarih)} · ${ilk.bas}–${ilk.bit}`;
+  const farkliVar=grup.some(d=>d.tarih!==ilk.tarih||d.bas!==ilk.bas||d.bit!==ilk.bit);
+
+  return `<div class="dvt ${yeniVar?'yeni':''}">
+    <div class="dvt-ust">
+      ${yeniVar?'<span class="yeni-rozet">yeni</span>':''}
+      <span class="dvt-kim">${grup.length} kişiye gönderildi</span>
+      <span class="spacer"></span>
+      <span class="dvt-durum">${guv(ozet)}</span>
+    </div>
+    <div class="dvt-konu">${guv(ilk.konu)}</div>
+    <div class="dvt-zaman">${anaZaman}${farkliVar?' <i>(kişiye göre değişiyor)</i>':''}</div>
+    ${detayBlogu(ilk.detay)}
+    <div class="kat-liste">
+      ${grup.map(d=>{
+        const revize=!!(d.oncekiTarih&&d.durum==='bekliyor');
+        const zamanFarkli=d.tarih!==ilk.tarih||d.bas!==ilk.bas||d.bit!==ilk.bit;
+        return `<div class="kat ${d.durum}">
+          <span class="kat-ad">${guv(kisiAdEposta(d.alici))}</span>
+          ${zamanFarkli?`<span class="kat-zaman mono">${kisaTarih(d.tarih)} ${d.bas}</span>`:''}
+          <span class="spacer"></span>
+          ${d.yanitNot?`<span class="kat-not" title="${guv(d.yanitNot)}">"${guv(kes(d.yanitNot,28))}"</span>`:''}
+          <span class="kat-durum ${d.durum}">${
+            revize?'yeni saat bekliyor'
+            :{bekliyor:'bekliyor',kabul:'kabul etti',red:'reddetti',
+              iptal:'takvimden çıkardı'}[d.durum]||d.durum}</span>
+          <span class="kat-aks">
+            ${d.durum==='bekliyor'?`<button class="ghost" data-dgeri="${d.id}">Geri çek</button>`:''}
+            ${['red','iptal'].includes(d.durum)&&kayitlar.some(x=>x.id===d.kayitId)
+              ?`<button class="kbl" data-dyeni="${d.id}">Yeni saat öner</button>`:''}
+            <button class="tsil" data-dsil="${d.id}" title="Bu kişinin davet kaydını sil">${copSvg(12)}</button>
+          </span>
+        </div>`;
+      }).join('')}
+    </div>
+    ${grup.some(d=>(d.gecmis||[]).length)?`
+      <details class="dvt-gecmis">
+        <summary>Önceki denemeler</summary>
+        ${grup.map(d=>(d.gecmis||[]).map(g2=>
+          `<div class="gec-satir"><b>${guv(kisiAdEposta(d.alici))}</b>
+            <span class="mono">${kisaTarih(g2.tarih)} ${g2.bas}–${g2.bit}</span>
+            <span class="kat-durum ${g2.durum}">${
+              {bekliyor:'yanıtsız',kabul:'kabul',red:'red',iptal:'çıktı'}[g2.durum]||g2.durum}</span>
+            ${g2.not?`<i>"${guv(kes(g2.not,40))}"</i>`:''}</div>`).join('')).join('')}
+      </details>`:''}
+  </div>`;
+}
+
 function davetKarti(d){
   const gelen=d.yon==='gelen';
   const revize=!!(d.oncekiTarih&&d.durum==='bekliyor');
@@ -4280,13 +4396,14 @@ function kutuCiz(){
   document.querySelectorAll('#kutuPerde .atabs button').forEach(b=>
     b.setAttribute('aria-selected',b.dataset.kt===kutuSekme));
   const g=document.getElementById('kutuGovde');
-  let liste=[],bosMetin='';
+  let liste=[],bosMetin='',gidenGruplu=false;
   if(kutuSekme==='gelen'){
     liste=davetler.filter(d=>d.yon==='gelen');
     bosMetin='Sana gönderilmiş davet yok.';
   }else if(kutuSekme==='giden'){
     liste=davetler.filter(d=>d.yon==='giden');
     bosMetin='Henüz davet göndermedin.<br>Bir kaydı açıp "Davet gönder" ile başlayabilirsin.';
+    gidenGruplu=true;
   }else{
     liste=atamalar;
     bosMetin=yoneticiMi
@@ -4309,9 +4426,22 @@ function kutuCiz(){
     zilGuncelle();
     return;
   }
-  g.innerHTML=liste.length
-    ? liste.map(x=>kutuSekme==='isler'?atamaKarti(x):davetKarti(x)).join('')
-    : `<div class="bos">${bosMetin}</div>`;
+  if(gidenGruplu&&liste.length){
+    /* aynı kayda ait davetler tek kartta toplanır */
+    const grup=new Map();
+    liste.forEach(d=>{
+      const anahtar=d.kayitId||('k'+d.konu+d.olusturma);
+      if(!grup.has(anahtar))grup.set(anahtar,[]);
+      grup.get(anahtar).push(d);
+    });
+    g.innerHTML=[...grup.values()]
+      .sort((a,b)=>(b[0].olusturma||0)-(a[0].olusturma||0))
+      .map(gidenGrupKarti).join('');
+  }else{
+    g.innerHTML=liste.length
+      ? liste.map(x=>kutuSekme==='isler'?atamaKarti(x):davetKarti(x)).join('')
+      : `<div class="bos">${bosMetin}</div>`;
+  }
   kutuBagla();
   zilGuncelle();
   setTimeout(okunduIsaretle,900);        // kullanıcı görmeye fırsat bulsun
