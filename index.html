@@ -3610,23 +3610,33 @@ function paylasimCiz(){
 /* Gönder düğmesi: kayıt kaydedilmemişse önce kaydedilir. */
 async function paylasimGonder(){
   if(!paySecililer.size){bildir('En az bir kişi seç');return}
+  /* Yeni kayıtta kaydetEt() → modalKapat() → paylasimKapat() zinciri payTur ve
+     paySecililer'ı sıfırlar (panel kapanışının normal davranışı). Kaydet
+     çağrısından ÖNCE anlık kopya alınır, aşağıda hep bu kopyalar kullanılır —
+     yoksa kayıt oluşur ama kimseye davet/iş gönderilmez. */
+  const turAn=payTur, secAn=new Set(paySecililer);
+  const tarihAn=document.getElementById('fTarih').value;
+  const basAn=document.getElementById('fBas').value;
+  const bitAn=document.getElementById('fBit').value;
+  const bitisAn=document.getElementById('payBitis')?.value||'';
+  const notAn=(document.getElementById('payNot').value||'').trim();
   const k=await paylasimIcinKaydet();
   if(!k)return;
 
   const detay=kayitDetayi(k);
-  const not=(document.getElementById('payNot').value||'').trim();
+  const not=notAn;
   const adlar=[], hatalar=[];
   let sonHata=null;
   const gon=document.getElementById('payGonder');
   gon.disabled=true; document.getElementById('payDurum').textContent='Gönderiliyor…';
 
-  if(payTur==='davet'){
-    const tarih=document.getElementById('fTarih').value||k.tarih;
-    const bas=document.getElementById('fBas').value||k.bas;
-    const bit=document.getElementById('fBit').value||k.bit;
+  if(turAn==='davet'){
+    const tarih=tarihAn||k.tarih;
+    const bas=basAn||k.bas;
+    const bit=bitAn||k.bit;
     if(!tarih||!bas||!bit){bildir('Tarih ve saat gerekli');gon.disabled=false;paylasimCiz();return}
     if(dk(bit)<=dk(bas)){bildir('Bitiş saati başlangıçtan sonra olmalı');gon.disabled=false;paylasimCiz();return}
-    for(const id of paySecililer){
+    for(const id of secAn){
       const alici=ayar.kisiler.find(x=>x.id===id);
       if(!alici||!alici.eposta)continue;
       const eposta=alici.eposta.toLowerCase();
@@ -3663,9 +3673,9 @@ async function paylasimGonder(){
     }
     if(adlar.length)yaz();
   }else{
-    const bitis=document.getElementById('payBitis').value;
+    const bitis=bitisAn;
     if(!bitis){bildir('Son tarih gerekli');gon.disabled=false;paylasimCiz();return}
-    for(const id of paySecililer){
+    for(const id of secAn){
       const alici=ayar.kisiler.find(x=>x.id===id);
       if(!alici||!alici.eposta)continue;
       if(atamalar.some(a=>a.yon==='benden'&&a.kayitId===k.id
@@ -3690,7 +3700,7 @@ async function paylasimGonder(){
   }
 
   gon.disabled=false;
-  if(adlar.length)bildir(`${adlar.length} kişiye ${payTur==='davet'?'davet gönderildi':'iş atandı'}: ${adlar.join(', ')}`);
+  if(adlar.length)bildir(`${adlar.length} kişiye ${turAn==='davet'?'davet gönderildi':'iş atandı'}: ${adlar.join(', ')}`);
   if(hatalar.length){
     bilgiVer({baslik:'Gönderilemedi',tehlike:true,
       mesaj:`${hatalar.length} kişiye ulaşılamadı`,
